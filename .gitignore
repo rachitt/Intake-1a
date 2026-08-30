@@ -1,0 +1,18 @@
+# ── build output & deps ───────────────────────────────────────────────────────
+node_modules/
+dist/
+*.log
+
+# ── assignment materials ──────────────────────────────────────────────────────
+# Provided for this assignment only; not redistributed. Reviewers already have
+# their own copy — the README points at it rather than shipping it.
+*.pdf
+*.zip
+intake-takehome-2/
+takehome-1a/
+
+# ── local ─────────────────────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+.env
+.env.local

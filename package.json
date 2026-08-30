@@ -1,0 +1,20 @@
+{
+  "name": "esource-study-builder-agent",
+  "version": "1.0.0",
+  "private": true,
+  "description": "A platform-agnostic browser agent that builds a clinical study specification into any eSource form designer.",
+  "type": "module",
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "watch": "node scripts/build.mjs --watch",
+    "typecheck": "tsc --noEmit",
+    "lint:portability": "node scripts/check-portability.mjs",
+    "diff": "node scripts/diff-ir.mjs",
+    "verify": "npm run typecheck && npm run lint:portability"
+  },
+  "devDependencies": {
+    "@types/chrome": "^0.0.268",
+    "esbuild": "^0.23.0",
+    "typescript": "^5.5.4"
+  }
+}

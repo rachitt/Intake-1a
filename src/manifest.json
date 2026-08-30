@@ -1,0 +1,25 @@
+{
+  "manifest_version": 3,
+  "name": "eSource Study Builder Agent",
+  "version": "1.0.0",
+  "description": "Builds a clinical study specification into any eSource form designer, with a human gate for anything it is not sure about.",
+  "minimum_chrome_version": "116",
+  "background": {
+    "service_worker": "background.js",
+    "type": "module"
+  },
+  "side_panel": {
+    "default_path": "panel.html"
+  },
+  "action": {
+    "default_title": "eSource Study Builder Agent",
+    "default_icon": {
+      "128": "icons/icon128.png"
+    }
+  },
+  "icons": {
+    "128": "icons/icon128.png"
+  },
+  "permissions": ["storage", "sidePanel", "scripting", "tabs", "activeTab"],
+  "host_permissions": ["<all_urls>"]
+}
