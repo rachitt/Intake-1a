@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>eSource Study Builder</title>
+    <link rel="stylesheet" href="panel.css" />
+  </head>
+  <body>
+    <header class="bar">
+      <div class="bar-title">
+        <span class="dot" id="phase-dot"></span>
+        <strong>Study Builder</strong>
+      </div>
+      <div class="bar-actions">
+        <button id="start" class="primary">Run</button>
+        <button id="stop" class="ghost" hidden>Stop</button>
+      </div>
+    </header>
+
+    <p class="status" id="status">Load an input file to begin.</p>
+
+    <section class="counters" id="counters" hidden></section>
+
+    <!--
+      The review queue is first on purpose. When the agent is waiting on a
+      decision, that decision is the only thing that matters, and burying it
+      under a progress tree would make a reviewer hunt for it.
+    -->
+    <section id="queue-section" hidden>
+      <div class="section-head">
+        <h2>Needs your decision</h2>
+        <span class="pill" id="queue-count"></span>
+      </div>
+      <p class="hint">
+        The agent builds what it is sure about and asks about the rest. Each question here is asked
+        once and settles every field it affects.
+      </p>
+      <div id="queue"></div>
+    </section>
+
+    <section id="setup">
+      <div class="section-head"><h2>Setup</h2></div>
+
+      <label class="field">
+        <span>Input file (study specification)</span>
+        <input type="file" id="ir-file" accept=".json,application/json" />
+      </label>
+      <div id="ir-summary" class="summary" hidden></div>
+      <div id="ir-problems" class="problems" hidden></div>
+
+      <label class="field">
+        <span>Gemini API key</span>
+        <input type="password" id="api-key" placeholder="Optional — used only for ambiguous decisions" autocomplete="off" />
+      </label>
+      <label class="field">
+        <span>Model</span>
+        <select id="model">
+          <option value="gemini-2.5-flash">gemini-2.5-flash — fast, cheap</option>
+          <option value="gemini-2.5-pro">gemini-2.5-pro — slower, better at ambiguity</option>
+          <option value="gemini-2.0-flash">gemini-2.0-flash</option>
+        </select>
+      </label>
+      <p class="hint">
+        Without a key the agent still runs: it grounds deterministically and escalates anything it
+        cannot settle, rather than guessing.
+      </p>
+    </section>
+
+    <section id="typemap-section" hidden>
+      <div class="section-head"><h2>What this platform calls each field type</h2></div>
+      <p class="hint">Established by building one of each and watching what it does — not by matching names.</p>
+      <div id="typemap"></div>
+    </section>
+
+    <section id="progress-section" hidden>
+      <div class="section-head">
+        <h2>Progress</h2>
+        <button id="toggle-done" class="ghost small">Hide finished</button>
+      </div>
+      <div id="progress"></div>
+    </section>
+
+    <section id="coverage-section" hidden>
+      <div class="section-head"><h2>Verification</h2></div>
+      <div id="coverage"></div>
+    </section>
+
+    <footer class="foot">
+      <button id="export-audit" class="ghost small">Export audit log</button>
+      <button id="export-coverage" class="ghost small">Export coverage</button>
+      <button id="forget" class="ghost small">Forget this platform</button>
+    </footer>
+
+    <script src="panel.js"></script>
+  </body>
+</html>
