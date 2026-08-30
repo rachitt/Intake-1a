@@ -36,6 +36,29 @@ const COMMIT_LOOKALIKES = [
 ];
 
 export const INTENTS = {
+  // ── getting around ──────────────────────────────────────────────────────────
+
+  /**
+   * Return to the screen listing the study's visits.
+   *
+   * Single-page applications frequently do not change their URL as they move
+   * between screens, so the agent navigates the way a person does — by finding
+   * the affordance that means "go back to the schedule" — rather than by
+   * driving the address bar.
+   */
+  gotoVisitSchedule: (): Intent => ({
+    id: 'nav.visitSchedule',
+    goal: "Go to the screen listing the study's visits.",
+    roles: ['button', 'link', 'tab', 'menuitem'],
+    lexicon: [
+      'visit schedule', 'visits', 'visit list', 'schedule', 'study plan', 'study design',
+      'timepoints', 'events', 'back to visits', 'study', 'plan', 'home', 'back',
+    ],
+    avoid: [...DESTRUCTIVE, 'subject', 'patient', 'report', 'user', 'settings', 'logout'],
+    regionKinds: ['navigation', 'toolbar', 'unknown'],
+    threshold: 0.5,
+  }),
+
   // ── study structure ─────────────────────────────────────────────────────────
 
   visitCreate: (): Intent => ({
