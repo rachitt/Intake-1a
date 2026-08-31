@@ -90,6 +90,73 @@ const gate: Gate = {
   },
 };
 
+// ── keeping this worker alive for the length of a run ─────────────────────────
+
+/**
+ * Everything a run consists of lives in this worker's memory: the builder's
+ * call stack, the promise each open question is waiting on, the progress tree.
+ * None of it is persisted, because none of it can be — an async call stack
+ * halfway through a form designer cannot be written to storage and picked up
+ * again.
+ *
+ * Manifest V3 evicts an idle service worker after about thirty seconds, and an
+ * agent waiting at the human gate is, as far as Chrome is concerned, idle. That
+ * is the worst possible moment to be evicted: the panel goes on showing a
+ * question whose answer now has nowhere to go, and every button on it throws
+ * "Attempting to use a disconnected port object" into a console nobody is
+ * reading.
+ *
+ * Any extension API call resets the idle timer, so a run holds the worker open
+ * by ticking one. This is a lifeline for the run rather than a background task,
+ * so it is started with the run and cleared when the run ends.
+ */
+const HEARTBEAT_MS = 20_000;
+let heartbeat: ReturnType<typeof setInterval> | undefined;
+
+function holdWorkerAwake(): void {
+  if (heartbeat !== undefined) return;
+  heartbeat = setInterval(() => void chrome.runtime.getPlatformInfo().catch(() => undefined), HEARTBEAT_MS);
+}
+
+function letWorkerSleep(): void {
+  if (heartbeat !== undefined) clearInterval(heartbeat);
+  heartbeat = undefined;
+}
+
+/**
+ * A marker that outlives this worker, so a run that died with it can be
+ * reported rather than left looking like a run that is merely slow.
+ */
+const RUN_MARKER = 'runInProgress';
+
+async function noteRunning(on: boolean): Promise<void> {
+  try {
+    if (on) await chrome.storage.session.set({ [RUN_MARKER]: Date.now() });
+    else await chrome.storage.session.remove(RUN_MARKER);
+  } catch {
+    // Session storage is a convenience here, never a dependency.
+  }
+}
+
+// If the marker is still set when this worker starts, the worker that set it
+// did not live to clear it. Say so plainly: a half-finished study reported as
+// finished is exactly the failure this tool exists to avoid.
+void (async () => {
+  try {
+    const raw = await chrome.storage.session.get(RUN_MARKER);
+    if (raw[RUN_MARKER] === undefined) return;
+    await chrome.storage.session.remove(RUN_MARKER);
+    store.setPhase(
+      'failed',
+      'The previous run was interrupted — Chrome shut the extension down while it was working, ' +
+        'and a run in progress cannot survive that. Start it again: every step checks whether its ' +
+        'work is already there before it builds, so nothing is duplicated and what was built stands.',
+    );
+  } catch {
+    // Nothing to report if the marker cannot be read.
+  }
+})();
+
 // ── the run ───────────────────────────────────────────────────────────────────
 
 let running = false;
@@ -105,6 +172,8 @@ async function startRun(tabId: number): Promise<void> {
   }
 
   running = true;
+  holdWorkerAwake();
+  void noteRunning(true);
   store.aborted = false;
   store.audit.length = 0;
   store.state = { ...store.state, phase: 'validating', escalations: [], typeMap: [], startedAt: Date.now() };
@@ -164,6 +233,8 @@ async function startRun(tabId: number): Promise<void> {
   } finally {
     store.state.finishedAt = Date.now();
     running = false;
+    letWorkerSleep();
+    void noteRunning(false);
     // Said last, so nothing the run logs on its way out can talk over it.
     if (store.aborted) store.setPhase('idle', 'Stopped.');
     store.notify();

@@ -20,10 +20,60 @@ import type {
 } from '../shared/protocol';
 import type { IrProblem, IrStats } from '../shared/ir';
 
-const port = chrome.runtime.connect({ name: 'panel' });
+/**
+ * The channel to the worker, re-established if it drops.
+ *
+ * A Manifest V3 service worker can be shut down under us. When that happens the
+ * port dies, and a panel holding one connection for its lifetime becomes a
+ * screenshot: it goes on showing the last state it was sent, and every button
+ * throws "Attempting to use a disconnected port object" where nobody sees it.
+ *
+ * Reconnecting costs nothing and starts the worker back up, which is also how
+ * the panel finds out what really happened — including that the run it was
+ * showing did not survive.
+ */
+let port: chrome.runtime.Port | null = null;
+
+function connect(): chrome.runtime.Port | null {
+  try {
+    const fresh = chrome.runtime.connect({ name: 'panel' });
+    fresh.onMessage.addListener(receive);
+    fresh.onDisconnect.addListener(() => {
+      port = null;
+      // Come straight back and ask what the truth is now.
+      setTimeout(() => {
+        if (connect()) {
+          send({ kind: 'getSettings' });
+          send({ kind: 'getState' });
+        }
+      }, 250);
+    });
+    port = fresh;
+    return fresh;
+  } catch {
+    port = null;
+    return null;
+  }
+}
 
 function send(command: PanelCommand): void {
-  port.postMessage(command);
+  const live = port ?? connect();
+  if (!live) return;
+  try {
+    live.postMessage(command);
+  } catch {
+    // It died between the check and the post. One retry on a fresh port; if
+    // that fails too the extension is going away and there is nothing to say.
+    port = null;
+    const retry = connect();
+    if (retry) {
+      try {
+        retry.postMessage(command);
+      } catch {
+        /* nothing left to talk to */
+      }
+    }
+  }
 }
 
 const $ = <T extends HTMLElement = HTMLElement>(id: string): T => document.getElementById(id) as T;
@@ -61,7 +111,7 @@ $('toggle-done').addEventListener('click', () => {
 
 // ── incoming events ───────────────────────────────────────────────────────────
 
-port.onMessage.addListener((event: BackgroundEvent) => {
+function receive(event: BackgroundEvent): void {
   switch (event.kind) {
     case 'state':
       state = event.state;
@@ -82,8 +132,9 @@ port.onMessage.addListener((event: BackgroundEvent) => {
     default:
       break;
   }
-});
+}
 
+connect();
 send({ kind: 'getSettings' });
 send({ kind: 'getState' });
 
@@ -152,6 +203,12 @@ function renderQueue(next: RunState): void {
   const section = $('queue-section');
   if (!next.escalations.length) {
     section.hidden = true;
+    // Emptied, not just hidden. After a worker restart this panel is handed a
+    // fresh state, and a queue left standing in the DOM is a question that no
+    // longer exists waiting to be answered.
+    $('queue-count').textContent = '';
+    $('queue').innerHTML = '';
+    picked.clear();
     return;
   }
   section.hidden = false;

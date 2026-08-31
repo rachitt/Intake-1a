@@ -467,7 +467,7 @@ export class Builder {
         }
       }
     }
-    this.store.setPhase('building', 'Building the study.');
+    if (!this.store.aborted) this.store.setPhase('building', 'Building the study.');
   }
 
   private libraryNameFor(type: CanonicalType): string | null {
