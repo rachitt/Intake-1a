@@ -185,6 +185,28 @@ function nodeState(el: Element, role: Role, inModal: boolean): SnapshotNode['sta
   return state;
 }
 
+/**
+ * Where each region of the latest snapshot lives on the page.
+ *
+ * A region is addressed the same way an element is: by an opaque integer that
+ * means nothing outside this file. It exists because some things can only be
+ * done TO a region rather than to a control — dropping a new field onto an
+ * empty canvas, most obviously, where there is by definition no control inside
+ * it to aim at.
+ *
+ * Only the latest snapshot's regions are kept. Unlike refs, which survive a few
+ * generations because the orchestrator reasons over an older snapshot while the
+ * page moves under it, a region id is only ever used immediately after the
+ * capture that produced it.
+ */
+const regionContainers = new Map<number, Element>();
+
+/** The element a region id refers to, or null once it has been superseded. */
+export function regionElement(id: number): Element | null {
+  const el = regionContainers.get(id);
+  return el && el.isConnected ? el : null;
+}
+
 // ── region inference ──────────────────────────────────────────────────────────
 
 const SEMANTIC_CUT = new Set(['dialog', 'form', 'fieldset', 'nav', 'aside', 'main', 'section', 'table', 'header', 'footer']);
@@ -512,7 +534,9 @@ export function captureSnapshot(opts: { includeGeneric?: boolean } = {}): Snapsh
   }
 
   const regions: SnapshotRegion[] = [];
+  regionContainers.clear();
   for (const [container, regionId] of regionIds) {
+    regionContainers.set(regionId, container);
     const members = owners.get(container) ?? [];
     const memberNodes = members.map((m) => nodes[indexOf.get(m)!]).filter(Boolean) as SnapshotNode[];
     const classified = classifyRegion(container, members, memberNodes);

@@ -41,6 +41,7 @@ import {
   remedyForCause,
   retryIsWorthwhile,
   retryShouldRemoveElement,
+  shouldOfferRebuild,
 } from './diagnose';
 import { SIGNATURES } from '../shared/types';
 import { formFingerprint, irPointer, type CanonicalType, type IrField, type IrForm, type IrStudy, type IrVisit } from '../shared/ir';
@@ -691,8 +692,9 @@ export class Builder {
     let snapshot = await this.page.capture();
     evidence.canvasAfterAdd = this.designer.canvasEntries(snapshot);
     const appeared = evidence.canvasAfterAdd.filter((n) => !evidence.canvasBefore.includes(n));
+    evidence.addAttempts = added.tried;
     evidence.elementAppeared = assessAppearance({ addedReportedOk: added.ok, appeared });
-    if (!added.ok) evidence.notes.push(added.detail);
+    evidence.notes.push(added.ok ? `${added.detail} (${added.via})` : added.detail);
     if (appeared.length) evidence.notes.push(`the canvas gained: ${appeared.join(', ')}`);
     if (!evidence.elementAppeared) return this.attemptFailed(evidence, beforeReading, snapshot, appeared);
 
@@ -887,7 +889,22 @@ export class Builder {
     });
 
     this.mark(pointer, 'failed', describeCause(diagnosis.cause));
+    this.rememberDiagnosis(pointer, diagnosis);
     this.log(`"${field.label}": ${describeCause(diagnosis.cause)} — ${diagnosis.why}`, 'warn');
+  }
+
+  /**
+   * Keep the diagnosis where the end-of-run sweep can find it.
+   *
+   * The sweep cannot work this out for itself. By the time it looks, a field
+   * the save discarded and a field it simply cannot name are both just absent —
+   * the evidence that told them apart was on screen during the build and is
+   * gone. Carrying the verdict forward is what lets the final report say
+   * "missing" and "unverified" as different things.
+   */
+  private rememberDiagnosis(pointer: string, diagnosis: Diagnosis): void {
+    const diagnoses = (this.store.state.diagnoses ??= {});
+    diagnoses[pointer] = { cause: diagnosis.cause, why: diagnosis.why };
   }
 
   /**
@@ -955,7 +972,7 @@ export class Builder {
     repeated: boolean,
   ): Promise<boolean> {
     const cause = diagnosis.cause;
-    const worthRetrying = retryIsWorthwhile(cause);
+    const worthRetrying = shouldOfferRebuild([cause]);
 
     // Asked once per CAUSE, not once per field.
     //
@@ -1001,15 +1018,23 @@ export class Builder {
         'by which point the study is live.',
       affectedCount: 1,
       affected: [pointer],
+      // Rebuilding is only OFFERED where it could help. Where the evidence says
+      // the field is already there and only the read-back cannot see it,
+      // building it again produces a duplicate — so the option is withheld
+      // rather than shown with a low score. A reviewer clearing a queue reads
+      // the options, not the confidences, and an option that is present is an
+      // option the tool is prepared to carry out.
       options: [
+        ...(worthRetrying
+          ? [{ id: 'retry', label: 'Try building this one field again', confidence: 0.4, agreements: [], conflicts: [] }]
+          : []),
         {
-          id: 'retry',
-          label: 'Try building this one field again',
-          confidence: worthRetrying ? 0.4 : 0.1,
-          agreements: [],
-          conflicts: worthRetrying ? [] : ['the field is probably already there; building it again would duplicate it'],
+          id: 'accept',
+          label: worthRetrying ? 'Leave it and flag it in the report' : 'Flag it in the report and leave it alone',
+          confidence: worthRetrying ? 0.1 : 0.7,
+          agreements: worthRetrying ? [] : ['the field appears to be built; only reading it back failed'],
+          conflicts: [],
         },
-        { id: 'accept', label: 'Leave it and flag it in the report', confidence: 0.1, agreements: [], conflicts: [] },
       ],
       allowsManual: true,
       createdAt: Date.now(),
@@ -1594,6 +1619,7 @@ export class Builder {
       });
       diagnoses.set(xi, diagnosis);
       this.fieldEvidence.set(fieldPointer, evidence);
+      this.rememberDiagnosis(fieldPointer, diagnosis);
 
       this.mark(fieldPointer, 'failed', describeCause(diagnosis.cause));
       this.audit(fieldPointer, `verify "${field.label}"`, {
@@ -1613,7 +1639,7 @@ export class Builder {
 
     // Fields the read-back cannot see, but which the evidence says are there.
     // Rebuilding these is not a repair, it is a duplicate.
-    const blind = missingIndexes.filter((xi) => !retryIsWorthwhile(diagnoses.get(xi)!.cause));
+    const blind = missingIndexes.filter((xi) => !shouldOfferRebuild([diagnoses.get(xi)!.cause]));
     const rebuildable = missingIndexes.filter((xi) => !blind.includes(xi));
 
     const causes = [...new Set(missingIndexes.map((xi) => describeCause(diagnoses.get(xi)!.cause)))];
@@ -1632,24 +1658,42 @@ export class Builder {
         'They were built, but reading the saved form back does not show them. ' +
         `Diagnosed as: ${causes.join('; ')}. ` +
         (blind.length
-          ? `${blind.length} of them look present and merely unreadable, so building those again would duplicate them. `
+          ? rebuildable.length
+            ? `${blind.length} of them look present and merely unreadable, so building those again would duplicate them and they are left out of the rebuild. `
+            : 'All of them look present and merely unreadable, so there is nothing to rebuild — doing so would duplicate every one of them. Check the form by eye. '
           : '') +
         examples,
       consequence:
         'A missing field is the most costly failure here: nobody notices until data collection has already started, by which point the study is live.',
       affectedCount: missing,
       affected: missingIndexes.map((xi) => irPointer.field(vi, fi, xi)),
+      // Rebuilding is offered only for the fields it could actually repair. When
+      // every one of them is a field the read-back merely cannot see, the option
+      // is withheld altogether: the code already knows building them again would
+      // duplicate them, and offering it anyway invites a reviewer to do the one
+      // thing the diagnosis exists to prevent.
       options: [
+        ...(rebuildable.length
+          ? [
+              {
+                id: 'rebuild',
+                label:
+                  rebuildable.length === missing
+                    ? 'Build the missing fields again'
+                    : `Build the ${rebuildable.length} genuinely missing field(s) again, and leave the ${blind.length} that appear to be there`,
+                confidence: 0.6,
+                agreements: [],
+                conflicts: blind.length ? [`${blind.length} field(s) appear to be there already`] : [],
+              },
+            ]
+          : []),
         {
-          id: 'rebuild',
-          label: rebuildable.length === missing
-            ? 'Build the missing fields again'
-            : `Build the ${rebuildable.length} genuinely missing field(s) again, and leave the rest`,
-          confidence: rebuildable.length ? 0.6 : 0.1,
-          agreements: [],
-          conflicts: blind.length ? [`${blind.length} field(s) appear to be there already`] : [],
+          id: 'accept',
+          label: rebuildable.length ? 'Leave it and flag the form in the report' : 'Flag the form in the report and leave it alone',
+          confidence: rebuildable.length ? 0.1 : 0.7,
+          agreements: rebuildable.length ? [] : ['every one of them appears to be built; only reading them back failed'],
+          conflicts: [],
         },
-        { id: 'accept', label: 'Leave it and flag the form in the report', confidence: 0.1, agreements: [], conflicts: [] },
       ],
       allowsManual: true,
       createdAt: Date.now(),

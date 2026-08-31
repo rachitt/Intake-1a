@@ -23,6 +23,14 @@ export type ContentCommand =
   | { kind: 'setToggle'; ref: Ref; desired: boolean }
   | { kind: 'pressKey'; ref: Ref; key: string }
   | { kind: 'drag'; sourceRef: Ref; targetRef: Ref }
+  /**
+   * Drop onto a whole region rather than onto a control inside it.
+   *
+   * The case a ref cannot express: an empty designer canvas has no control to
+   * aim at, so a palette entry that can only be added by dragging has nowhere
+   * to go. A region id is as opaque as a ref — still no markup crosses here.
+   */
+  | { kind: 'dropOnRegion'; sourceRef: Ref; regionId: number }
   | { kind: 'read'; ref: Ref }
   /** Click, then wait for the page to settle, then re-capture. One round trip. */
   | { kind: 'actAndObserve'; action: ContentCommand; settleMs?: number };
@@ -182,12 +190,42 @@ export interface TypeMappingEntry {
   conflicts?: string[];
 }
 
+/**
+ * What reading the platform back actually established about one entry.
+ *
+ * "Missing" used to cover three different situations that need three different
+ * responses, which made the number at the end of a run unactionable:
+ *
+ *   - `missing` — it is not there. Rebuild it.
+ *   - `unverified` — the agent could not see it, and has reason to think that
+ *     is a limit of the reading rather than an absence. Look at it; do NOT
+ *     rebuild it, because that duplicates it.
+ *   - `wrong_properties` — it is there, and something about it does not match
+ *     the specification. Correct that property; the field itself is fine.
+ *
+ * Reporting the second as missing sends someone to rebuild a field that
+ * already exists, and reporting the third as verified is how a study whose
+ * dates were all built as free text passes its own reconciliation.
+ */
+export type CoverageStatus = 'verified' | 'missing' | 'unverified' | 'wrong_properties';
+
 export interface CoverageRow {
   pointer: IrPointer;
   visit: string;
   form: string;
   field?: string;
   present: boolean;
+  /** Which bucket this falls into. */
+  status: CoverageStatus;
+  /**
+   * Did the sweep actually manage to look at this entry?
+   *
+   * False where a visit or designer would not open, where the run was stopped
+   * before reaching it, or where the entry is on screen but renders without an
+   * accessible name. A thing that was never looked at is unverified, not
+   * missing — and the difference decides whether someone rebuilds it.
+   */
+  readable: boolean;
   typeOk: boolean | null;
   labelOk: boolean | null;
   requiredOk: boolean | null;
@@ -223,6 +261,15 @@ export interface RunState {
     llmCalls: number;
   };
   coverage?: CoverageRow[];
+  /**
+   * Why each failed entry failed, by pointer.
+   *
+   * Written by the build pipeline and read by the end-of-run sweep, which
+   * cannot work it out for itself: by the time it looks, the difference between
+   * a field the save discarded and a field it simply cannot name is no longer
+   * visible on screen.
+   */
+  diagnoses?: Record<string, { cause: string; why: string }>;
   irStats?: IrStats;
 }
 

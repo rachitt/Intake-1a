@@ -65,6 +65,12 @@ export interface FieldAttemptEvidence {
   /** Identifiable canvas entries before the add, and after it. */
   canvasBefore: string[];
   canvasAfterAdd: string[];
+  /**
+   * Every way the agent tried to get the element onto the canvas, in plain
+   * words. A palette that answers to a drag and not to a click is common
+   * enough that "clicking did nothing" is not, on its own, a diagnosis.
+   */
+  addAttempts: string[];
 
   // ── selection ─────────────────────────────────────────────────────────────
   /**
@@ -129,6 +135,7 @@ export function emptyFieldEvidence(
     elementAppeared: null,
     canvasBefore: [],
     canvasAfterAdd: [],
+    addAttempts: [],
     labelEditorOnSelection: null,
     labelEditorValueBefore: null,
     labelWriteAccepted: null,
@@ -364,10 +371,11 @@ export function classifyFieldFailure(evidence: FieldAttemptEvidence): Diagnosis 
   const label = e.expectedLabel;
 
   if (e.elementAppeared === false) {
+    const how = e.addAttempts.length ? ` Tried ${e.addAttempts.join(', ')}.` : '';
     return det(
       'element_not_added',
       0.9,
-      `Using ${quoteEntry(e)} changed nothing on the canvas, so no element for "${label}" was ever created.`,
+      `${quoteEntry(e)} put nothing on the canvas, so no element for "${label}" was ever created.${how}`,
     );
   }
 
@@ -545,8 +553,9 @@ export function remedyForCause(cause: FieldFailureCause): string {
   switch (cause) {
     case 'element_not_added':
       return (
-        'The palette entry mapped to this type may create nothing on this platform, or it may need dragging rather ' +
-        'than clicking. Naming the right entry, or adding one field by hand, settles it for every field of this type.'
+        'Clicking the entry and dragging it onto the canvas were both tried, so this is not the palette wanting a ' +
+        'different gesture. Either the entry mapped to this type does not create a field here, or the canvas was not ' +
+        'ready to take one. Naming the right entry, or adding one field by hand, settles it for every field of this type.'
       );
     case 'added_wrong_type':
       return (
@@ -586,6 +595,20 @@ export function remedyForCause(cause: FieldFailureCause): string {
  */
 export function retryShouldRemoveElement(cause: FieldFailureCause): boolean {
   return cause === 'added_wrong_type' || cause === 'label_set_on_wrong_element' || cause === 'label_not_set';
+}
+
+/**
+ * Should the human gate OFFER to build these again?
+ *
+ * Not "would it be a good idea" — whether the option appears at all. A reviewer
+ * clearing a queue reads the options, not the confidence scores attached to
+ * them, and an option that is present is one the tool is prepared to carry out.
+ * Where every failure is a field the read-back merely cannot see, the agent
+ * already knows rebuilding would duplicate it, so offering it anyway invites
+ * exactly the mistake the diagnosis exists to prevent.
+ */
+export function shouldOfferRebuild(causes: readonly FieldFailureCause[]): boolean {
+  return causes.some((cause) => retryIsWorthwhile(cause));
 }
 
 /** Is building it again worth a round trip? */

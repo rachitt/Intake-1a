@@ -74,6 +74,15 @@ export interface PlatformProfile {
   formReuse: 'supported' | 'unsupported' | null;
   /** How this platform models a repeating/log form, if at all. */
   repeatingControl?: LearnedControl;
+  /**
+   * How this designer takes a new field from its palette — by clicking the
+   * entry, or by dragging it onto the canvas.
+   *
+   * Learned by trying, because the two fail identically from the outside: on a
+   * drag-only palette a click is accepted and nothing appears, which is
+   * indistinguishable from an entry that does not work at all.
+   */
+  paletteInteraction?: 'click' | 'drag';
   /** Notes worth showing a human. */
   notes: string[];
   updatedAt: number;
@@ -289,7 +298,7 @@ export class Store {
   exportCoverage(): string {
     const rows = this.state.coverage ?? [];
     const cols = [
-      'pointer', 'visit', 'form', 'field', 'present', 'typeOk', 'labelOk', 'requiredOk',
+      'pointer', 'visit', 'form', 'field', 'status', 'present', 'readable', 'typeOk', 'labelOk', 'requiredOk',
       'optionsOk', 'rangeOk', 'formulaOk', 'skipOk', 'repeatingOk', 'notes',
     ];
     const escape = (v: unknown) => {

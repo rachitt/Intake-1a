@@ -10,7 +10,7 @@
  * which is exactly the failure mode this assignment is built to catch.
  */
 
-import { resolveRef } from './snapshot';
+import { regionElement, resolveRef } from './snapshot';
 import { accessibleName, elementRole, normaliseText } from './accname';
 import type { Ref } from '../shared/snapshot';
 
@@ -300,7 +300,37 @@ export function dragRef(sourceRef: Ref, targetRef: Ref): ActionResult {
   const target = el(targetRef);
   if (!source) return fail('The dragged control is no longer on the page.');
   if (!target) return fail('The drop target is no longer on the page.');
+  return dispatchDrag(source, target, 'a control');
+}
 
+/**
+ * Drop onto a whole REGION rather than onto a control inside it.
+ *
+ * Needed for the case a ref cannot express: an empty canvas. A designer with
+ * nothing built on it yet contains no control to aim at, so a palette entry
+ * that can only be added by dragging has nowhere to be dropped — and the agent
+ * concludes the entry does not work, when in fact it was never given a target.
+ *
+ * A region id is as opaque as a ref; nothing about the page's markup crosses
+ * the boundary either way.
+ */
+export function dropOnRegionRef(sourceRef: Ref, regionId: number): ActionResult {
+  const source = el(sourceRef);
+  if (!source) return fail('The dragged control is no longer on the page.');
+  const target = regionElement(regionId);
+  if (!(target instanceof HTMLElement)) return fail('That region is no longer on the page.');
+  return dispatchDrag(source, target, 'a region');
+}
+
+/**
+ * A best-effort drag.
+ *
+ * Both the HTML5 drag events and the pointer/mouse sequence are dispatched,
+ * because designers are split roughly evenly between the two and there is no
+ * way to tell from the outside which one a given palette listens to. Sending
+ * both is harmless where only one is handled.
+ */
+function dispatchDrag(source: HTMLElement, target: HTMLElement, what: string): ActionResult {
   reveal(target);
   const dt = new DataTransfer();
   const srcInit = pointerInit(source);
@@ -309,11 +339,17 @@ export function dragRef(sourceRef: Ref, targetRef: Ref): ActionResult {
   source.dispatchEvent(new PointerEvent('pointerdown', srcInit));
   source.dispatchEvent(new MouseEvent('mousedown', srcInit));
   source.dispatchEvent(new DragEvent('dragstart', { ...srcInit, dataTransfer: dt }));
+
   target.dispatchEvent(new DragEvent('dragenter', { ...tgtInit, dataTransfer: dt }));
+  target.dispatchEvent(new PointerEvent('pointermove', tgtInit));
+  target.dispatchEvent(new MouseEvent('mousemove', tgtInit));
   target.dispatchEvent(new DragEvent('dragover', { ...tgtInit, dataTransfer: dt }));
   target.dispatchEvent(new DragEvent('drop', { ...tgtInit, dataTransfer: dt }));
+
+  target.dispatchEvent(new PointerEvent('pointerup', tgtInit));
+  target.dispatchEvent(new MouseEvent('mouseup', tgtInit));
   source.dispatchEvent(new DragEvent('dragend', { ...srcInit, dataTransfer: dt }));
-  return ok('dispatched a drag sequence (best-effort)');
+  return ok(`dispatched a drag sequence onto ${what} (best-effort)`);
 }
 
 /** Read a control back, for verification. */

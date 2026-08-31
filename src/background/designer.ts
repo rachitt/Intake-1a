@@ -33,6 +33,26 @@ export interface PaletteEntry {
   ref: Ref;
 }
 
+/** How a platform takes a new field from its palette. Learned, never assumed. */
+export type PaletteInteraction = 'click' | 'drag';
+
+export interface AddResult {
+  ok: boolean;
+  observation: Observation | null;
+  detail: string;
+  /** Which interaction worked, where one did. */
+  via: PaletteInteraction | null;
+  /** Everything attempted, in plain words, for the audit log. */
+  tried: string[];
+}
+
+interface InteractionAttempt {
+  ok: boolean;
+  observation: Observation | null;
+  detail: string;
+  tried: string[];
+}
+
 export interface ProbeResult {
   observation: ObservedBehaviour;
   /** Whether the probe element could be cleaned up afterwards. */
@@ -161,32 +181,138 @@ export class Designer {
    * dragging. Success is judged by what changed on the page, never by the click
    * having been accepted.
    */
-  async addElement(entryName: string): Promise<{ ok: boolean; observation: Observation | null; detail: string }> {
+  async addElement(entryName: string): Promise<AddResult> {
     const snapshot = await this.page.capture();
     const entries = await this.paletteEntries(snapshot);
     const entry = entries.find((e) => e.name === entryName);
     if (!entry) {
-      return { ok: false, observation: null, detail: `The element library has no entry named "${entryName}" on this screen.` };
+      return {
+        ok: false,
+        observation: null,
+        detail: `The element library has no entry named "${entryName}" on this screen.`,
+        via: null,
+        tried: [],
+      };
     }
 
-    const observation = await this.page.click(entry.ref);
-    if (this.elementWasAdded(observation)) return { ok: true, observation, detail: 'added by clicking the library entry' };
+    // A palette that is known to need dragging is dragged first. Clicking it
+    // again on every one of 195 fields is a wasted round trip each time, and
+    // on some designers a click that does not add a field still changes the
+    // selection, which the caller then has to unpick.
+    const order: PaletteInteraction[] =
+      this.profile.paletteInteraction === 'drag' ? ['drag', 'click'] : ['click', 'drag'];
 
-    // Fallback: drag the entry onto whatever looks like the canvas.
-    const canvasRegion = this.canvasRegion(observation.after);
-    if (canvasRegion) {
-      const target = canvasRegion.members[0];
-      if (target !== undefined) {
-        const dragged = await this.page.act({ kind: 'drag', sourceRef: entry.ref, targetRef: target });
-        if (this.elementWasAdded(dragged)) return { ok: true, observation: dragged, detail: 'added by dragging onto the canvas' };
+    const tried: string[] = [];
+    let last: Observation | null = null;
+
+    for (const how of order) {
+      const attempt: InteractionAttempt =
+        how === 'click' ? await this.addByClicking(entry) : await this.addByDragging(entry, last);
+      tried.push(...attempt.tried);
+      if (attempt.observation) last = attempt.observation;
+      if (!attempt.ok) continue;
+
+      // Remember how this platform takes a new field. Runtime data about one
+      // product, learned by trying — never a constant in source.
+      if (this.profile.paletteInteraction !== how) {
+        this.profile.paletteInteraction = how;
+        this.log(`This designer adds a field by ${how === 'click' ? 'clicking' : 'dragging'} the library entry.`);
+      }
+      return { ok: true, observation: attempt.observation, detail: attempt.detail, via: how, tried };
+    }
+
+    return {
+      ok: false,
+      observation: last,
+      detail:
+        `"${entryName}" added nothing to the form. Tried ${tried.join('; ') || 'nothing'}.` +
+        (last ? ` The last attempt changed ${last.diff.magnitude} thing(s) on the page.` : ''),
+      via: null,
+      tried,
+    };
+  }
+
+  private async addByClicking(entry: PaletteEntry): Promise<InteractionAttempt> {
+    const observation = await this.page.click(entry.ref);
+    return {
+      ok: this.elementWasAdded(observation),
+      observation,
+      detail: 'added by clicking the library entry',
+      tried: ['clicking it'],
+    };
+  }
+
+  /**
+   * Drag the entry onto the canvas — the interaction a click cannot substitute
+   * for.
+   *
+   * Worth doing properly rather than as a token second try, because a designer
+   * whose palette is drag-only fails IDENTICALLY to one whose palette entry is
+   * broken: the click is accepted and nothing appears. Told apart only by
+   * actually attempting the drag.
+   *
+   * Several targets are tried, in order of how likely they are to be a drop
+   * zone, and the last of them is the canvas REGION rather than anything
+   * inside it. That last case is the one that matters most and the one the
+   * first version of this could not do at all: an empty form has no control on
+   * its canvas to aim at, so the very first field of every form — on a
+   * drag-only platform, every field — had nowhere to be dropped.
+   */
+  private async addByDragging(entry: PaletteEntry, previous: Observation | null): Promise<InteractionAttempt> {
+    const snapshot = previous?.after ?? (await this.page.capture());
+    const tried: string[] = [];
+
+    const regions = this.dropRegions(snapshot);
+    let observation: Observation | null = previous;
+
+    for (const region of regions.slice(0, 3)) {
+      // Something inside the region first: a drop handler is more often bound
+      // to a list than to the panel around it.
+      const inside = region.members[0];
+      if (inside !== undefined) {
+        tried.push(`dragging it onto the ${region.kind} region`);
+        const dragged = await this.page.act({ kind: 'drag', sourceRef: entry.ref, targetRef: inside });
+        observation = dragged;
+        if (this.elementWasAdded(dragged)) {
+          return { ok: true, observation: dragged, detail: 'added by dragging onto the canvas', tried };
+        }
+      }
+
+      tried.push(`dropping it on the ${region.kind} region itself`);
+      const dropped = await this.page.act({ kind: 'dropOnRegion', sourceRef: entry.ref, regionId: region.id });
+      observation = dropped;
+      if (this.elementWasAdded(dropped)) {
+        return { ok: true, observation: dropped, detail: 'added by dropping onto the canvas', tried };
       }
     }
 
     return {
       ok: false,
       observation,
-      detail: `Clicking "${entryName}" did not add anything to the form (${observation.diff.magnitude} change(s) observed).`,
+      detail: regions.length ? 'dragging it onto the canvas added nothing' : 'no drop target could be identified',
+      tried,
     };
+  }
+
+  /**
+   * Where a dragged field could plausibly be dropped, most likely first.
+   *
+   * Regions are ranked rather than filtered, because the one that is really the
+   * canvas is not always the one the classifier is most confident about — and
+   * an empty canvas, which is exactly when this matters, is the hardest region
+   * on the page to classify, having nothing in it to classify by. So the
+   * palette and the chrome are excluded and everything else is offered, largest
+   * first, on the reasoning that a designer gives its canvas the most room.
+   */
+  private dropRegions(snapshot: Snapshot) {
+    const editor = this.editorRegionId(snapshot);
+    const area = (r: { box?: { w: number; h: number } }) => (r.box ? r.box.w * r.box.h : 0);
+    return snapshot.regions
+      .filter((r) => r.kind !== 'palette' && r.kind !== 'toolbar' && r.kind !== 'navigation' && r.id !== editor)
+      .sort((a, b) => {
+        const canvasFirst = Number(b.kind === 'canvas') - Number(a.kind === 'canvas');
+        return canvasFirst || area(b) - area(a);
+      });
   }
 
   /**

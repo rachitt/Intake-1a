@@ -8,7 +8,16 @@
  */
 
 import { captureSnapshot } from './snapshot';
-import { chooseOptionRef, clickRef, dragRef, pressKeyRef, readRef, setTextRef, setToggleRef } from './actuator';
+import {
+  chooseOptionRef,
+  clickRef,
+  dragRef,
+  dropOnRegionRef,
+  pressKeyRef,
+  readRef,
+  setTextRef,
+  setToggleRef,
+} from './actuator';
 import type { ActOutcome, ContentCommand, ContentResponse } from '../shared/protocol';
 
 const INSTALLED = '__esourceAgentContentInstalled';
@@ -78,6 +87,8 @@ function perform(command: ContentCommand): { ok: boolean; detail: string } {
       return pressKeyRef(command.ref, command.key);
     case 'drag':
       return dragRef(command.sourceRef, command.targetRef);
+    case 'dropOnRegion':
+      return dropOnRegionRef(command.sourceRef, command.regionId);
     default:
       return { ok: false, detail: `"${command.kind}" is not an action.` };
   }
