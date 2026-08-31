@@ -167,6 +167,12 @@ function render(next: RunState): void {
   $('phase-dot').dataset['phase'] = next.phase;
   $('status').textContent = next.message;
 
+  // Which site Run would act on. The panel outlives the tab it was run against,
+  // so "the study is built" is only meaningful next to where it was built.
+  const target = $('target');
+  target.hidden = !next.origin;
+  target.textContent = next.origin ? `Site: ${next.origin}` : '';
+
   const active = next.phase !== 'idle' && next.phase !== 'done' && next.phase !== 'failed';
   $('start').hidden = active;
   $<HTMLButtonElement>('start').disabled = active;

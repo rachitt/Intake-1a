@@ -20,7 +20,7 @@ import { Grounder } from './grounder';
 import { Page } from './page';
 import { TypeMapper } from './typemap';
 import { irStats, validateIr } from '../shared/ir';
-import { store } from './store';
+import { runStateForSite, store } from './store';
 import { runCoverageSweep } from './verify';
 import type { BackgroundEvent, Escalation, EscalationResolution, PanelCommand } from '../shared/protocol';
 
@@ -177,7 +177,19 @@ async function startRun(tabId: number): Promise<void> {
   void noteRunning(true);
   store.aborted = false;
   store.audit.length = 0;
-  store.state = { ...store.state, phase: 'validating', escalations: [], typeMap: [], startedAt: Date.now() };
+  // The progress tree and the coverage table belong to the run that produced
+  // them. Carrying them into the next one leaves the previous study's fields on
+  // screen, ticked green, while this one has not built anything yet.
+  store.state = {
+    ...store.state,
+    phase: 'validating',
+    escalations: [],
+    typeMap: [],
+    progress: [],
+    startedAt: Date.now(),
+  };
+  delete store.state.coverage;
+  delete store.state.finishedAt;
   store.state.counters = {
     visitsBuilt: 0, visitsTotal: 0, formsBuilt: 0, formsTotal: 0, fieldsBuilt: 0, fieldsTotal: 0,
     verified: 0, escalated: 0, repaired: 0, failed: 0, llmCalls: 0,
@@ -248,6 +260,31 @@ async function startRun(tabId: number): Promise<void> {
 
 // ── messages ──────────────────────────────────────────────────────────────────
 
+/**
+ * Point the state at the site the panel is actually looking at.
+ *
+ * The decision itself is `runStateForSite`; this only supplies the origin and
+ * the guard that a live run is never disturbed.
+ *
+ * The audit log is deliberately NOT cleared here. It is the record of a run
+ * that really happened, its export names the origin it belongs to in its own
+ * header, and someone who has just finished a build and glanced at another tab
+ * should not silently lose it. `startRun` clears it when a run actually begins.
+ */
+async function reconcileStateWithActiveTab(): Promise<boolean> {
+  if (running) return false;
+
+  const origin = await currentOrigin();
+  if (!origin) return false;
+
+  const outcome = runStateForSite(store.state, origin, {
+    loaded: Boolean(store.ir),
+    ...(store.ir?.study?.protocol_id ? { protocolId: store.ir.study.protocol_id } : {}),
+  });
+  if (outcome.changed) store.state = outcome.state;
+  return outcome.changed;
+}
+
 chrome.runtime.onConnect.addListener((port) => {
   if (port.name !== 'panel') return;
   ports.add(port);
@@ -257,16 +294,42 @@ chrome.runtime.onConnect.addListener((port) => {
     void handle(message, port);
   });
 
-  void store.load().then(() => {
+  void store.load().then(async () => {
+    await reconcileStateWithActiveTab();
     port.postMessage({ kind: 'settings', settings: store.settings } satisfies BackgroundEvent);
     port.postMessage({ kind: 'state', state: store.state } satisfies BackgroundEvent);
   });
 });
 
+/**
+ * Follow the tab the panel is looking at.
+ *
+ * The side panel stays open across tab switches and navigations, so the site in
+ * front of it changes without the panel being reopened. Reconnecting is not the
+ * only moment the answer can go stale.
+ */
+function watchForSiteChanges(): void {
+  const refresh = () => {
+    void reconcileStateWithActiveTab().then((changed) => {
+      if (changed) broadcast({ kind: 'state', state: store.state });
+    });
+  };
+
+  chrome.tabs.onActivated.addListener(refresh);
+  chrome.tabs.onUpdated.addListener((_tabId, info, tab) => {
+    // Only a committed navigation in the tab being looked at. A title or
+    // favicon settling is not a change of site.
+    if (info.url && tab.active) refresh();
+  });
+  chrome.windows?.onFocusChanged?.addListener(refresh);
+}
+
+watchForSiteChanges();
 
 async function handle(message: PanelCommand, port: chrome.runtime.Port): Promise<void> {
   switch (message.kind) {
     case 'getState':
+      await reconcileStateWithActiveTab();
       port.postMessage({ kind: 'state', state: store.state } satisfies BackgroundEvent);
       break;
 

@@ -106,6 +106,8 @@ h2 {
 @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.35; } }
 
 .status { margin: 10px 0; color: var(--ink-2); }
+/* The site the run would act on, said quietly but always. */
+.target { margin: -6px 0 10px; color: var(--ink-3); font-size: 12px; word-break: break-all; }
 
 /* ── buttons ───────────────────────────────────────────────────────────────── */
 

@@ -118,6 +118,59 @@ export function emptyRunState(): RunState {
   };
 }
 
+/**
+ * The run state, made to describe the site actually in front of the panel.
+ *
+ * A finished run's results belong to ONE origin. The panel outlives the tab it
+ * was run against — it is a side panel, it survives that tab being closed, and
+ * it is reopened against whatever is in front of it now — so without this it
+ * greets you on a new site with the previous site's progress tree, its coverage
+ * table, and a message saying the study is complete. That is not cosmetic: it
+ * reports work as done somewhere it has not been started.
+ *
+ * Kept pure, and separate from the tab plumbing, because the interesting part
+ * is the decision rather than the lookup: an active run must never be disturbed
+ * by someone glancing at another tab, and a run that has finished must not
+ * follow them to the next site.
+ */
+export function runStateForSite(
+  state: RunState,
+  origin: string,
+  study: { loaded: boolean; protocolId?: string },
+): { changed: boolean; state: RunState } {
+  // Anything mid-flight owns the panel. Switching tabs while a build is running
+  // is normal — a person checks something and comes back — and wiping the run
+  // they are watching would be far worse than showing them the wrong site.
+  const settled = state.phase === 'idle' || state.phase === 'done' || state.phase === 'failed';
+  if (!settled || state.origin === origin) return { changed: false, state };
+
+  // Is there anything here that belongs to the site being left? A panel that
+  // has only ever been pointed at a site, without a run, has nothing to set
+  // aside — and announcing "the last run was on…" when there was no run is a
+  // small lie that makes a person go looking for results that never existed.
+  const carriesResults =
+    state.phase !== 'idle' ||
+    state.progress.length > 0 ||
+    state.escalations.length > 0 ||
+    Boolean(state.startedAt) ||
+    Boolean(state.coverage);
+
+  if (!carriesResults) return { changed: true, state: { ...state, origin } };
+
+  const previous = state.origin;
+  const wasOn = previous ? ` The last run was on ${previous}, so its results are not shown here.` : '';
+  return {
+    changed: true,
+    state: {
+      ...emptyRunState(),
+      origin,
+      message: study.loaded
+        ? `Ready to build ${study.protocolId ? `"${study.protocolId}"` : 'the loaded study'} into ${origin}.${wasOn}`
+        : `Load an input file to begin.${wasOn}`,
+    },
+  };
+}
+
 const STORAGE = {
   settings: 'settings',
   ir: 'ir',
