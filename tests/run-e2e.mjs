@@ -156,9 +156,27 @@ if (report.questions.length) {
 }
 
 if (report.coverage?.length) {
+  // Three buckets, because they call for three different responses: rebuild
+  // what is missing, go and look at what is unverified (rebuilding it would
+  // duplicate it), and correct the property on what exists but does not match.
   const fields = report.coverage.filter((r) => r.field);
-  const missing = fields.filter((r) => !r.present);
-  console.log(`\n  reconciliation: ${fields.length - missing.length}/${fields.length} fields found by reading the platform back`);
+  const count = (status) => fields.filter((r) => r.status === status).length;
+
+  const parts = [`${count('verified')}/${fields.length} verified`];
+  if (count('missing')) parts.push(`${count('missing')} missing`);
+  if (count('unverified')) parts.push(`${count('unverified')} unverified`);
+  if (count('wrong_properties')) parts.push(`${count('wrong_properties')} with properties that do not match`);
+  console.log(`\n  reconciliation: ${parts.join(', ')}`);
+
+  for (const status of ['missing', 'unverified', 'wrong_properties']) {
+    const rows = fields.filter((r) => r.status === status);
+    if (!rows.length) continue;
+    console.log(`    ${status}:`);
+    for (const row of rows.slice(0, 10)) {
+      console.log(`      ${row.form} / ${row.field}${row.notes?.length ? ` — ${row.notes[0]}` : ''}`);
+    }
+    if (rows.length > 10) console.log(`      …and ${rows.length - 10} more`);
+  }
 }
 
 console.log(`\n  report: ${reportPath}`);

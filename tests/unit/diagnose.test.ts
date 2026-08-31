@@ -26,6 +26,7 @@ import {
   remedyForCause,
   retryIsWorthwhile,
   retryShouldRemoveElement,
+  shouldOfferRebuild,
   typesAgree,
   type FieldAttemptEvidence,
 } from '../../src/background/diagnose';
@@ -231,6 +232,16 @@ test('a field that is there but unreadable is never rebuilt, because that would 
   assert.equal(retryIsWorthwhile('verifier_cannot_see_it'), false);
   assert.equal(retryIsWorthwhile('save_lost_it'), true);
   assert.equal(retryIsWorthwhile('element_not_added'), true);
+});
+
+test('the gate does not offer to rebuild a field it knows is already there', () => {
+  // The option is withheld, not merely scored low: a reviewer reads the
+  // options, and an option that is present is one the tool will carry out.
+  assert.equal(shouldOfferRebuild(['verifier_cannot_see_it']), false);
+  assert.equal(shouldOfferRebuild(['save_lost_it']), true);
+  // A mixed batch still offers it — for the ones it can actually repair.
+  assert.equal(shouldOfferRebuild(['verifier_cannot_see_it', 'element_not_added']), true);
+  assert.equal(shouldOfferRebuild([]), false);
 });
 
 test('a half-built element is removed before a retry; a missing one is not', () => {

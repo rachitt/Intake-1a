@@ -11,6 +11,8 @@
 
 import type {
   BackgroundEvent,
+  CoverageRow,
+  CoverageStatus,
   Escalation,
   EscalationResolution,
   PanelCommand,
@@ -454,6 +456,16 @@ function renderProgress(next: RunState): void {
  * Missing items are listed first and in full, because a form or field that
  * never got built is the failure that costs the most and is noticed the latest.
  */
+/**
+ * The reconciliation, in the three buckets that call for three different
+ * responses.
+ *
+ * One "missing" count was actively misleading: it lumped a field that is not
+ * there together with a field that is there but could not be read, and the
+ * right response to those is opposite — rebuild one, and on no account rebuild
+ * the other, because that duplicates it. Each bucket therefore says what to do
+ * about it rather than leaving that to be inferred from a number.
+ */
 function renderCoverage(next: RunState): void {
   const section = $('coverage-section');
   const rows = next.coverage;
@@ -464,41 +476,64 @@ function renderCoverage(next: RunState): void {
   section.hidden = false;
 
   const fields = rows.filter((r) => r.field);
-  const missing = fields.filter((r) => !r.present);
-  const wrong = fields.filter(
-    (r) =>
-      r.present &&
-      [r.labelOk, r.requiredOk, r.optionsOk, r.rangeOk, r.formulaOk, r.skipOk].some((v) => v === false),
-  );
+  const of = (status: CoverageStatus) => fields.filter((r) => r.status === status);
+  const missing = of('missing');
+  const unverified = of('unverified');
+  const wrong = of('wrong_properties');
+  const verified = of('verified');
 
   const parts: string[] = [];
   parts.push(
-    `<div class="summary"><b>${fields.length - missing.length}/${fields.length}</b> fields present, ` +
-      `<b class="${wrong.length ? 'cov-bad' : 'cov-good'}">${wrong.length}</b> with a property that does not match the specification.</div>`,
+    `<div class="summary">` +
+      `<b class="cov-good">${verified.length}</b>/${fields.length} verified · ` +
+      `<b class="${missing.length ? 'cov-bad' : ''}">${missing.length}</b> missing · ` +
+      `<b class="${unverified.length ? 'cov-warn' : ''}">${unverified.length}</b> unverified · ` +
+      `<b class="${wrong.length ? 'cov-bad' : ''}">${wrong.length}</b> wrong properties` +
+      `</div>`,
   );
 
-  if (missing.length) {
-    parts.push(
-      `<div class="problems"><b>Missing (${missing.length})</b><ul>` +
-        missing.slice(0, 25).map((r) => `<li>${escapeHtml(`${r.visit} / ${r.form} / ${r.field}`)}</li>`).join('') +
-        (missing.length > 25 ? `<li>…and ${missing.length - 25} more</li>` : '') +
-        `</ul></div>`,
-    );
-  }
+  parts.push(
+    bucket('problems', 'Missing', missing, 'not created, or lost when the form was saved — these need building again.', (r) =>
+      `${r.visit} / ${r.form} / ${r.field}`,
+    ),
+  );
+  parts.push(
+    bucket(
+      'problems warn',
+      'Unverified',
+      unverified,
+      'the agent could not read these back. They may well be built — check by eye, and do not rebuild them, because that would duplicate them.',
+      (r) => `${r.form} / ${r.field}${r.notes.length ? ` — ${r.notes[0]}` : ''}`,
+    ),
+  );
+  parts.push(
+    bucket(
+      'problems',
+      'Wrong properties',
+      wrong,
+      'the field exists; something about it does not match the specification.',
+      (r) => `${r.form} / ${r.field} — ${r.notes.slice(0, 2).join('; ')}`,
+    ),
+  );
 
-  if (wrong.length) {
-    parts.push(
-      `<div class="problems warn"><b>Mismatched (${wrong.length})</b><ul>` +
-        wrong
-          .slice(0, 25)
-          .map((r) => `<li>${escapeHtml(`${r.form} / ${r.field}`)} — ${escapeHtml(r.notes.slice(0, 2).join('; '))}</li>`)
-          .join('') +
-        (wrong.length > 25 ? `<li>…and ${wrong.length - 25} more</li>` : '') +
-        `</ul></div>`,
-    );
-  }
+  $('coverage').innerHTML = parts.filter(Boolean).join('');
+}
 
-  $('coverage').innerHTML = parts.join('');
+function bucket(
+  className: string,
+  title: string,
+  rows: CoverageRow[],
+  what: string,
+  line: (row: CoverageRow) => string,
+): string {
+  if (!rows.length) return '';
+  return (
+    `<div class="${className}"><b>${escapeHtml(title)} (${rows.length})</b>` +
+    `<p class="bucket-what">${escapeHtml(what)}</p><ul>` +
+    rows.slice(0, 25).map((r) => `<li>${escapeHtml(line(r))}</li>`).join('') +
+    (rows.length > 25 ? `<li>…and ${rows.length - 25} more</li>` : '') +
+    `</ul></div>`
+  );
 }
 
 function renderIrFeedback(ok: boolean, problems: IrProblem[], stats?: IrStats): void {

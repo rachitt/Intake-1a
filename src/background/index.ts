@@ -21,7 +21,7 @@ import { Page } from './page';
 import { TypeMapper } from './typemap';
 import { irStats, validateIr } from '../shared/ir';
 import { runStateForSite, store } from './store';
-import { runCoverageSweep } from './verify';
+import { coverageTally, runCoverageSweep } from './verify';
 import type { BackgroundEvent, Escalation, EscalationResolution, PanelCommand } from '../shared/protocol';
 
 // ── panel plumbing ────────────────────────────────────────────────────────────
@@ -186,6 +186,7 @@ async function startRun(tabId: number): Promise<void> {
     escalations: [],
     typeMap: [],
     progress: [],
+    diagnoses: {},
     startedAt: Date.now(),
   };
   delete store.state.coverage;
@@ -234,13 +235,19 @@ async function startRun(tabId: number): Promise<void> {
       store.state.coverage = await runCoverageSweep(page, grounder, designer, store, log);
       await store.saveProfile();
 
-      const rows = store.state.coverage;
-      const fields = rows.filter((r) => r.field);
-      const missing = fields.filter((r) => !r.present).length;
+      // Three buckets, not one. "12 missing" reads as twelve fields to build
+      // again; if most of them are in fact built and merely unreadable, acting
+      // on that number duplicates them.
+      const tally = coverageTally(store.state.coverage);
+      const detail = [
+        tally.missing ? `${tally.missing} missing` : '',
+        tally.unverified ? `${tally.unverified} unverified` : '',
+        tally.wrong_properties ? `${tally.wrong_properties} with properties that do not match` : '',
+      ].filter(Boolean);
       store.setPhase(
         'done',
-        `Finished. ${fields.length - missing} of ${fields.length} fields verified` +
-          (missing ? `, ${missing} missing.` : '.'),
+        `Finished. ${tally.verified} of ${tally.total} fields verified` +
+          (detail.length ? `; ${detail.join(', ')}.` : '.'),
       );
     }
   } catch (err) {

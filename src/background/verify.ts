@@ -25,9 +25,51 @@ import type { IrField, IrForm } from '../shared/ir';
 import type { PageLike } from './page';
 import type { Snapshot, SnapshotNode } from '../shared/snapshot';
 import type { Store } from './store';
-import type { CoverageRow } from '../shared/protocol';
+import type { CoverageRow, CoverageStatus } from '../shared/protocol';
 
 type Log = (message: string, level?: 'info' | 'warn' | 'error') => void;
+
+/**
+ * Which bucket one entry falls into.
+ *
+ * Pure, and separate from the reading, because it is the part that has to be
+ * argued about: the same row means different things depending on whether the
+ * agent LOOKED and saw nothing, or never managed to look.
+ *
+ * The diagnosis carried over from the build is what settles the hardest case.
+ * By the time this sweep runs, a field the save discarded and a field the
+ * reader simply cannot name look identical on screen — both are absent — and
+ * only the evidence gathered while building tells them apart.
+ */
+export function coverageStatus(row: CoverageRow, cause?: string): CoverageStatus {
+  // Never looked at, or looked at and not legible. Either way the honest answer
+  // is that nothing was established, and telling someone it is missing sends
+  // them to rebuild something that may well be there.
+  if (!row.readable) return 'unverified';
+
+  if (!row.present) return cause === 'verifier_cannot_see_it' ? 'unverified' : 'missing';
+
+  const mismatched = [
+    row.typeOk,
+    row.labelOk,
+    row.requiredOk,
+    row.optionsOk,
+    row.rangeOk,
+    row.formulaOk,
+    row.skipOk,
+    row.repeatingOk,
+  ].some((v) => v === false);
+
+  return mismatched ? 'wrong_properties' : 'verified';
+}
+
+/** Count the buckets, for a summary line. */
+export function coverageTally(rows: readonly CoverageRow[]): Record<CoverageStatus, number> & { total: number } {
+  const fields = rows.filter((r) => r.field);
+  const tally = { verified: 0, missing: 0, unverified: 0, wrong_properties: 0, total: fields.length };
+  for (const row of fields) tally[row.status]++;
+  return tally;
+}
 
 export async function runCoverageSweep(
   page: PageLike,
@@ -68,7 +110,7 @@ export async function runCoverageSweep(
       );
       rows.push(missingVisit(vi, visit.name, visit.forms));
       for (let fi = 0; fi < visit.forms.length; fi++) {
-        rows.push(...missingForm(vi, fi, visit.name, visit.forms[fi]!, 'the visit could not be opened'));
+        rows.push(...missingForm(vi, fi, visit.name, visit.forms[fi]!, 'the visit could not be opened', false));
       }
       continue;
     }
@@ -81,7 +123,7 @@ export async function runCoverageSweep(
       // inside a designer, and the way out does not always land where it
       // started, so each form re-establishes its own starting point.
       if (!nav.onVisitDetail(await page.capture(), visit.name) && !(await nav.openVisit(visit.name))) {
-        rows.push(...missingForm(vi, fi, visit.name, form, 'the visit could not be reopened to look for this form'));
+        rows.push(...missingForm(vi, fi, visit.name, form, 'the visit could not be reopened to look for this form', false));
         log(`Lost the way back to "${visit.name}" while reading it back.`, 'error');
         continue;
       }
@@ -112,6 +154,7 @@ export async function runCoverageSweep(
             ...blankRow(irPointer.field(vi, fi, xi), visit.name, form.name),
             field: field.label,
             present: false,
+            readable: false,
             notes: ['not read back: the form exists but its designer could not be opened'],
           });
         });
@@ -142,19 +185,32 @@ export async function runCoverageSweep(
           ...blankRow(pointer, visit.name, form.name),
           field: field.label,
           present: false,
+          readable: false,
           notes: [store.aborted ? 'not read back: the run was stopped' : 'not read back: the sweep never reached it'],
         });
       });
     }
   }
 
-  const fields = rows.filter((r) => r.field);
-  const missing = fields.filter((r) => !r.present);
-  log(
-    `Reconciliation: ${fields.length - missing.length}/${fields.length} fields present` +
-      (missing.length ? `; missing: ${missing.slice(0, 8).map((r) => `${r.form}/${r.field}`).join(', ')}${missing.length > 8 ? '…' : ''}` : ''),
-    missing.length ? 'warn' : 'info',
-  );
+  // Bucket every row now that the whole sweep is in, using what the build
+  // pipeline worked out about anything that failed.
+  const diagnoses = store.state.diagnoses ?? {};
+  for (const row of rows) row.status = coverageStatus(row, diagnoses[row.pointer]?.cause);
+
+  const tally = coverageTally(rows);
+  const named = (status: CoverageStatus, limit = 6) =>
+    rows
+      .filter((r) => r.field && r.status === status)
+      .slice(0, limit)
+      .map((r) => `${r.form}/${r.field}`)
+      .join(', ');
+
+  const parts = [`${tally.verified}/${tally.total} fields verified`];
+  if (tally.missing) parts.push(`${tally.missing} missing (${named('missing')})`);
+  if (tally.unverified) parts.push(`${tally.unverified} unverified (${named('unverified')})`);
+  if (tally.wrong_properties) parts.push(`${tally.wrong_properties} with properties that do not match (${named('wrong_properties')})`);
+
+  log(`Reconciliation: ${parts.join('; ')}`, tally.missing || tally.wrong_properties ? 'warn' : tally.unverified ? 'warn' : 'info');
   return rows;
 }
 
@@ -206,6 +262,7 @@ async function readFieldRows(
       // The field may still be there while rendering as something unnamed.
       if (designer.fieldPresentOnCanvas(snapshot, field.label)) {
         row.present = true;
+        row.readable = false;
         row.notes.push('present, but its preview carries no accessible name, so its properties could not be read back');
         rows.push(row);
         continue;
@@ -527,6 +584,8 @@ function blankRow(pointer: string, visit: string, form: string): CoverageRow {
     visit,
     form,
     present: false,
+    status: 'missing',
+    readable: true,
     typeOk: null,
     labelOk: null,
     requiredOk: null,
@@ -540,16 +599,36 @@ function blankRow(pointer: string, visit: string, form: string): CoverageRow {
 }
 
 function missingVisit(vi: number, name: string, _forms: IrForm[]): CoverageRow {
-  return { ...blankRow(irPointer.visit(vi), name, ''), present: false, notes: ['the visit could not be found or opened'] };
+  return {
+    ...blankRow(irPointer.visit(vi), name, ''),
+    present: false,
+    readable: false,
+    notes: ['the visit could not be found or opened'],
+  };
 }
 
-function missingForm(vi: number, fi: number, visitName: string, form: IrForm, why: string): CoverageRow[] {
-  const rows: CoverageRow[] = [{ ...blankRow(irPointer.form(vi, fi), visitName, form.name), present: false, notes: [why] }];
+/**
+ * `looked` separates "we checked and it is not there" from "we never got to
+ * look" — the difference between a field someone should rebuild and a field
+ * someone should go and see for themselves.
+ */
+function missingForm(
+  vi: number,
+  fi: number,
+  visitName: string,
+  form: IrForm,
+  why: string,
+  looked = true,
+): CoverageRow[] {
+  const rows: CoverageRow[] = [
+    { ...blankRow(irPointer.form(vi, fi), visitName, form.name), present: false, readable: looked, notes: [why] },
+  ];
   form.fields.forEach((field, xi) => {
     rows.push({
       ...blankRow(irPointer.field(vi, fi, xi), visitName, form.name),
       field: field.label,
       present: false,
+      readable: looked,
       notes: [why],
     });
   });
