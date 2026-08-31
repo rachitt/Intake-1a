@@ -40,6 +40,22 @@ export interface ProbeResult {
   notes: string[];
 }
 
+/** A predicate narrowing where on the screen a control may be looked for. */
+export type NodeScope = (node: SnapshotNode) => boolean;
+
+/** One coded value as the property editor renders it: a code, and its label. */
+export interface OptionRow {
+  code: SnapshotNode;
+  label: SnapshotNode;
+}
+
+/** Do two controls sit on the same visual row? */
+export function sameBand(a: SnapshotNode, b: SnapshotNode): boolean {
+  if (!a.box || !b.box) return false;
+  const overlap = Math.min(a.box.y + a.box.h, b.box.y + b.box.h) - Math.max(a.box.y, b.box.y);
+  return overlap > Math.min(a.box.h, b.box.h) / 2;
+}
+
 export class Designer {
   constructor(
     private page: PageLike,
@@ -273,10 +289,146 @@ export class Designer {
    */
   async selectFieldOnCanvas(label: string): Promise<boolean> {
     const snapshot = await this.page.capture();
+    // Already selected? Ask the property editor before looking at the canvas.
+    //
+    // A canvas preview only takes on a field's label once the editor has
+    // committed it. The field just built is still the one being edited, so its
+    // preview can still read as the library entry it was made from — "Multi-line
+    // Textbox" rather than "Reason Not Administered" — while the editor beside
+    // it already shows the right label. Searching the canvas by label therefore
+    // fails to find a field that is not merely present but already selected.
+    //
+    // That is why this only ever bit the LAST field of a form: every other field
+    // is committed by the act of creating the one after it, and nothing follows
+    // the last. Four of the study's thirteen display rules sit on a form's last
+    // field, and all four were escalated to a human who had nothing to fix.
+    if ((this.fieldLabelBox(snapshot)?.value ?? null) === label) return true;
+
     const node = this.fieldOnCanvas(snapshot, label);
     if (!node) return false;
     const observation = await this.page.click(node.ref);
+
+    // Judged by the goal — is the editor showing this field? — and not by
+    // whether the page moved.
+    //
+    // Selecting something already selected changes nothing, and the field most
+    // likely to be already selected is the one just built, which is exactly the
+    // field the skip-logic pass reaches for first when a rule sits on the last
+    // field of a form. Treating "no change" as failure therefore refused to
+    // apply a rule precisely when everything was in fact ready, and sent a
+    // reviewer a question with no answer to give.
+    const showing = this.propertyEditorShows(observation.after, label, node);
+    if (showing !== null) return showing;
+
+    // The platform offers nothing that reads back as a label, so there is no
+    // way to confirm the selection. Fall back to the weaker signal rather than
+    // reporting a failure that may not have happened.
     return observation.diff.magnitude > 0;
+  }
+
+  /**
+   * Does the property editor currently show the field with this label?
+   *
+   * `null` when it cannot be told apart — no control on this platform reads
+   * back as the label of the selected field. "Could not tell" and "no" must
+   * never be conflated: one is a reason to look for other evidence, the other
+   * is a reason to stop.
+   *
+   * The canvas is excluded because it is full of inert preview inputs named
+   * after the fields they preview, so the field's own preview reads as an
+   * excellent candidate for "the box holding this field's label".
+   */
+  private propertyEditorShows(after: Snapshot, label: string, preview: SnapshotNode): boolean | null {
+    const canvasRegion = this.fieldOnCanvas(after, label)?.region ?? preview.region;
+    const box = this.fieldLabelBox(after, (node) => node.region !== canvasRegion);
+    if (!box) return null;
+    return (box.value ?? '') === label;
+  }
+
+  // ── reading the property editor ─────────────────────────────────────────────
+
+  /**
+   * The control holding the SELECTED FIELD's label.
+   *
+   * "Label" is the most overloaded word on a form designer's screen. Every
+   * coded value has one too, sitting in a list directly beneath the field's
+   * own, and they score identically against the same vocabulary — so the
+   * highest-ranked "label" box on a list-of-choices field is routinely the
+   * first coded value rather than the field. Anything standing on a
+   * coded-value row is therefore ruled out structurally before ranking.
+   *
+   * `scope` is how a caller excludes the canvas, which is full of inert preview
+   * inputs named after the fields they preview.
+   */
+  fieldLabelBox(snapshot: Snapshot, scope: NodeScope = () => true): SnapshotNode | undefined {
+    const rows = this.optionRows(snapshot, scope);
+    const onOptionRow = (node: SnapshotNode): boolean => rows.some((r) => sameBand(r.code, node));
+    const ranked = this.grounder
+      .rank(snapshot, { ...INTENTS.fieldLabel(), ignoreMemory: true })
+      .filter((c) => c.score >= 0.5 && !onOptionRow(c.node));
+    // Prefer a candidate inside the scope, but fall back to the best anywhere
+    // rather than reporting nothing when something was in fact found.
+    return (ranked.find((c) => scope(c.node)) ?? ranked[0])?.node;
+  }
+
+  /**
+   * The coded-value rows in the property editor, as pairs.
+   *
+   * Anchored on the CODE boxes and paired by geometry, because that is the only
+   * structure a coded value is guaranteed to have on a platform nobody has
+   * seen: it is a pair, and a pair is rendered together on a row. Ranking
+   * label-ish boxes on their own cannot work, for the reason above.
+   *
+   * "code" is the safer anchor of the two: it has one meaning in a form
+   * designer, whereas "label" has several.
+   */
+  optionRows(snapshot: Snapshot, scope: NodeScope = () => true): OptionRow[] {
+    // A bulk-entry box is not a coded value, however much it sounds like one.
+    // "Paste Values", "Import values" and "Multiple values" all read as
+    // strongly code-ish, and one of them sitting under the list is enough to
+    // report a correct list as having one value too many. The agent already has
+    // a canonical intent for that control, so it is ruled out by meaning.
+    const bulk = new Set(
+      this.grounder
+        .rank(snapshot, { ...INTENTS.optionBulkInput(), ignoreMemory: true })
+        .filter((c) => c.score >= 0.5)
+        .map((c) => c.node.ref),
+    );
+
+    const codes = this.ranked(snapshot, INTENTS.optionCode(), scope).filter((n) => n.box && !bulk.has(n.ref));
+    if (!codes.length) return [];
+
+    const codeRefs = new Set(codes.map((n) => n.ref));
+    const candidates = this.ranked(snapshot, INTENTS.optionLabel(), scope).filter(
+      (n) => n.box && !codeRefs.has(n.ref) && !bulk.has(n.ref),
+    );
+
+    const taken = new Set<number>();
+    const paired = codes.map((code) => {
+      const label = candidates
+        .filter((n) => !taken.has(n.ref) && sameBand(code, n))
+        // Nearest along the row. A pair is adjacent; anything further away on
+        // the same band belongs to something else.
+        .sort((a, b) => Math.abs(a.box!.x - code.box!.x) - Math.abs(b.box!.x - code.box!.x))[0];
+      if (label) taken.add(label.ref);
+      return label ? { code, label } : { code };
+    });
+
+    // A coded value is a PAIR. A code-ish box standing alone on its row, with
+    // no label beside it, is some other control that happens to share the
+    // vocabulary. If a platform genuinely stacks code above label rather than
+    // beside it, nothing pairs and the caller is told so, rather than being
+    // handed a confident wrong answer.
+    return paired.filter((r): r is OptionRow => Boolean(r.label));
+  }
+
+  /** Candidates for an intent, in on-screen order — the order values were entered in. */
+  private ranked(snapshot: Snapshot, intent: Intent, scope: NodeScope): SnapshotNode[] {
+    return this.grounder
+      .rank(snapshot, { ...intent, ignoreMemory: true })
+      .filter((c) => c.score >= 0.45 && scope(c.node))
+      .map((c) => c.node)
+      .sort((a, b) => (a.box?.y ?? 0) - (b.box?.y ?? 0) || (a.box?.x ?? 0) - (b.box?.x ?? 0));
   }
 
   // ── properties ──────────────────────────────────────────────────────────────

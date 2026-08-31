@@ -19,7 +19,7 @@ import { INTENTS } from './intents';
 import { Navigator } from './navigate';
 import { SIGNATURES } from '../shared/types';
 import { irPointer } from '../shared/ir';
-import type { Designer } from './designer';
+import type { Designer, OptionRow } from './designer';
 import type { Grounder } from './grounder';
 import type { IrField, IrForm } from '../shared/ir';
 import type { PageLike } from './page';
@@ -192,9 +192,9 @@ async function readFieldRows(
     // Every property is read from the property editor, never from the canvas
     // preview of the field itself.
     const scope = offCanvas(designer, editor, field.label);
-    const pairs = optionRows(grounder, editor, scope);
+    const pairs = designer.optionRows(editor, scope);
 
-    checkLabel(grounder, editor, field, row, pairs, scope);
+    checkLabel(grounder, designer, editor, field, row, scope);
     checkRequired(grounder, editor, field, row, scope);
     checkRange(grounder, editor, field, row, scope);
     checkFormula(grounder, editor, field, row, scope);
@@ -209,22 +209,13 @@ async function readFieldRows(
 
 function checkLabel(
   grounder: Grounder,
+  designer: Designer,
   editor: Snapshot,
   field: IrField,
   row: CoverageRow,
-  optionBands: OptionRow[],
   scope: Scope,
 ): void {
-  // A coded value's label box is label-ish too, and on a list-of-choices field
-  // there are several of them sitting right under the field's own. Anything on
-  // a coded-value row is therefore ruled out before ranking — otherwise the
-  // first option's label is read back as the field's name and every properly
-  // built select reports a wrong label.
-  const onOptionRow = (node: SnapshotNode): boolean => optionBands.some((r) => sameBand(r.code, node));
-  const ranked = grounder
-    .rank(editor, { ...INTENTS.fieldLabel(), ignoreMemory: true })
-    .filter((c) => c.score >= 0.5 && !onOptionRow(c.node));
-  const node = (ranked.find((c) => scope(c.node)) ?? ranked[0])?.node;
+  const node = designer.fieldLabelBox(editor, scope);
   if (!node) {
     row.notes.push('could not read the label back');
     return;
@@ -238,7 +229,7 @@ function checkLabel(
     const considered = grounder
       .rank(editor, { ...INTENTS.fieldLabel(), ignoreMemory: true })
       .slice(0, 3)
-      .map((c) => `"${c.node.name}"=${JSON.stringify(c.node.value ?? '')}@${c.score.toFixed(2)}${onOptionRow(c.node) ? ' [on a coded-value row]' : ''}`)
+      .map((c) => `"${c.node.name}"=${JSON.stringify(c.node.value ?? '')}@${c.score.toFixed(2)}${scope(c.node) ? '' : ' [on the canvas]'}`)
       .join(', ');
     row.notes.push(`label read from "${node.name}"; considered ${considered}`);
   }
@@ -391,77 +382,6 @@ function offCanvas(designer: Designer, editor: Snapshot, label: string): (node: 
   const preview = designer.fieldOnCanvas(editor, label);
   if (!preview) return () => true;
   return (node: SnapshotNode) => node.region !== preview.region;
-}
-
-/** One coded value as it is rendered in the property editor: a code, and its label. */
-interface OptionRow {
-  code: SnapshotNode;
-  label?: SnapshotNode;
-}
-
-/** Do two controls sit on the same visual row? */
-function sameBand(a: SnapshotNode, b: SnapshotNode): boolean {
-  if (!a.box || !b.box) return false;
-  const overlap = Math.min(a.box.y + a.box.h, b.box.y + b.box.h) - Math.max(a.box.y, b.box.y);
-  return overlap > Math.min(a.box.h, b.box.h) / 2;
-}
-
-/**
- * The coded-value rows in the property editor, as pairs.
- *
- * Anchored on the CODE boxes and paired by geometry, because that is the only
- * structure a coded value is guaranteed to have on a platform nobody has seen:
- * it is a pair, and a pair is rendered together on a row. Ranking label-ish
- * boxes on their own cannot work — a field's own label box is label-ish too and
- * sits directly above the list, so a purely lexical read picks it up as the
- * first coded value and reports every option shifted down by one. That is a
- * defect in the READING, and it made a correctly built list of choices look
- * wrong on 42 fields.
- *
- * "code" is the safer anchor of the two: it is a word with one meaning in a
- * form designer, whereas "label" is the most overloaded word on the screen.
- */
-function optionRows(grounder: Grounder, editor: Snapshot, scope: Scope = ANYWHERE): OptionRow[] {
-  // A bulk-entry box is not a coded value, however much it sounds like one.
-  // "Paste Values", "Import values", "Multiple values" all read as strongly
-  // code-ish, and one of them sitting under the list is enough to report every
-  // correctly built list as having one value too many. The agent already has a
-  // canonical intent for that control, so it is ruled out by meaning.
-  const bulk = new Set(
-    grounder
-      .rank(editor, { ...INTENTS.optionBulkInput(), ignoreMemory: true })
-      .filter((c) => c.score >= 0.5)
-      .map((c) => c.node.ref),
-  );
-
-  const codes = allNodes(grounder, editor, INTENTS.optionCode(), scope).filter((n) => n.box && !bulk.has(n.ref));
-  if (!codes.length) return [];
-
-  const codeRefs = new Set(codes.map((n) => n.ref));
-  const candidates = allNodes(grounder, editor, INTENTS.optionLabel(), scope).filter(
-    (n) => n.box && !codeRefs.has(n.ref) && !bulk.has(n.ref),
-  );
-
-  const taken = new Set<number>();
-  const paired = codes.map((code) => {
-    const label = candidates
-      .filter((n) => !taken.has(n.ref) && sameBand(code, n))
-      // Nearest along the row. A pair is adjacent; anything further away on the
-      // same band belongs to something else.
-      .sort((a, b) => Math.abs((a.box!.x ?? 0) - code.box!.x) - Math.abs((b.box!.x ?? 0) - code.box!.x))[0];
-    if (label) taken.add(label.ref);
-    return label ? { code, label } : { code };
-  });
-
-  // A coded value is a PAIR. A code-ish box standing alone on its row, with no
-  // label beside it, is some other control that happens to share the
-  // vocabulary. Requiring the pair is the structural backstop to the semantic
-  // exclusion above, and it costs nothing when the platform is well behaved:
-  // if a platform genuinely stacks code above label instead of beside it,
-  // nothing pairs, and the caller falls back to a labels-only read that says
-  // openly it could not confirm the codes.
-  const complete = paired.filter((r): r is Required<OptionRow> => Boolean(r.label));
-  return complete.length ? complete : [];
 }
 
 type Scope = (node: SnapshotNode) => boolean;
