@@ -64,6 +64,11 @@ export interface PlatformProfile {
   commit?: LearnedControl & { provenBy: string };
   /** Save-shaped controls proven NOT to persist — the near-miss decoys. */
   rejectedCommits: { name: string; why: string }[];
+  /**
+   * Intent id → the disclosure that has to be opened before the affordance is
+   * on screen at all. Populated when an intent is found only inside a menu.
+   */
+  disclosures?: Record<string, { role: Role; name: string }>;
   /** Whether a form definition can be reused across visits here. null = not yet tested. */
   formReuse: 'supported' | 'unsupported' | null;
   /** How this platform models a repeating/log form, if at all. */

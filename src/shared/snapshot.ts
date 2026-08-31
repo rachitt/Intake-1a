@@ -64,6 +64,12 @@ export interface NodeState {
   required?: boolean;
   checked?: boolean;
   expanded?: boolean;
+  /**
+   * The control reveals more controls when activated — a menu, a listbox, a
+   * popup. Structural, not lexical: it is how a platform declares that what you
+   * are looking for may not be on screen yet.
+   */
+  hasPopup?: boolean;
   selected?: boolean;
   multiline?: boolean;
   /** A listbox/select that holds more than one value at a time. */

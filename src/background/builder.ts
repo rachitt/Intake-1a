@@ -25,6 +25,7 @@
  * duplicating it.
  */
 
+import { Discloser } from './disclose';
 import { INTENTS } from './intents';
 import { Navigator } from './navigate';
 import { SIGNATURES } from '../shared/types';
@@ -55,6 +56,9 @@ export class Builder {
    */
   private readonly nav: Navigator;
 
+  /** Finds affordances that a platform keeps one click deep. */
+  private readonly discloser: Discloser;
+
   constructor(
     private page: PageLike,
     private grounder: Grounder,
@@ -73,6 +77,7 @@ export class Builder {
       () => this.store.ir?.study?.protocol_id ?? '',
       (text) => this.profile.notes.push(text),
     );
+    this.discloser = new Discloser(page, grounder, store, log);
   }
 
   private get ir(): IrStudy {
@@ -684,12 +689,34 @@ export class Builder {
     const tried: string[] = [];
 
     for (let attempt = 0; attempt < 3; attempt++) {
-      const snapshot = await this.page.capture();
-      const intent = { ...INTENTS.commitWork(), excludeRefs: [] as number[], ignoreMemory: attempt > 0 };
-      const candidate = await this.grounder.ground(snapshot, intent);
+      // Everything already shown not to persist is ruled out by name, both
+      // within this run and from what the profile learned earlier. Without
+      // that, the grounder keeps re-offering the same plausible look-alike and
+      // the agent never gets far enough to notice that the real affordance is
+      // somewhere it has not looked.
+      const ruledOut = [...new Set([...tried, ...this.profile.rejectedCommits.map((r) => r.name)])];
+      const intent = {
+        ...INTENTS.commitWork(),
+        excludeRefs: [] as number[],
+        excludeNames: ruledOut,
+        ignoreMemory: attempt > 0,
+      };
+
+      // Through a disclosure if need be. Not every platform puts Save on the
+      // toolbar, and one that keeps it in an overflow menu is not a platform
+      // without a Save — it is a platform the agent has not finished looking
+      // at. Getting this wrong is silent and total: the form builds perfectly
+      // and is discarded on the way out.
+      const { result: candidate, through } = await this.discloser.ground(intent);
       if (!candidate.ok) {
         await this.escalateGrounding(pointer, 'save the form', candidate.reason, candidate.candidates);
         return false;
+      }
+      if (through) {
+        this.audit(pointer, `open "${through.name}" to reach this platform's save`, {
+          chose: through,
+          rationale: 'the commit affordance is not on the toolbar here; it is inside this disclosure',
+        });
       }
       if (tried.includes(candidate.node.name)) {
         // The grounder keeps offering something already shown not to work.

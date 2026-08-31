@@ -64,7 +64,7 @@ export const INTENTS = {
   visitCreate: (): Intent => ({
     id: 'visit.create',
     goal: 'Start creating a new visit (a scheduled study timepoint) in the visit schedule.',
-    roles: ['button', 'link'],
+    roles: ['button', 'link', 'menuitem'],
     lexicon: ['add visit', 'new visit', 'create visit', 'add timepoint', 'add event', 'add row', 'new', 'add', 'create'],
     // The generic words above are what make this work on a platform whose
     // button is just "New". They are also what make it match "New Source
@@ -120,7 +120,7 @@ export const INTENTS = {
   formCreate: (): Intent => ({
     id: 'form.create',
     goal: 'Start creating a new source document (a data-collection form) under the current visit.',
-    roles: ['button', 'link'],
+    roles: ['button', 'link', 'menuitem'],
     lexicon: [
       'add form', 'new form', 'create form', 'add source document', 'new source document',
       'add document', 'new document', 'add case report form', 'add crf', 'new', 'add', 'create',
@@ -168,7 +168,7 @@ export const INTENTS = {
   formOpenDesigner: (): Intent => ({
     id: 'form.openDesigner',
     goal: 'Open this source document in the form designer so its fields can be built.',
-    roles: ['button', 'link'],
+    roles: ['button', 'link', 'menuitem'],
     lexicon: ['edit', 'design', 'build', 'configure', 'open', 'modify', 'author', 'fields', 'layout'],
     avoid: [...DESTRUCTIVE, 'preview', 'view only', 'export', 'activate', 'publish', 'version'],
     regionKinds: ['table', 'toolbar', 'unknown'],
@@ -182,7 +182,7 @@ export const INTENTS = {
   formNewVersion: (): Intent => ({
     id: 'form.newVersion',
     goal: 'Return a locked or approved source document to an editable state by creating a new version of it.',
-    roles: ['button', 'link'],
+    roles: ['button', 'link', 'menuitem'],
     lexicon: ['new version', 'create version', 'revise', 'amend', 'new draft', 'unlock', 'reopen', 'version'],
     avoid: [...DESTRUCTIVE, 'preview', 'export'],
     regionKinds: ['table', 'toolbar', 'unknown'],
@@ -209,7 +209,11 @@ export const INTENTS = {
   commitWork: (): Intent => ({
     id: 'builder.commit',
     goal: 'Persist the work done in this form designer so it survives leaving the screen.',
-    roles: ['button'],
+    // A menu item is a perfectly ordinary home for Save. Plenty of designers
+    // keep the toolbar for Preview and put committing one click deep in an
+    // overflow menu, and an agent that will only consider buttons decides such
+    // a platform cannot save at all.
+    roles: ['button', 'menuitem'],
     lexicon: ['save', 'commit', 'apply', 'persist', 'store', 'keep', 'save changes', 'submit', 'update', 'confirm'],
     avoid: [...DESTRUCTIVE, ...COMMIT_LOOKALIKES],
     regionKinds: ['toolbar', 'editor', 'unknown'],

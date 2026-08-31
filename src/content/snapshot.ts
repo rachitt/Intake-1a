@@ -155,6 +155,12 @@ function nodeState(el: Element, role: Role, inModal: boolean): SnapshotNode['sta
   const expanded = ariaBool(el, 'aria-expanded');
   if (expanded !== undefined) state.expanded = expanded;
 
+  // `aria-haspopup` is how a control says "there is more behind me". Any value
+  // but "false" counts; the specific popup kind does not matter to an agent
+  // that simply needs to know the screen is not showing everything it offers.
+  const popup = (el.getAttribute('aria-haspopup') ?? '').trim().toLowerCase();
+  if (popup && popup !== 'false') state.hasPopup = true;
+
   const selected = ariaBool(el, 'aria-selected');
   if (selected !== undefined) state.selected = selected;
 
