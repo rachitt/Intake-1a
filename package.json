@@ -12,7 +12,8 @@
     "diff": "node scripts/diff-ir.mjs",
     "e2e": "node tests/run-e2e.mjs",
     "verify:extension": "npm run build && node tests/verify-extension.mjs",
-    "verify": "npm run typecheck && npm run lint:portability"
+    "verify": "npm run typecheck && npm run lint:portability && npm test",
+    "test": "node scripts/run-tests.mjs"
   },
   "devDependencies": {
     "@types/chrome": "^0.0.268",
