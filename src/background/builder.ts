@@ -26,6 +26,7 @@
  */
 
 import { INTENTS } from './intents';
+import { Navigator } from './navigate';
 import { SIGNATURES } from '../shared/types';
 import { formFingerprint, irPointer, type CanonicalType, type IrField, type IrForm, type IrStudy, type IrVisit } from '../shared/ir';
 import type { Designer } from './designer';
@@ -48,6 +49,12 @@ type Log = (message: string, level?: 'info' | 'warn' | 'error') => void;
 export class Builder {
   private commitProven = false;
 
+  /**
+   * Getting around is shared with the reconciliation sweep rather than written
+   * twice — see `navigate.ts` for why that matters.
+   */
+  private readonly nav: Navigator;
+
   constructor(
     private page: PageLike,
     private grounder: Grounder,
@@ -56,7 +63,17 @@ export class Builder {
     private store: Store,
     private gate: Gate,
     private log: Log,
-  ) {}
+  ) {
+    this.nav = new Navigator(
+      page,
+      grounder,
+      designer,
+      log,
+      () => this.store.ir?.visits.map((v) => v.name) ?? [],
+      () => this.store.ir?.study?.protocol_id ?? '',
+      (text) => this.profile.notes.push(text),
+    );
+  }
 
   private get ir(): IrStudy {
     return this.store.ir!;
@@ -138,178 +155,37 @@ export class Builder {
   }
 
   // ── navigation ──────────────────────────────────────────────────────────────
+  //
+  // All of it lives in `navigate.ts`, shared with the reconciliation sweep. The
+  // sweep used to keep its own copy; it drifted, and a correctly built study
+  // read back as empty. These are thin delegations so that cannot recur.
 
-  /**
-   * Get back to the visit list.
-   *
-   * Tried the way a person would: look for something that means "back to the
-   * schedule" and click it, repeatedly, until the visits are on screen. There
-   * is deliberately no URL manipulation — a single-page app may never change
-   * its address, and a platform that does is not owed a special case.
-   */
-  private async goToVisitSchedule(): Promise<boolean> {
-    const wrongTurns: string[] = [];
-
-    for (let attempt = 0; attempt < 6; attempt++) {
-      let snapshot = await this.page.capture();
-      if (this.visitScheduleVisible(snapshot)) return true;
-
-      // Climb out of a designer first. Its breadcrumb is named after the visit
-      // it belongs to, so every visit's name is offered as context — the agent
-      // knows them all, and nothing generic about "back" matches a proper noun.
-      if (this.inDesigner(snapshot)) {
-        await this.leaveDesignerIfOpen(this.ir.visits.map((v) => v.name));
-        snapshot = await this.page.capture();
-        if (this.visitScheduleVisible(snapshot)) return true;
-      }
-
-      // Ranked, not grounded, and deliberately so.
-      //
-      // Grounding refuses to act when two candidates are close, which is right
-      // for a choice that cannot be taken back — but going to the wrong screen
-      // costs a click and is instantly detectable. A module tab scoring 0.88
-      // against the real breadcrumb at 0.82 is not a question for a human; it
-      // is two things to try in order. Refusing to choose here does not make
-      // the agent careful, it makes it stuck.
-      const candidate = this.grounder
-        .rank(snapshot, {
-          ...INTENTS.gotoVisitSchedule([this.ir.study?.protocol_id ?? ''].filter(Boolean)),
-          excludeNames: wrongTurns,
-        })
-        .find((c) => c.score >= 0.5);
-      if (!candidate) break;
-
-      const observation = await this.page.click(candidate.node.ref);
-      if (this.visitScheduleVisible(observation.after)) {
-        this.grounder.remember(
-          INTENTS.gotoVisitSchedule().id,
-          candidate.node,
-          candidate.score,
-          'probe',
-          'verified by arriving at the visit schedule',
-        );
-        return true;
-      }
-
-      // Judged by the GOAL, not by whether anything moved. A decorative module
-      // tab produces no change; a breadcrumb to the wrong level produces plenty.
-      // Both are equally not the way to the visit schedule.
-      wrongTurns.push(candidate.node.name);
-      this.grounder.forget(INTENTS.gotoVisitSchedule().id);
-      this.log(`"${candidate.node.name}" did not lead to the visit schedule; trying another way.`);
-    }
-
-    const snapshot = await this.page.capture();
-    if (this.visitScheduleVisible(snapshot)) return true;
-    const considered = this.grounder
-      .rank(snapshot, { ...INTENTS.gotoVisitSchedule(), ignoreMemory: true })
-      .slice(0, 3)
-      .map((c) => `"${c.node.name}" (${c.score.toFixed(2)})`)
-      .join(', ');
-    this.log(
-      `Could not get back to the visit schedule; still on "${snapshot.screenTitle || snapshot.title}". Considered: ${considered || 'nothing'}.`,
-      'warn',
-    );
-    return false;
+  private goToVisitSchedule(): Promise<boolean> {
+    return this.nav.goToVisitSchedule();
   }
 
-  /**
-   * Are we looking at the visit list?
-   *
-   * Judged by evidence, not by a screen title, since screen titles are one of
-   * the things that differ between platforms. Two signals, in order:
-   *
-   *   - A palette of field types means we are inside a form designer, whatever
-   *     else is on screen. This check has to come first: a designer usually
-   *     shows the visit's name in its breadcrumb, and matching on that alone
-   *     would conclude we are on the schedule while standing in an editor.
-   *   - Otherwise, the presence of somewhere to create a VISIT specifically —
-   *     which is distinguishable from somewhere to create a document only
-   *     because the intents name each other's nouns as hazards.
-   */
   private visitScheduleVisible(snapshot: Snapshot): boolean {
-    if (this.inDesigner(snapshot)) return false;
-    const ranked = this.grounder.rank(snapshot, { ...INTENTS.visitCreate(), ignoreMemory: true });
-    if (ranked[0] && ranked[0].score >= 0.55) return true;
-    // A schedule with rows for visits we expect is a schedule even if its
-    // create affordance is worded unusually.
-    return this.ir.visits.some((v) => snapshot.nodes.some((n) => n.role === 'row' && n.name.includes(v.name)));
+    return this.nav.visitScheduleVisible(snapshot);
   }
 
-  /** Looking at one visit's list of source documents. */
   private onVisitDetail(snapshot: Snapshot, visitName: string): boolean {
-    if (this.inDesigner(snapshot)) return false;
-    const canAddDocument = this.grounder.rank(snapshot, { ...INTENTS.formCreate(), ignoreMemory: true })[0];
-    if (!canAddDocument || canAddDocument.score < 0.5) return false;
-    // The visit's name must be in the screen's own heading. Accepting a mention
-    // anywhere would match the schedule itself, where every visit is named in a
-    // row — and the agent would then start building documents without ever
-    // opening a visit.
-    return snapshot.screenTitle.includes(visitName);
+    return this.nav.onVisitDetail(snapshot, visitName);
   }
 
-  /** A palette of field types is present, so we are inside a form designer. */
   private inDesigner(snapshot: Snapshot): boolean {
-    return snapshot.regions.some((r) => r.kind === 'palette' && r.confidence >= 0.6);
+    return this.nav.inDesigner(snapshot);
   }
 
-  /**
-   * Get out of the form designer, if we are in one.
-   *
-   * Always via the platform's own affordance, and never while there is unsaved
-   * work — navigating away from a designer commonly discards the working copy
-   * without warning, which is the single easiest way to lose an entire form.
-   */
-  private async leaveDesignerIfOpen(context: string[] = []): Promise<void> {
-    const wrongTurns: string[] = [];
-    for (let attempt = 0; attempt < 4; attempt++) {
-      const snapshot = await this.page.capture();
-      if (!this.inDesigner(snapshot)) return;
-
-      // Same reasoning as the schedule: leaving a screen is reversible, so the
-      // plausible ways out are tried in order rather than escalated.
-      const leave = this.grounder
-        .rank(snapshot, { ...INTENTS.leaveDesigner(context), excludeNames: wrongTurns })
-        .find((c) => c.score >= 0.5);
-      if (!leave) return;
-
-      const observation = await this.page.click(leave.node.ref);
-      if (!this.inDesigner(observation.after)) {
-        this.grounder.remember(
-          INTENTS.leaveDesigner().id,
-          leave.node,
-          leave.score,
-          'probe',
-          'verified by leaving the form designer',
-        );
-        return;
-      }
-
-      wrongTurns.push(leave.node.name);
-      this.grounder.forget(INTENTS.leaveDesigner().id);
-    }
+  private leaveDesignerIfOpen(context: string[] = []): Promise<void> {
+    return this.nav.leaveDesignerIfOpen(context);
   }
 
-  /**
-   * The list row for a named thing.
-   *
-   * Prefers a node whose role actually is a row, because its box is the band
-   * that owns the per-row actions. Falls back to whatever carries the name.
-   */
   private rowFor(snapshot: Snapshot, name: string): SnapshotNode | undefined {
-    const rows = snapshot.nodes.filter((n) => n.role === 'row' && n.name.includes(name));
-    if (rows.length) return rows.sort((a, b) => a.name.length - b.name.length)[0];
-    return this.findByName(snapshot, name);
+    return this.nav.rowFor(snapshot, name);
   }
 
-  /** A control on screen that carries this exact name, or clearly contains it. */
   private findByName(snapshot: Snapshot, name: string): SnapshotNode | undefined {
-    const exact = snapshot.nodes.find((n) => n.name === name);
-    if (exact) return exact;
-    const contained = snapshot.nodes.filter((n) => n.name.includes(name));
-    // Prefer the tightest match, so a row containing the name loses to a link
-    // that IS the name.
-    return contained.sort((a, b) => a.name.length - b.name.length)[0];
+    return this.nav.findByName(snapshot, name);
   }
 
   // ── visits ──────────────────────────────────────────────────────────────────
@@ -388,26 +264,8 @@ export class Builder {
     return true;
   }
 
-  private async openVisit(visit: IrVisit): Promise<boolean> {
-    await this.leaveDesignerIfOpen([visit.name]);
-
-    // Already on it? Its detail screen names the visit and offers somewhere to
-    // add a document to it. Navigating away and back happens to work here and
-    // may not on the next platform, so the cheapest correct move is to notice.
-    const here = await this.page.capture();
-    if (this.onVisitDetail(here, visit.name)) return true;
-
-    await this.goToVisitSchedule();
-    const snapshot = await this.page.capture();
-    const node = this.findByName(snapshot, visit.name);
-    if (!node) return false;
-    await this.page.click(node.ref);
-
-    // Confirm we actually moved: the visit's own forms area should now be
-    // reachable, i.e. there is somewhere to add a source document.
-    const after = await this.page.capture();
-    const ranked = this.grounder.rank(after, { ...INTENTS.formCreate(), ignoreMemory: true });
-    return Boolean(ranked[0] && ranked[0].score >= 0.5) || Boolean(this.findByName(after, visit.name));
+  private openVisit(visit: IrVisit): Promise<boolean> {
+    return this.nav.openVisit(visit.name);
   }
 
   // ── forms ───────────────────────────────────────────────────────────────────
@@ -541,57 +399,20 @@ export class Builder {
    * available looks for something that means "make this editable again".
    */
   private async openDesigner(form: IrForm, pointer: string): Promise<boolean> {
-    for (let attempt = 0; attempt < 2; attempt++) {
-      const snapshot = await this.page.capture();
-      const row = this.rowFor(snapshot, form.name);
-
-      // Scope the search to this form's own row. A list of documents has one
-      // identical edit control per row, and being "near" the right row is not
-      // enough to tell forty-pixel-apart rows apart — being INSIDE it is.
-      const intent = {
-        ...INTENTS.formOpenDesigner(),
-        nearName: row?.name ?? form.name,
-        ...(row?.box ? { withinBox: row.box } : {}),
-      };
-
-      const edit = await this.grounder.ground(snapshot, intent);
-      if (edit.ok) {
-        await this.page.click(edit.ref);
-        if (await this.designerOpen()) {
-          this.log(
-            `Opened the designer for "${form.name}" via "${edit.node.name}"` +
-              (row ? ` scoped to its row` : ' (no row found to scope to)'),
-          );
-          this.audit(pointer, `open the designer for "${form.name}"`, {
-            chose: { role: edit.node.role, name: edit.node.name },
-            rationale: edit.rationale,
-            confidence: edit.confidence,
-          });
-          return true;
-        }
-      }
-
-      // Perhaps it is locked. Look for the affordance that reopens it.
-      const versionSnapshot = await this.page.capture();
-      const versionRow = this.rowFor(versionSnapshot, form.name);
-      const version = await this.grounder.ground(versionSnapshot, {
-        ...INTENTS.formNewVersion(),
-        nearName: versionRow?.name ?? form.name,
-        ...(versionRow?.box ? { withinBox: versionRow.box } : {}),
-      });
-      if (!version.ok) break;
-      await this.page.click(version.ref);
-      this.log(`"${form.name}" appeared to be locked; created a new version to make it editable.`);
-      this.profile.notes.push('Documents are locked once approved; a new version is required to edit them.');
-    }
-    return false;
+    const result = await this.nav.openDesigner(form.name);
+    if (!result.ok) return false;
+    this.log(`Opened the designer for "${form.name}" — ${result.detail}.`);
+    this.audit(pointer, `open the designer for "${form.name}"`, {
+      ...(result.chose ? { chose: result.chose } : {}),
+      ...(result.rationale ? { rationale: result.rationale } : {}),
+      ...(result.confidence !== undefined ? { confidence: result.confidence } : {}),
+    });
+    return true;
   }
 
   /** Are we inside a form designer? Judged by the palette being present. */
-  private async designerOpen(): Promise<boolean> {
-    const snapshot = await this.page.capture();
-    const entries = await this.designer.paletteEntries(snapshot);
-    return entries.length > 0;
+  private designerOpen(): Promise<boolean> {
+    return this.nav.designerOpen();
   }
 
   // ── type vocabulary ─────────────────────────────────────────────────────────

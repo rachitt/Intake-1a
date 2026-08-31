@@ -16,6 +16,7 @@
  */
 
 import { INTENTS } from './intents';
+import { Navigator } from './navigate';
 import { SIGNATURES } from '../shared/types';
 import { irPointer } from '../shared/ir';
 import type { Designer } from './designer';
@@ -38,13 +39,27 @@ export async function runCoverageSweep(
   const ir = store.ir;
   if (!ir) return [];
 
+  // The same navigation the builder used. The sweep used to carry its own
+  // copy, which judged "am I on a visit?" by whether SOMETHING creatable was on
+  // screen — a test the visit schedule itself passes. It therefore believed it
+  // had opened every visit while never leaving the list of them, found no forms
+  // under any of them, and reported a correctly built study as 0/188.
+  const nav = new Navigator(
+    page,
+    grounder,
+    designer,
+    log,
+    () => ir.visits.map((v) => v.name),
+    () => ir.study?.protocol_id ?? '',
+  );
+
   const rows: CoverageRow[] = [];
 
   for (let vi = 0; vi < ir.visits.length; vi++) {
     const visit = ir.visits[vi]!;
     if (store.aborted) break;
 
-    const visitOpen = await openVisit(page, grounder, designer, visit.name);
+    const visitOpen = await nav.openVisit(visit.name);
     if (!visitOpen) {
       const where = await page.capture();
       log(
@@ -62,6 +77,15 @@ export async function runCoverageSweep(
       if (store.aborted) break;
       const form = visit.forms[fi]!;
 
+      // Make sure we are still looking at this visit. Reading a form back ends
+      // inside a designer, and the way out does not always land where it
+      // started, so each form re-establishes its own starting point.
+      if (!nav.onVisitDetail(await page.capture(), visit.name) && !(await nav.openVisit(visit.name))) {
+        rows.push(...missingForm(vi, fi, visit.name, form, 'the visit could not be reopened to look for this form'));
+        log(`Lost the way back to "${visit.name}" while reading it back.`, 'error');
+        continue;
+      }
+
       const snapshot = await page.capture();
       const formNode = findNamed(snapshot, form.name);
       if (!formNode) {
@@ -70,7 +94,7 @@ export async function runCoverageSweep(
         continue;
       }
 
-      const opened = await openDesigner(page, grounder, designer, form.name);
+      const opened = (await nav.openDesigner(form.name)).ok;
       if (!opened) {
         log(`Could not open the designer for "${form.name}" to read it back.`, 'warn');
         rows.push({
@@ -84,8 +108,7 @@ export async function runCoverageSweep(
       rows.push(await readFormRow(page, grounder, vi, fi, visit.name, form));
       rows.push(...(await readFieldRows(page, grounder, designer, vi, fi, visit.name, form)));
 
-      await leaveDesigner(page, grounder, designer, [visit.name]);
-      await openVisit(page, grounder, designer, visit.name);
+      await nav.leaveDesignerIfOpen([visit.name, ...ir.visits.map((v) => v.name)]);
     }
   }
 
@@ -97,116 +120,6 @@ export async function runCoverageSweep(
     missing.length ? 'warn' : 'info',
   );
   return rows;
-}
-
-// ── navigation ────────────────────────────────────────────────────────────────
-
-/**
- * Open a visit by name, from wherever we happen to be.
- *
- * Every step is judged by whether it achieved the goal rather than by whether
- * the page moved, and any control that did not is ruled out for the rest of the
- * attempt. Applications are full of controls that navigate somewhere — just not
- * where you asked.
- */
-async function openVisit(page: PageLike, grounder: Grounder, designer: Designer, name: string): Promise<boolean> {
-  const wrongTurns: string[] = [];
-
-  const onVisit = (snapshot: Snapshot): boolean => {
-    const ranked = grounder.rank(snapshot, { ...INTENTS.formCreate(), ignoreMemory: true })[0];
-    return Boolean(ranked && ranked.score >= 0.5);
-  };
-
-  /**
-   * Already looking at this visit?
-   *
-   * The screen's own heading is the evidence. A visit's detail screen names the
-   * visit and offers somewhere to add a document to it. Without this check the
-   * agent navigates away from the very screen it wanted in order to come back
-   * to it — and on a platform where that round trip does not land where it
-   * expects, it never arrives at all.
-   */
-  const alreadyHere = (snapshot: Snapshot): boolean =>
-    onVisit(snapshot) && snapshot.screenTitle.includes(name);
-
-  for (let attempt = 0; attempt < 8; attempt++) {
-    const snapshot = await page.capture();
-    if (alreadyHere(snapshot)) return true;
-
-
-    const row = snapshot.nodes.find((n) => n.role === 'row' && n.name.includes(name));
-    if (row) {
-      const observation = await page.click(row.ref);
-      if (onVisit(observation.after)) return true;
-      continue;
-    }
-
-    // Not on a screen listing this visit. Climb out: first out of any designer,
-    // then towards the schedule.
-    if ((await designer.paletteEntries(snapshot)).length) {
-      const leave = await grounder.ground(snapshot, {
-        ...INTENTS.leaveDesigner([name]),
-        excludeNames: wrongTurns,
-        ignoreMemory: wrongTurns.length > 0,
-      });
-      if (!leave.ok) return false;
-      const moved = await page.click(leave.ref);
-      if ((await designer.paletteEntries(moved.after)).length) {
-        wrongTurns.push(leave.node.name);
-        grounder.forget(INTENTS.leaveDesigner().id);
-      }
-      continue;
-    }
-
-    const back = await grounder.ground(snapshot, {
-      ...INTENTS.gotoVisitSchedule(),
-      excludeNames: wrongTurns,
-      ignoreMemory: wrongTurns.length > 0,
-    });
-    if (!back.ok) return false;
-
-    const moved = await page.click(back.ref);
-    const reached = moved.after.nodes.some((n) => n.role === 'row' && n.name.includes(name));
-    if (!reached) {
-      wrongTurns.push(back.node.name);
-      grounder.forget(INTENTS.gotoVisitSchedule().id);
-    }
-  }
-  return false;
-}
-
-async function openDesigner(page: PageLike, grounder: Grounder, designer: Designer, formName: string): Promise<boolean> {
-  const snapshot = await page.capture();
-  const rows = snapshot.nodes.filter((n) => n.role === 'row' && n.name.includes(formName));
-  const row = rows.sort((a, b) => a.name.length - b.name.length)[0] ?? findNamed(snapshot, formName);
-  const result = await grounder.ground(snapshot, {
-    ...INTENTS.formOpenDesigner(),
-    nearName: row?.name ?? formName,
-    ...(row?.box ? { withinBox: row.box } : {}),
-  });
-  if (!result.ok) return false;
-  await page.click(result.ref);
-  const entries = await designer.paletteEntries(await page.capture());
-  return entries.length > 0;
-}
-
-async function leaveDesigner(page: PageLike, grounder: Grounder, designer: Designer, context: string[] = []): Promise<void> {
-  const inert: string[] = [];
-  for (let attempt = 0; attempt < 4; attempt++) {
-    const snapshot = await page.capture();
-    if (!(await designer.paletteEntries(snapshot)).length) return;
-    const result = await grounder.ground(snapshot, {
-      ...INTENTS.leaveDesigner(context),
-      excludeNames: inert,
-      ignoreMemory: inert.length > 0,
-    });
-    if (!result.ok) return;
-    const observation = await page.click(result.ref);
-    if (observation.diff.magnitude === 0) {
-      inert.push(result.node.name);
-      grounder.forget(INTENTS.leaveDesigner().id);
-    }
-  }
 }
 
 // ── reading back ──────────────────────────────────────────────────────────────
@@ -273,12 +186,20 @@ async function readFieldRows(
     const observation = await page.click(node.ref);
     const editor = observation.after;
 
-    checkLabel(grounder, editor, field, row);
-    checkRequired(grounder, editor, field, row);
-    checkRange(grounder, editor, field, row);
-    checkFormula(grounder, editor, field, row);
-    checkOptions(grounder, editor, field, row);
-    checkSkipLogic(grounder, editor, field, row);
+    // Worked out once and shared: the label check needs to know which boxes
+    // belong to a coded value so it can ignore them, and the option check needs
+    // the same rows to read the pairs off.
+    // Every property is read from the property editor, never from the canvas
+    // preview of the field itself.
+    const scope = offCanvas(designer, editor, field.label);
+    const pairs = optionRows(grounder, editor, scope);
+
+    checkLabel(grounder, editor, field, row, pairs, scope);
+    checkRequired(grounder, editor, field, row, scope);
+    checkRange(grounder, editor, field, row, scope);
+    checkFormula(grounder, editor, field, row, scope);
+    checkOptions(grounder, editor, field, row, pairs, scope);
+    checkSkipLogic(grounder, editor, field, row, scope);
 
     rows.push(row);
   }
@@ -286,18 +207,45 @@ async function readFieldRows(
   return rows;
 }
 
-function checkLabel(grounder: Grounder, editor: Snapshot, field: IrField, row: CoverageRow): void {
-  const node = bestNode(grounder, editor, INTENTS.fieldLabel());
+function checkLabel(
+  grounder: Grounder,
+  editor: Snapshot,
+  field: IrField,
+  row: CoverageRow,
+  optionBands: OptionRow[],
+  scope: Scope,
+): void {
+  // A coded value's label box is label-ish too, and on a list-of-choices field
+  // there are several of them sitting right under the field's own. Anything on
+  // a coded-value row is therefore ruled out before ranking — otherwise the
+  // first option's label is read back as the field's name and every properly
+  // built select reports a wrong label.
+  const onOptionRow = (node: SnapshotNode): boolean => optionBands.some((r) => sameBand(r.code, node));
+  const ranked = grounder
+    .rank(editor, { ...INTENTS.fieldLabel(), ignoreMemory: true })
+    .filter((c) => c.score >= 0.5 && !onOptionRow(c.node));
+  const node = (ranked.find((c) => scope(c.node)) ?? ranked[0])?.node;
   if (!node) {
     row.notes.push('could not read the label back');
     return;
   }
   row.labelOk = (node.value ?? '') === field.label;
-  if (!row.labelOk) row.notes.push(`label reads "${node.value ?? ''}", specification says "${field.label}"`);
+  if (!row.labelOk) {
+    row.notes.push(`label reads "${node.value ?? ''}", specification says "${field.label}"`);
+    // Say what else was on the table. A read-back that disagrees with the build
+    // is either a real defect or a misread, and the only way to tell them apart
+    // later is to know which control was consulted.
+    const considered = grounder
+      .rank(editor, { ...INTENTS.fieldLabel(), ignoreMemory: true })
+      .slice(0, 3)
+      .map((c) => `"${c.node.name}"=${JSON.stringify(c.node.value ?? '')}@${c.score.toFixed(2)}${onOptionRow(c.node) ? ' [on a coded-value row]' : ''}`)
+      .join(', ');
+    row.notes.push(`label read from "${node.name}"; considered ${considered}`);
+  }
 }
 
-function checkRequired(grounder: Grounder, editor: Snapshot, field: IrField, row: CoverageRow): void {
-  const node = bestNode(grounder, editor, INTENTS.fieldRequired());
+function checkRequired(grounder: Grounder, editor: Snapshot, field: IrField, row: CoverageRow, scope: Scope): void {
+  const node = bestNode(grounder, editor, INTENTS.fieldRequired(), scope);
   if (!node || node.state.checked === undefined) {
     row.notes.push('could not read the required flag back');
     return;
@@ -313,14 +261,14 @@ function checkRequired(grounder: Grounder, editor: Snapshot, field: IrField, row
  * min/max when the type changes says nothing at the time, and the only way to
  * know is to come back and look.
  */
-function checkRange(grounder: Grounder, editor: Snapshot, field: IrField, row: CoverageRow): void {
+function checkRange(grounder: Grounder, editor: Snapshot, field: IrField, row: CoverageRow, scope: Scope): void {
   if (!SIGNATURES[field.type].hasRange) return;
   const wantsRange = field.min !== undefined || field.max !== undefined || field.units !== undefined;
   if (!wantsRange) return;
 
-  const min = bestNode(grounder, editor, INTENTS.fieldMin());
-  const max = bestNode(grounder, editor, INTENTS.fieldMax());
-  const units = bestNode(grounder, editor, INTENTS.fieldUnits());
+  const min = bestNode(grounder, editor, INTENTS.fieldMin(), scope);
+  const max = bestNode(grounder, editor, INTENTS.fieldMax(), scope);
+  const units = bestNode(grounder, editor, INTENTS.fieldUnits(), scope);
 
   const problems: string[] = [];
   if (field.min !== undefined) {
@@ -340,9 +288,9 @@ function checkRange(grounder: Grounder, editor: Snapshot, field: IrField, row: C
   row.notes.push(...problems);
 }
 
-function checkFormula(grounder: Grounder, editor: Snapshot, field: IrField, row: CoverageRow): void {
+function checkFormula(grounder: Grounder, editor: Snapshot, field: IrField, row: CoverageRow, scope: Scope): void {
   if (!field.formula) return;
-  const node = bestNode(grounder, editor, INTENTS.fieldFormula());
+  const node = bestNode(grounder, editor, INTENTS.fieldFormula(), scope);
   const actual = node?.value ?? '';
   row.formulaOk = actual.replace(/\s+/g, '') === field.formula.replace(/\s+/g, '');
   if (!row.formulaOk) row.notes.push(`formula reads "${actual}", expected "${field.formula}"`);
@@ -355,20 +303,43 @@ function checkFormula(grounder: Grounder, editor: Snapshot, field: IrField, row:
  * stores nothing useful, and a bulk paste that replaced rather than appended
  * looks complete too. So codes and labels are read separately and matched.
  */
-function checkOptions(grounder: Grounder, editor: Snapshot, field: IrField, row: CoverageRow): void {
+function checkOptions(
+  grounder: Grounder,
+  editor: Snapshot,
+  field: IrField,
+  row: CoverageRow,
+  pairs: OptionRow[],
+  scope: Scope,
+): void {
   const expected = field.options ?? [];
   if (!expected.length) return;
 
-  const codes = allNodes(grounder, editor, INTENTS.optionCode()).map((n) => n.value ?? '');
-  const labels = allNodes(grounder, editor, INTENTS.optionLabel()).map((n) => n.value ?? '');
+  let codes: string[];
+  let labels: string[];
 
-  if (!codes.length && !labels.length) {
-    row.notes.push('could not read the coded value list back');
-    return;
+  if (pairs.length) {
+    codes = pairs.map((p) => p.code.value ?? '');
+    labels = pairs.map((p) => p.label?.value ?? '');
+  } else {
+    // No box on this platform reads as a "code". Fall back to label-only
+    // ranking, which is the best that can be done, and say so — an unpaired
+    // read cannot prove the codes are right, and claiming otherwise would be
+    // exactly the false confidence this sweep exists to prevent.
+    const fieldLabelBox = bestNode(grounder, editor, INTENTS.fieldLabel(), scope);
+    labels = allNodes(grounder, editor, INTENTS.optionLabel(), scope)
+      .filter((n) => n.ref !== fieldLabelBox?.ref)
+      .map((n) => n.value ?? '');
+    codes = [];
+    if (!labels.length) {
+      row.notes.push('could not read the coded value list back');
+      return;
+    }
+    row.notes.push('no control on this platform identifies a coded value’s CODE; only the labels could be read back');
   }
 
   const problems: string[] = [];
-  if (codes.length !== expected.length) problems.push(`${codes.length} coded value(s) present, expected ${expected.length}`);
+  const present = pairs.length ? codes.length : labels.length;
+  if (present !== expected.length) problems.push(`${present} coded value(s) present, expected ${expected.length}`);
 
   expected.forEach((option, i) => {
     if (codes[i] !== undefined && codes[i] !== option.code) problems.push(`value ${i + 1} code reads "${codes[i]}", expected "${option.code}"`);
@@ -379,10 +350,10 @@ function checkOptions(grounder: Grounder, editor: Snapshot, field: IrField, row:
   row.notes.push(...problems.slice(0, 4));
 }
 
-function checkSkipLogic(grounder: Grounder, editor: Snapshot, field: IrField, row: CoverageRow): void {
+function checkSkipLogic(grounder: Grounder, editor: Snapshot, field: IrField, row: CoverageRow, scope: Scope): void {
   if (!field.skip_logic) return;
-  const when = bestNode(grounder, editor, INTENTS.visibilityWhenField());
-  const value = bestNode(grounder, editor, INTENTS.visibilityValue());
+  const when = bestNode(grounder, editor, INTENTS.visibilityWhenField(), scope);
+  const value = bestNode(grounder, editor, INTENTS.visibilityValue(), scope);
 
   const actualWhen = when?.value ?? '';
   const actualValue = value?.value ?? '';
@@ -396,16 +367,128 @@ function checkSkipLogic(grounder: Grounder, editor: Snapshot, field: IrField, ro
 
 // ── helpers ───────────────────────────────────────────────────────────────────
 
-function bestNode(grounder: Grounder, snapshot: Snapshot, intent: Parameters<Grounder['rank']>[1]): SnapshotNode | undefined {
-  const ranked = grounder.rank(snapshot, { ...intent, ignoreMemory: true });
-  const top = ranked[0];
-  return top && top.score >= 0.5 ? top.node : undefined;
+/**
+ * Everything except the designer canvas.
+ *
+ * The canvas is full of inert PREVIEW inputs, and a preview is named after the
+ * field it previews — so a form containing a field called "Medication Name"
+ * puts an empty textbox called "Medication Name" on screen, which reads as an
+ * excellent candidate for "the box holding this field's label" and is nothing
+ * of the sort. Reading a property off it reports an empty label on a field that
+ * was built correctly.
+ *
+ * The canvas is located positively rather than guessed at: it is whichever
+ * region holds the preview of the field currently being read back. Both the
+ * canvas and the property editor look like editors — clusters of labelled
+ * inputs — so no amount of shape analysis separates them, but the field's own
+ * preview can only be on one of them.
+ *
+ * If that leaves nothing to read (a platform that edits properties inline on
+ * the canvas), the caller falls back to the unscoped snapshot: a slightly
+ * suspect read beats no read, and recall matters more than precision here.
+ */
+function offCanvas(designer: Designer, editor: Snapshot, label: string): (node: SnapshotNode) => boolean {
+  const preview = designer.fieldOnCanvas(editor, label);
+  if (!preview) return () => true;
+  return (node: SnapshotNode) => node.region !== preview.region;
 }
 
-function allNodes(grounder: Grounder, snapshot: Snapshot, intent: Parameters<Grounder['rank']>[1]): SnapshotNode[] {
+/** One coded value as it is rendered in the property editor: a code, and its label. */
+interface OptionRow {
+  code: SnapshotNode;
+  label?: SnapshotNode;
+}
+
+/** Do two controls sit on the same visual row? */
+function sameBand(a: SnapshotNode, b: SnapshotNode): boolean {
+  if (!a.box || !b.box) return false;
+  const overlap = Math.min(a.box.y + a.box.h, b.box.y + b.box.h) - Math.max(a.box.y, b.box.y);
+  return overlap > Math.min(a.box.h, b.box.h) / 2;
+}
+
+/**
+ * The coded-value rows in the property editor, as pairs.
+ *
+ * Anchored on the CODE boxes and paired by geometry, because that is the only
+ * structure a coded value is guaranteed to have on a platform nobody has seen:
+ * it is a pair, and a pair is rendered together on a row. Ranking label-ish
+ * boxes on their own cannot work — a field's own label box is label-ish too and
+ * sits directly above the list, so a purely lexical read picks it up as the
+ * first coded value and reports every option shifted down by one. That is a
+ * defect in the READING, and it made a correctly built list of choices look
+ * wrong on 42 fields.
+ *
+ * "code" is the safer anchor of the two: it is a word with one meaning in a
+ * form designer, whereas "label" is the most overloaded word on the screen.
+ */
+function optionRows(grounder: Grounder, editor: Snapshot, scope: Scope = ANYWHERE): OptionRow[] {
+  // A bulk-entry box is not a coded value, however much it sounds like one.
+  // "Paste Values", "Import values", "Multiple values" all read as strongly
+  // code-ish, and one of them sitting under the list is enough to report every
+  // correctly built list as having one value too many. The agent already has a
+  // canonical intent for that control, so it is ruled out by meaning.
+  const bulk = new Set(
+    grounder
+      .rank(editor, { ...INTENTS.optionBulkInput(), ignoreMemory: true })
+      .filter((c) => c.score >= 0.5)
+      .map((c) => c.node.ref),
+  );
+
+  const codes = allNodes(grounder, editor, INTENTS.optionCode(), scope).filter((n) => n.box && !bulk.has(n.ref));
+  if (!codes.length) return [];
+
+  const codeRefs = new Set(codes.map((n) => n.ref));
+  const candidates = allNodes(grounder, editor, INTENTS.optionLabel(), scope).filter(
+    (n) => n.box && !codeRefs.has(n.ref) && !bulk.has(n.ref),
+  );
+
+  const taken = new Set<number>();
+  const paired = codes.map((code) => {
+    const label = candidates
+      .filter((n) => !taken.has(n.ref) && sameBand(code, n))
+      // Nearest along the row. A pair is adjacent; anything further away on the
+      // same band belongs to something else.
+      .sort((a, b) => Math.abs((a.box!.x ?? 0) - code.box!.x) - Math.abs((b.box!.x ?? 0) - code.box!.x))[0];
+    if (label) taken.add(label.ref);
+    return label ? { code, label } : { code };
+  });
+
+  // A coded value is a PAIR. A code-ish box standing alone on its row, with no
+  // label beside it, is some other control that happens to share the
+  // vocabulary. Requiring the pair is the structural backstop to the semantic
+  // exclusion above, and it costs nothing when the platform is well behaved:
+  // if a platform genuinely stacks code above label instead of beside it,
+  // nothing pairs, and the caller falls back to a labels-only read that says
+  // openly it could not confirm the codes.
+  const complete = paired.filter((r): r is Required<OptionRow> => Boolean(r.label));
+  return complete.length ? complete : [];
+}
+
+type Scope = (node: SnapshotNode) => boolean;
+
+const ANYWHERE: Scope = () => true;
+
+function bestNode(
+  grounder: Grounder,
+  snapshot: Snapshot,
+  intent: Parameters<Grounder['rank']>[1],
+  scope: Scope = ANYWHERE,
+): SnapshotNode | undefined {
+  const ranked = grounder.rank(snapshot, { ...intent, ignoreMemory: true }).filter((c) => c.score >= 0.5);
+  // Prefer a candidate inside the scope; fall back to the best one anywhere
+  // rather than reporting "could not read it back" when something was found.
+  return (ranked.find((c) => scope(c.node)) ?? ranked[0])?.node;
+}
+
+function allNodes(
+  grounder: Grounder,
+  snapshot: Snapshot,
+  intent: Parameters<Grounder['rank']>[1],
+  scope: Scope = ANYWHERE,
+): SnapshotNode[] {
   return grounder
     .rank(snapshot, { ...intent, ignoreMemory: true })
-    .filter((c) => c.score >= 0.45)
+    .filter((c) => c.score >= 0.45 && scope(c.node))
     .map((c) => c.node)
     // Preserve on-screen order, which is the order the values were entered in.
     .sort((a, b) => (a.box?.y ?? 0) - (b.box?.y ?? 0) || (a.box?.x ?? 0) - (b.box?.x ?? 0));

@@ -16,3 +16,6 @@ takehome-1a/
 Thumbs.db
 .env
 .env.local
+
+# End-to-end run reports and state dumps: evidence for one run, not source.
+tests/results/
