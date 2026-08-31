@@ -97,18 +97,54 @@ export async function runCoverageSweep(
       const opened = (await nav.openDesigner(form.name)).ok;
       if (!opened) {
         log(`Could not open the designer for "${form.name}" to read it back.`, 'warn');
+        // The form is there — it was found under the visit a moment ago — but
+        // its fields were never looked at. They are reported as unverified,
+        // one row each, because dropping them instead would take them out of
+        // the denominator as well as the numerator and turn a form nobody
+        // could read into a perfect score.
         rows.push({
           ...blankRow(irPointer.form(vi, fi), visit.name, form.name),
           present: true,
           notes: ['the form exists but its designer could not be opened to read the fields back'],
         });
+        form.fields.forEach((field, xi) => {
+          rows.push({
+            ...blankRow(irPointer.field(vi, fi, xi), visit.name, form.name),
+            field: field.label,
+            present: false,
+            notes: ['not read back: the form exists but its designer could not be opened'],
+          });
+        });
         continue;
       }
 
       rows.push(await readFormRow(page, grounder, vi, fi, visit.name, form));
-      rows.push(...(await readFieldRows(page, grounder, designer, vi, fi, visit.name, form)));
+      rows.push(...(await readFieldRows(page, grounder, designer, store, vi, fi, visit.name, form)));
 
       await nav.leaveDesignerIfOpen([visit.name, ...ir.visits.map((v) => v.name)]);
+    }
+  }
+
+  // Whatever happened above — a visit that would not open, a designer that
+  // would not open, the run being stopped part way — every field in the
+  // specification gets a row. A sweep that reports on what it managed to look
+  // at, rather than on what it was asked to check, answers "did everything I
+  // saw look right" while sounding like it answered "is the study complete".
+  const reported = new Set(rows.map((r) => r.pointer));
+  for (let vi = 0; vi < ir.visits.length; vi++) {
+    const visit = ir.visits[vi]!;
+    for (let fi = 0; fi < visit.forms.length; fi++) {
+      const form = visit.forms[fi]!;
+      form.fields.forEach((field, xi) => {
+        const pointer = irPointer.field(vi, fi, xi);
+        if (reported.has(pointer)) return;
+        rows.push({
+          ...blankRow(pointer, visit.name, form.name),
+          field: field.label,
+          present: false,
+          notes: [store.aborted ? 'not read back: the run was stopped' : 'not read back: the sweep never reached it'],
+        });
+      });
     }
   }
 
@@ -152,6 +188,7 @@ async function readFieldRows(
   page: PageLike,
   grounder: Grounder,
   designer: Designer,
+  store: Store,
   vi: number,
   fi: number,
   visitName: string,
@@ -194,6 +231,7 @@ async function readFieldRows(
     const scope = offCanvas(designer, editor, field.label);
     const pairs = designer.optionRows(editor, scope);
 
+    checkType(grounder, store, editor, field, row, scope);
     checkLabel(grounder, designer, editor, field, row, scope);
     checkRequired(grounder, editor, field, row, scope);
     checkRange(grounder, editor, field, row, scope);
@@ -205,6 +243,69 @@ async function readFieldRows(
   }
 
   return rows;
+}
+
+/**
+ * The field's type — the property that was never actually checked.
+ *
+ * `CoverageRow` has carried a `typeOk` column since the beginning and nothing
+ * ever wrote to it, so a study whose dates were all built as free text read
+ * back as fully verified: every label matched, every required flag matched,
+ * and the one property that decides what the field can hold was not consulted.
+ *
+ * It is checked without knowing anything about this platform. The specification
+ * says a canonical type; the profile records which of THIS designer's library
+ * entries was found to realise that type, by probing, earlier in the run. The
+ * type control in the property editor should now be reading that entry back.
+ * Where the profile learned nothing, the answer is "not checked" rather than a
+ * guess — an unknown reported as a pass is the failure this whole sweep exists
+ * to prevent.
+ */
+function checkType(
+  grounder: Grounder,
+  store: Store,
+  editor: Snapshot,
+  field: IrField,
+  row: CoverageRow,
+  scope: Scope,
+): void {
+  const mapping = store.profile?.typeMap[field.type];
+  if (!mapping) {
+    row.notes.push(`type not checked: nothing was learned about how this platform spells ${field.type}`);
+    return;
+  }
+
+  const node = bestNode(grounder, editor, INTENTS.fieldType(), scope);
+  const actual = (node?.value ?? '').trim();
+  if (!node || !actual) {
+    row.notes.push('could not read the field type back');
+    return;
+  }
+
+  if (actual.toLowerCase() !== mapping.libraryName.toLowerCase()) {
+    row.typeOk = false;
+    row.notes.push(`type reads "${actual}", specification says ${field.type}, built here as "${mapping.libraryName}"`);
+    return;
+  }
+
+  // The field is what the run meant it to be. Whether what the run meant was
+  // RIGHT is a different question, and only probing answers it: a mapping that
+  // was assumed makes this check circular — it confirms the agent did what it
+  // decided to do, which it would also report for a study built entirely out of
+  // the wrong element. So a match against an unproven mapping is reported as
+  // not verified, with the reason, rather than as a pass.
+  if (mapping.source === 'assumed') {
+    row.notes.push(
+      `type reads "${actual}", but nothing established that this platform's "${actual}" really is ` +
+        `${field.type} — the mapping was assumed rather than probed, so the type is not verified`,
+    );
+    return;
+  }
+
+  row.typeOk = true;
+  if (mapping.conflicts?.length) {
+    row.notes.push(`type reads "${actual}"; probing it also noted: ${mapping.conflicts.slice(0, 2).join('; ')}`);
+  }
 }
 
 function checkLabel(
