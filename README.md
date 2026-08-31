@@ -47,6 +47,23 @@ pretend otherwise — it reports them as open questions.
 
 ---
 
+## Contents
+
+- [Install and run](#install-and-run)
+- [Architecture](#architecture) — how the agent perceives, decides, acts and confirms
+- [Mapping canonical types onto an unknown element library](#mapping-canonical-types-onto-an-unknown-element-library)
+- [The human gate](#the-human-gate) — what is escalated, and what the reviewer sees
+- [Portability](#portability) — how it generalises, and the evidence for it
+- [Verification](#verification)
+- [Failure modes](#failure-modes)
+- [Performance](#performance)
+- [Roadmap](#roadmap)
+- [Development](#development)
+- [Assumptions](#assumptions)
+- [Commands](#commands)
+
+---
+
 ## Install and run
 
 **Prerequisites:** Node 18+ (20+ recommended) and Chrome 116+.
@@ -88,7 +105,7 @@ to model a reviewer clearing the queue.
 
 ---
 
-## How it works
+## Architecture
 
 ```
 src/
@@ -373,7 +390,7 @@ Being specific about this is more useful than a claim of generality:
 
 ## Verification
 
-Two independent checks, which agree.
+Three independent checks, which agree.
 
 **1. The agent's own read-back.** The reconciliation sweep re-opens all 28
 documents and selects all 195 fields through the UI, reading each property from
@@ -388,7 +405,7 @@ Mock A:  visits 4/4   forms 28/28   fields 195/195   property checks 655/655 (10
 Mock B:  visits 4/4   forms 28/28   fields 195/195   property checks 655/655 (100.0%)
 ```
 
-The two agreeing exactly is the useful part. They disagreed at one point — the
+The first two agreeing exactly is the useful part. They disagreed at one point — the
 sweep reported 0/188 on a study the diff scored 195/195 — and the disagreement
 was entirely in the *reading*: duplicated navigation logic that had drifted,
 coded values read one row out because a field's own label box outranks them
@@ -397,11 +414,11 @@ because a canvas preview is named after the field it previews. All three were
 false negatives, and all three are fixed. An honest self-report that cries wolf
 is not much better than one that does not report at all.
 
-Spot-checked by hand in each platform's UI: coded-value lists carry both codes
-and labels in order; `Body Mass Index` carries its formula; `Height` carries min
-100, max 250, unit `cm`; the repeating flag is set on `Adverse Events` and
-`Concomitant Medications`; and all thirteen display rules name the right
-controlling field and value.
+**3. By-hand spot checks**, clicking through each platform's own UI. Coded-value
+lists carry both codes and labels, in order; `Body Mass Index` carries its
+formula; `Height` carries min 100, max 250, unit `cm`; the repeating flag is set
+on `Adverse Events` and `Concomitant Medications`; and all thirteen display rules
+name the right controlling field and value.
 
 ---
 
@@ -484,6 +501,51 @@ mean racing it.
 7. **Escalation batching by shape.** The panel batches identical questions
    today. It should cluster *similar* ones — every range check the platform
    rejected, together, with one decision.
+
+---
+
+## Development
+
+### Built with AI assistance
+
+**Claude Code (Opus)** wrote effectively all of this repository — the agent,
+both mocks, the test harnesses and this document — over one long session, driven
+conversationally against a running platform rather than by writing code and
+hoping.
+
+**Where it helped.** The loop this problem rewards is *run the agent → read the
+failure → form a hypothesis → instrument → fix*, and it is very fast at it.
+Nearly every fix listed under [Portability](#portability) was found by adding one
+diagnostic log line, running, reading the output, and deleting the line. It also
+made it cheap to build a second platform deliberately hostile to the first's
+assumptions — 2,100 lines that exist only to attack the other 8,400 — which is
+exactly the kind of work that gets skipped under time pressure and is where most
+of the value here came from.
+
+**Where it got in the way.** Three things, all worth knowing about:
+
+- **It is fluent enough to be wrong convincingly.** The first three explanations
+  for the reconciliation sweep reporting `0/188` were plausible, well-argued and
+  wrong. What settled it was refusing to change anything until a log line said
+  what the agent had actually looked at. Every real fix here came from an
+  observation, not an argument.
+- **It writes the naive version confidently.** Mock B's first renderer rebuilt
+  the DOM on every keystroke — which no framework does, and which made the mock
+  unfairly hostile rather than merely unfamiliar. It took a run, and a careful
+  look at how the other mock avoided the same trap, to notice.
+- **It generalises from one example unless stopped.** The steady pull was toward
+  "make Mock B pass", which is how a hardcoded selector arrives one refactor at a
+  time. `npm run lint:portability` exists partly as a guard against its own
+  author.
+
+### Runtime model use
+
+**Gemini 2.5 Flash** is wired in as an *optional* tie-breaker for unfamiliar
+vocabulary — ranking grounding candidates and library entries when names alone
+are ambiguous. It is never the driver: a full build makes 4–8 model calls, and
+completes with none. Its free-tier quota was exhausted throughout development,
+which turned out to be useful, since **every number in this document is a
+no-model result**.
 
 ---
 
