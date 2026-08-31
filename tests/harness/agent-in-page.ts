@@ -32,6 +32,7 @@ import { renderSnapshot } from '../../src/shared/snapshot';
 import { irStats, validateIr } from '../../src/shared/ir';
 import { Builder, type Gate } from '../../src/background/builder';
 import { Designer } from '../../src/background/designer';
+import { FieldDiagnostician } from '../../src/background/diagnose';
 import { Gemini } from '../../src/background/gemini';
 import { Grounder } from '../../src/background/grounder';
 import { TypeMapper } from '../../src/background/typemap';
@@ -296,7 +297,7 @@ async function run(irText: string, options: RunOptions = {}): Promise<RunReport>
     const designer = new Designer(page, grounder, store, log);
     const typeMapper = new TypeMapper(designer, store, llm, log);
     const gate = makeGate(options.policy ?? 'accept-best', questions, options.answers ?? {});
-    const builder = new Builder(page, grounder, designer, typeMapper, store, gate, log);
+    const builder = new Builder(page, grounder, designer, typeMapper, store, gate, new FieldDiagnostician(llm, log), log);
 
     await builder.run();
     if (!options.skipSweep) {

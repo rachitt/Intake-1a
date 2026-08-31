@@ -28,9 +28,24 @@
 import { Discloser } from './disclose';
 import { INTENTS } from './intents';
 import { Navigator } from './navigate';
+import {
+  assessAppearance,
+  assessDisplacement,
+  assessLabelOnCanvas,
+  assessSelection,
+  assessType,
+  confirmLabelBeforeCommit,
+  describeCause,
+  emptyFieldEvidence,
+  mergeReadBackEvidence,
+  remedyForCause,
+  retryIsWorthwhile,
+  retryShouldRemoveElement,
+} from './diagnose';
 import { SIGNATURES } from '../shared/types';
 import { formFingerprint, irPointer, type CanonicalType, type IrField, type IrForm, type IrStudy, type IrVisit } from '../shared/ir';
 import type { Designer } from './designer';
+import type { CanvasReading, Diagnosis, FieldAttemptEvidence, FieldDiagnostician, FieldFailureCause } from './diagnose';
 import type { Grounded, Grounder, Intent } from './grounder';
 import type { PageLike } from './page';
 import type { Store } from './store';
@@ -46,6 +61,17 @@ export interface Gate {
 }
 
 type Log = (message: string, level?: 'info' | 'warn' | 'error') => void;
+
+/** What one attempt at one field produced, evidence and all. */
+interface FieldAttempt {
+  ok: boolean;
+  evidence: FieldAttemptEvidence;
+  /** How the screen read before the attempt, and after it. */
+  before: CanvasReading;
+  after: CanvasReading;
+  /** Canvas entries that were not there before this attempt. */
+  appeared: string[];
+}
 
 export class Builder {
   private commitProven = false;
@@ -66,6 +92,7 @@ export class Builder {
     private typeMapper: TypeMapper,
     private store: Store,
     private gate: Gate,
+    private diagnostician: FieldDiagnostician,
     private log: Log,
   ) {
     this.nav = new Navigator(
@@ -128,6 +155,34 @@ export class Builder {
     };
     walk(this.store.state.progress);
     this.store.notify();
+  }
+
+  /** The status currently recorded against a pointer, if any. */
+  private statusOf(pointer: string): TaskStatus | undefined {
+    const walk = (nodes: ProgressNode[]): TaskStatus | undefined => {
+      for (const node of nodes) {
+        if (node.pointer === pointer) return node.status;
+        if (node.children) {
+          const found = walk(node.children);
+          if (found) return found;
+        }
+      }
+      return undefined;
+    };
+    return walk(this.store.state.progress);
+  }
+
+  /**
+   * Record an outcome without overwriting a more informative one.
+   *
+   * A field left with a person, or skipped for want of a type mapping, has
+   * already been described more precisely than "failed"; flattening that on the
+   * way out of the loop loses the reason a reviewer needs.
+   */
+  private settle(pointer: string, status: TaskStatus): void {
+    const current = this.statusOf(pointer);
+    if (status === 'failed' && (current === 'escalated' || current === 'skipped')) return;
+    this.mark(pointer, status);
   }
 
   private audit(pointer: string, intent: string, extra: Partial<Parameters<Store['log']>[0]> = {}): void {
@@ -324,6 +379,11 @@ export class Builder {
       return;
     }
 
+    // What the canvas held on the way into the save. Without it, a field that
+    // is missing afterwards cannot be told apart from one that was never
+    // there — and those need opposite repairs.
+    await this.noteCanvasBeforeCommit(form, vi, fi);
+
     const committed = await this.commit(pointer, form);
     const verified = await this.verifyForm(visit, form, vi, fi, pointer);
 
@@ -476,7 +536,25 @@ export class Builder {
 
   // ── fields ──────────────────────────────────────────────────────────────────
 
+  /**
+   * The fields already standing in the form currently open, in build order.
+   *
+   * Kept because most of what can go wrong with a field is only visible
+   * RELATIVE to its neighbours: a name that lands in the wrong editor is
+   * invisible on its own and obvious the moment you notice the field built a
+   * moment ago has stopped showing its own.
+   */
+  private builtInForm: { label: string; pointer: string }[] = [];
+
+  /** The last attempt at each field, so verification can build on what it saw. */
+  private fieldEvidence = new Map<string, FieldAttemptEvidence>();
+
+  /** What the canvas held immediately before the form was committed. */
+  private beforeCommit: { reading: CanvasReading; visible: string[] } | null = null;
+
   private async buildFields(form: IrForm, vi: number, fi: number, formPointer: string): Promise<void> {
+    this.builtInForm = [];
+
     for (let xi = 0; xi < form.fields.length; xi++) {
       if (this.store.aborted) break;
       const field = form.fields[xi]!;
@@ -486,26 +564,42 @@ export class Builder {
       const snapshot = await this.page.capture();
       if (this.fieldOnCanvas(snapshot, field.label)) {
         this.mark(pointer, 'built', 'already present');
+        this.builtInForm.push({ label: field.label, pointer });
         continue;
       }
 
-      const built = await this.buildField(field, pointer);
-      this.mark(pointer, built ? 'built' : 'failed');
-      if (built) this.store.state.counters.fieldsBuilt++;
-      else this.store.state.counters.failed++;
+      const built = await this.buildFieldWithRetry(field, pointer);
+      this.settle(pointer, built ? 'built' : 'failed');
+      if (built) {
+        this.store.state.counters.fieldsBuilt++;
+        this.builtInForm.push({ label: field.label, pointer });
+      } else {
+        this.store.state.counters.failed++;
+      }
       this.store.notify();
     }
     void formPointer;
   }
 
   /**
-   * Build one field.
+   * Build one field — and when it does not work, find out WHY before trying
+   * again.
    *
-   * The order of the steps is the whole point — see the note at the top of this
-   * file. Type first, because it is destructive; then the label, because an
-   * unnamed field is worthless; then everything the type is allowed to carry.
+   * "It failed, try it again" is not a repair strategy, it is a coin toss: a
+   * second identical attempt fixes a transient and does nothing at all for the
+   * five ways this actually fails, one of which (a name landing in the previous
+   * field's editor) is made strictly worse by repeating it. So every attempt
+   * collects evidence, a failed attempt is classified from that evidence, and
+   * what happens next follows from the classification — including doing
+   * nothing, where the field is in fact fine and only the reading of it is
+   * broken.
+   *
+   * Two attempts, never a loop. If the same cause comes back a second time the
+   * attempt is not what is wrong, and the only useful thing left to spend is a
+   * person's attention — spent on a question that says what went wrong rather
+   * than that something did.
    */
-  private async buildField(field: IrField, pointer: string): Promise<boolean> {
+  private async buildFieldWithRetry(field: IrField, pointer: string, maxAttempts = 2): Promise<boolean> {
     const libraryName = this.libraryNameFor(field.type);
     if (!libraryName) {
       this.mark(pointer, 'skipped', `no mapping for ${field.type}`);
@@ -517,24 +611,144 @@ export class Builder {
       return false;
     }
 
-    const added = await this.designer.addElement(libraryName);
-    if (!added.ok) {
-      this.audit(pointer, `add a ${field.type} field using "${libraryName}"`, {
-        level: 'error',
-        observed: added.detail,
-        verification: 'fail',
+    let previous: Diagnosis | null = null;
+
+    for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+      if (this.store.aborted) return false;
+
+      const outcome = await this.attemptField(field, pointer, libraryName, attempt);
+      this.fieldEvidence.set(pointer, outcome.evidence);
+
+      if (outcome.ok) {
+        this.audit(pointer, `build "${field.label}" as ${field.type}`, {
+          chose: { role: 'listitem', name: libraryName },
+          rationale: `"${libraryName}" was established as this platform's ${field.type} by probing its behaviour`,
+          confidence: this.profile.typeMap[field.type]?.confidence,
+          observed: describeAttempt(outcome.evidence),
+          verification: 'pass',
+        });
+        if (attempt > 1) {
+          this.store.state.counters.repaired++;
+          this.log(`"${field.label}" went in on attempt ${attempt}.`);
+        }
+        return true;
+      }
+
+      const diagnosis = await this.diagnostician.diagnose(outcome.evidence, {
+        before: outcome.before,
+        after: outcome.after,
+        spec: specOf(field),
       });
-      return false;
+      this.recordDiagnosis(pointer, field, diagnosis, attempt);
+      this.reportCollateralDamage(outcome.evidence);
+
+      const repeated = previous?.cause === diagnosis.cause;
+      const outOfAttempts = attempt >= maxAttempts;
+      if (outOfAttempts || repeated || !retryIsWorthwhile(diagnosis.cause)) {
+        return this.escalateFieldFailure(pointer, field, diagnosis, attempt, repeated);
+      }
+
+      // Never retry over the top of a half-built element: that turns one
+      // missing field into two broken ones.
+      if (retryShouldRemoveElement(diagnosis.cause)) await this.removeStray(field, outcome.evidence);
+      previous = diagnosis;
+    }
+    return false;
+  }
+
+  /**
+   * One attempt at one field, checked at every step rather than at the end.
+   *
+   * The order of the steps is the whole point — see the note at the top of this
+   * file. Type first, because it is destructive; then the label, because an
+   * unnamed field is worthless; then everything the type is allowed to carry.
+   *
+   * What is new here is that each step is CONFIRMED before the next one runs,
+   * and the confirmations are recorded whether they pass or fail. That matters
+   * most between creating an element and naming it: if the property editor is
+   * still attached to the previous field, writing the name is not a failure
+   * that can be retried, it is damage to a field that was already correct. So
+   * the selection is settled first, and the attempt is abandoned rather than
+   * risking the write.
+   */
+  private async attemptField(
+    field: IrField,
+    pointer: string,
+    libraryName: string,
+    attempt: number,
+  ): Promise<FieldAttempt> {
+    const evidence = emptyFieldEvidence(field.label, field.type, libraryName, attempt);
+    const peers = this.builtInForm.map((p) => p.label);
+
+    const before = await this.page.capture();
+    evidence.canvasBefore = this.designer.canvasEntries(before);
+    const beforeReading = this.designer.readCanvas(before);
+    const peersVisibleBefore = this.designer.visibleLabels(before, peers);
+    evidence.peerLabelsExpected = peers.length;
+
+    // ── did an element appear at all? ─────────────────────────────────────────
+    const added = await this.designer.addElement(libraryName);
+    let snapshot = await this.page.capture();
+    evidence.canvasAfterAdd = this.designer.canvasEntries(snapshot);
+    const appeared = evidence.canvasAfterAdd.filter((n) => !evidence.canvasBefore.includes(n));
+    evidence.elementAppeared = assessAppearance({ addedReportedOk: added.ok, appeared });
+    if (!added.ok) evidence.notes.push(added.detail);
+    if (appeared.length) evidence.notes.push(`the canvas gained: ${appeared.join(', ')}`);
+    if (!evidence.elementAppeared) return this.attemptFailed(evidence, beforeReading, snapshot, appeared);
+
+    // ── is the editor on the element that just appeared? ──────────────────────
+    snapshot = await this.confirmSelection(snapshot, appeared, peers, evidence);
+    if (evidence.labelEditorOnSelection === false) {
+      return this.attemptFailed(evidence, beforeReading, snapshot, appeared);
     }
 
-    // Naming is a separate act from creating, and skipping it produces a field
-    // that is structurally present and semantically empty.
+    // ── did the name go in, and go in HERE? ───────────────────────────────────
     const labelled = await this.designer.setText(INTENTS.fieldLabel(), field.label);
-    if (!labelled.ok) {
-      this.audit(pointer, `name the field "${field.label}"`, { level: 'error', observed: labelled.detail, verification: 'fail' });
-      return false;
+    evidence.labelWriteAccepted = labelled.ok;
+    if (!labelled.ok) evidence.notes.push(labelled.detail);
+
+    snapshot = await this.page.capture();
+    const peersVisibleAfter = this.designer.visibleLabels(snapshot, peers);
+    const labelVisibleNow = this.designer.fieldPresentOnCanvas(snapshot, field.label);
+    evidence.peerLabelsVisible = peersVisibleAfter.length;
+    evidence.labelDisplacedFrom = assessDisplacement({
+      peersVisibleBefore,
+      peersVisibleAfter,
+      labelVisibleAfter: labelVisibleNow,
+    });
+
+    // Confirm the name reached the canvas — but a negative here is NOT a
+    // failure. A designer that only paints a label onto a preview once the
+    // selection moves on shows nothing for the field just named, which is
+    // every field at the moment it is checked. So this can only confirm; the
+    // authoritative check is deferred to just before the form is saved.
+    const onCanvasNow = assessLabelOnCanvas({
+      labelVisible: labelVisibleNow,
+      peersVisibleBefore,
+    });
+    evidence.addedElementShowsLabel = onCanvasNow === true ? true : null;
+    evidence.notes.push(
+      onCanvasNow === false
+        ? 'the canvas had not taken the new name up yet; it is checked again before the form is saved'
+        : onCanvasNow === null
+          ? 'no field on this canvas is showing its label, so the name could not be confirmed there'
+          : 'the canvas shows the expected label',
+    );
+
+    if (!labelled.ok || evidence.labelDisplacedFrom) {
+      return this.attemptFailed(evidence, beforeReading, snapshot, appeared);
     }
 
+    // ── is it the kind of field that was asked for? ───────────────────────────
+    //
+    // Read, never written. Changing a type after the fact discards whatever the
+    // new type cannot hold, so a mismatch is a reason to rebuild the field from
+    // the right palette entry, not to correct it in place.
+    evidence.displayedType = this.designer.displayedType(snapshot);
+    evidence.typeMatches = await this.typeAsExpected(snapshot, evidence.displayedType, libraryName);
+    if (evidence.typeMatches === false) return this.attemptFailed(evidence, beforeReading, snapshot, appeared);
+
+    // ── everything the type is allowed to carry ───────────────────────────────
     if (field.required) await this.designer.setToggle(INTENTS.fieldRequired(), true);
 
     const signature = SIGNATURES[field.type];
@@ -554,14 +768,301 @@ export class Builder {
       await this.enterOptions(field, pointer);
     }
 
-    this.audit(pointer, `build "${field.label}" as ${field.type}`, {
-      chose: { role: 'listitem', name: libraryName },
-      rationale: `"${libraryName}" was established as this platform's ${field.type} by probing its behaviour`,
-      confidence: this.profile.typeMap[field.type]?.confidence,
-      observed: added.detail,
-      verification: 'not-checked',
+    const settled = await this.page.capture();
+    evidence.presentBeforeCommit = this.designer.fieldPresentOnCanvas(settled, field.label);
+    return { ok: true, evidence, before: beforeReading, after: this.designer.readCanvas(settled), appeared };
+  }
+
+  private attemptFailed(
+    evidence: FieldAttemptEvidence,
+    before: CanvasReading,
+    snapshot: Snapshot,
+    appeared: string[],
+  ): FieldAttempt {
+    return { ok: false, evidence, before, after: this.designer.readCanvas(snapshot), appeared };
+  }
+
+  /**
+   * Settle which element the property editor is attached to, before writing
+   * anything into it.
+   *
+   * The failure this exists for is quiet and expensive: a platform that does
+   * not select a newly added element leaves the editor pointing at the previous
+   * field, so the next name overwrites it. The result is a form with the right
+   * number of fields, one of them named twice and one of them not at all — and
+   * nothing on screen says so.
+   *
+   * The tell is that the label control is already holding the name of a field
+   * built earlier in this form. That is checked first, and if it holds, the
+   * agent selects what it just added and looks again rather than writing.
+   */
+  private async confirmSelection(
+    snapshot: Snapshot,
+    appeared: string[],
+    peers: string[],
+    evidence: FieldAttemptEvidence,
+  ): Promise<Snapshot> {
+    let snap = snapshot;
+    let read = this.readSelection(snap, appeared, peers);
+    evidence.labelEditorValueBefore = read.value;
+
+    if (read.verdict === false && appeared.length) {
+      const target = appeared[0]!;
+      if (await this.designer.selectFieldOnCanvas(target)) {
+        snap = await this.page.capture();
+        const second = this.readSelection(snap, appeared, peers);
+        evidence.notes.push(
+          `the property editor was on another field; selecting "${target}" first ` +
+            `${second.verdict === false ? 'did not move it' : 'moved it onto the new element'}`,
+        );
+        read = second;
+      }
+    }
+
+    evidence.labelEditorOnSelection = read.verdict;
+    return snap;
+  }
+
+  /**
+   * Whose properties is the editor showing?
+   *
+   * `null` wherever the platform gives no way to tell, which is common and
+   * safe. Only a positive sign of the WRONG element counts as a failure.
+   */
+  private readSelection(
+    snapshot: Snapshot,
+    appeared: string[],
+    peers: string[],
+  ): { verdict: boolean | null; value: string | null } {
+    const editor = this.designer.labelEditor(snapshot);
+    const value = editor ? editor.value : null;
+    const verdict = assessSelection({
+      hasLabelEditor: Boolean(editor),
+      labelEditorValue: value,
+      selectedEntry: this.designer.selectedCanvasEntry(snapshot),
+      appeared,
+      peers,
     });
-    return true;
+    return { verdict, value };
+  }
+
+  /**
+   * Does the editor's idea of the field's type match the palette entry used?
+   *
+   * A disagreement is only believed when the control is demonstrably speaking
+   * the PALETTE's vocabulary — that is, what it shows is itself one of the
+   * entries in the element library. Any other control that happens to be named
+   * like a type (a format, a display mode, a unit) would otherwise condemn a
+   * perfectly good field to being deleted and built again.
+   */
+  private async typeAsExpected(snapshot: Snapshot, displayed: string | null, libraryName: string): Promise<boolean | null> {
+    const entries = await this.designer.paletteEntries(snapshot);
+    return assessType({ displayed, libraryName, paletteNames: entries.map((e) => e.name) });
+  }
+
+  // ── acting on a diagnosis ───────────────────────────────────────────────────
+
+  /** Put the diagnosis where a person will find it: the log, and the progress tree. */
+  private recordDiagnosis(pointer: string, field: IrField, diagnosis: Diagnosis, attempt: number): void {
+    const rationale =
+      diagnosis.source === 'model'
+        ? 'proposed by the model, then checked against what the agent observed before being accepted'
+        : diagnosis.source === 'deterministic'
+          ? 'established from what the agent observed during the attempt'
+          : 'nothing the agent observed explains it';
+
+    this.audit(pointer, `diagnose why "${field.label}" was not built (attempt ${attempt})`, {
+      level: diagnosis.cause === 'unknown' ? 'warn' : 'error',
+      observed: `${describeCause(diagnosis.cause)} — ${diagnosis.why}`,
+      confidence: diagnosis.confidence,
+      rationale,
+      verification: 'fail',
+      diagnosis: {
+        cause: diagnosis.cause,
+        confidence: diagnosis.confidence,
+        source: diagnosis.source,
+        why: diagnosis.why,
+        ...(diagnosis.modelProposal ? { modelProposal: diagnosis.modelProposal } : {}),
+      },
+    });
+
+    this.mark(pointer, 'failed', describeCause(diagnosis.cause));
+    this.log(`"${field.label}": ${describeCause(diagnosis.cause)} — ${diagnosis.why}`, 'warn');
+  }
+
+  /**
+   * A name written into the wrong editor damages TWO fields, and only one of
+   * them is the one being built. The other is already marked built and would
+   * sail through to the end of the run looking fine, so it is un-marked here
+   * and left for the form's read-back to rebuild.
+   */
+  private reportCollateralDamage(evidence: FieldAttemptEvidence): void {
+    const victim = evidence.labelDisplacedFrom;
+    if (!victim) return;
+    const peer = this.builtInForm.find((p) => p.label === victim);
+    if (!peer) return;
+
+    this.mark(peer.pointer, 'failed', 'its label was overwritten while a later field was being named');
+    this.audit(peer.pointer, `re-check "${victim}"`, {
+      level: 'error',
+      observed: `it stopped showing its label when "${evidence.expectedLabel}" was named, so that write landed on it`,
+      verification: 'fail',
+    });
+    this.builtInForm = this.builtInForm.filter((p) => p.label !== victim);
+    this.store.state.counters.failed++;
+  }
+
+  /**
+   * Remove what this attempt left behind — and nothing else.
+   *
+   * Deliberately not "delete whatever is selected". The failure most likely to
+   * bring us here is the editor being attached to the wrong element, so the
+   * selection is exactly what must not be trusted. Only a canvas entry that
+   * appeared during this attempt, and is not a field already built, is a
+   * candidate; if none can be identified the stray is left alone, because a
+   * duplicate is a lesser defect than a deleted good field.
+   */
+  private async removeStray(field: IrField, evidence: FieldAttemptEvidence): Promise<void> {
+    const appeared = evidence.canvasAfterAdd.filter((n) => !evidence.canvasBefore.includes(n));
+    const candidates = [field.label, ...appeared].filter((n) => !this.builtInForm.some((p) => p.label === n));
+
+    for (const candidate of candidates) {
+      if (!(await this.designer.selectFieldOnCanvas(candidate))) continue;
+      if (await this.designer.deleteSelected()) {
+        evidence.notes.push(`removed the half-built "${candidate}" before trying again`);
+        return;
+      }
+    }
+    evidence.notes.push(
+      'nothing on the canvas could be identified as the half-built element, so it was left alone rather than ' +
+        'risk deleting a field that was already correct',
+    );
+  }
+
+  /**
+   * Ask a person — with the cause, not just the symptom.
+   *
+   * The difference between "a field is missing" and "the name was written into
+   * another field's editor, and the field built just before it has lost its
+   * own" is the difference between a question a reviewer can answer in seconds
+   * and one that makes them go and look.
+   */
+  private async escalateFieldFailure(
+    pointer: string,
+    field: IrField,
+    diagnosis: Diagnosis,
+    attempts: number,
+    repeated: boolean,
+  ): Promise<boolean> {
+    const cause = diagnosis.cause;
+    const worthRetrying = retryIsWorthwhile(cause);
+
+    // Asked once per CAUSE, not once per field.
+    //
+    // Fields fail for platform-level reasons: if the label control this
+    // designer offers is not the one that names a field, that is true of every
+    // field in the study, and a queue with one identically-worded row per field
+    // is not a gate, it is a wall. A reviewer clearing it watches it refill
+    // with the question they just answered. So the first answer is kept and
+    // applied to every later field that fails the same way, with each affected
+    // pointer written to the audit log so nothing becomes invisible.
+    const already = this.fieldFailureDecisions.get(cause);
+    if (already) {
+      this.audit(pointer, `apply a reviewer's earlier answer about ${describeCause(cause)} to "${field.label}"`, {
+        humanDecision:
+          already.choice === 'option'
+            ? `${already.optionId} — their earlier answer for the same cause`
+            : already.choice === 'manual'
+              ? 'handled by hand'
+              : 'skipped',
+        observed: diagnosis.why,
+        verification: 'fail',
+        level: 'warn',
+      });
+      return this.actOnFieldFailure(already, pointer, field, cause, attempts);
+    }
+
+    const resolution = await this.gate.raise({
+      id: `field:${cause}`,
+      kind: 'field_build_failed',
+      question: `"${field.label}" could not be built — ${describeCause(cause)}. How should it be handled?`,
+      reason:
+        `${diagnosis.why} ` +
+        (repeated
+          ? 'The same thing happened on both attempts, so building it again is not the answer. '
+          : `Tried ${attempts} time(s). `) +
+        (diagnosis.source === 'model'
+          ? 'That reading was proposed by the model and checked against what the agent observed. '
+          : '') +
+        remedyForCause(cause) +
+        ' This answer will be applied to any other field that fails the same way, so it is not asked again.',
+      consequence:
+        'A missing field is the most costly failure here: nobody notices until data collection has already started, ' +
+        'by which point the study is live.',
+      affectedCount: 1,
+      affected: [pointer],
+      options: [
+        {
+          id: 'retry',
+          label: 'Try building this one field again',
+          confidence: worthRetrying ? 0.4 : 0.1,
+          agreements: [],
+          conflicts: worthRetrying ? [] : ['the field is probably already there; building it again would duplicate it'],
+        },
+        { id: 'accept', label: 'Leave it and flag it in the report', confidence: 0.1, agreements: [], conflicts: [] },
+      ],
+      allowsManual: true,
+      createdAt: Date.now(),
+    });
+
+    this.fieldFailureDecisions.set(cause, resolution);
+    return this.actOnFieldFailure(resolution, pointer, field, cause, attempts);
+  }
+
+  /**
+   * A reviewer's answer about a field, kept per CAUSE for the run.
+   * See `escalateFieldFailure` for why this is not asked once per field.
+   */
+  private fieldFailureDecisions = new Map<FieldFailureCause, EscalationResolution>();
+
+  /** Carry out what a reviewer decided — and check it rather than believe it. */
+  private async actOnFieldFailure(
+    resolution: EscalationResolution,
+    pointer: string,
+    field: IrField,
+    cause: FieldFailureCause,
+    attempts: number,
+  ): Promise<boolean> {
+    // One reviewer-requested attempt, and it is judged by what appears on the
+    // canvas rather than by having been asked for.
+    if (resolution.choice === 'option' && resolution.optionId === 'retry') {
+      const libraryName = this.libraryNameFor(field.type);
+      if (!libraryName) return false;
+      const again = await this.attemptField(field, pointer, libraryName, attempts + 1);
+      this.fieldEvidence.set(pointer, again.evidence);
+      this.audit(pointer, `build "${field.label}" again, as a reviewer asked`, {
+        observed: describeAttempt(again.evidence),
+        verification: again.ok ? 'pass' : 'fail',
+        level: again.ok ? 'info' : 'error',
+      });
+      if (again.ok) this.store.state.counters.repaired++;
+      return again.ok;
+    }
+
+    // "I did it by hand" is checked, not believed.
+    if (resolution.choice === 'manual') {
+      const there = this.fieldOnCanvas(await this.page.capture(), field.label);
+      this.audit(pointer, `read "${field.label}" back after a reviewer handled it at the gate`, {
+        observed: there ? 'it is on the canvas' : 'it is still not on the canvas',
+        verification: there ? 'pass' : 'fail',
+        level: there ? 'info' : 'warn',
+      });
+      this.mark(pointer, there ? 'built' : 'escalated', there ? 'done by hand' : 'left for a person');
+      return there;
+    }
+
+    this.mark(pointer, 'escalated', describeCause(cause));
+    return false;
   }
 
   /**
@@ -985,12 +1486,53 @@ export class Builder {
   // ── verification ────────────────────────────────────────────────────────────
 
   /**
+   * Remember what the canvas held on the way into a commit.
+   *
+   * This one reading is what makes "the save lost it" and "it was never built"
+   * distinguishable afterwards. Without it, both look identical at read-back —
+   * a field that is not there — and they need opposite repairs: one wants a
+   * different save, the other wants the field built.
+   */
+  private async noteCanvasBeforeCommit(form: IrForm, vi: number, fi: number): Promise<void> {
+    if (this.store.aborted) return;
+    const snapshot = await this.page.capture();
+    const labels = form.fields.map((f) => f.label);
+    const visible = this.designer.visibleLabels(snapshot, labels);
+    this.beforeCommit = { reading: this.designer.readCanvas(snapshot), visible };
+
+    // The deferred half of the post-add label check. Every field has now been
+    // committed by the act of building the one after it, so a name that is
+    // still not on the canvas is genuinely not on the element.
+    for (let xi = 0; xi < form.fields.length; xi++) {
+      const pointer = irPointer.field(vi, fi, xi);
+      const evidence = this.fieldEvidence.get(pointer);
+      if (!evidence) continue;
+      const label = form.fields[xi]!.label;
+      const shows = confirmLabelBeforeCommit({ label, visibleLabels: visible });
+      if (shows === null) continue;
+      evidence.addedElementShowsLabel = shows;
+      if (!shows) {
+        this.audit(pointer, `re-check "${label}" on the canvas before saving`, {
+          level: 'warn',
+          observed: 'the element is there, but the canvas still does not show its name',
+          verification: 'fail',
+        });
+      }
+    }
+  }
+
+  /**
    * Read the saved form back and compare it with the specification.
    *
    * This is what separates an agent that works from a demo that worked once.
    * Every failure this pipeline is guarding against — a discarded range, a
    * replaced value list, an unnamed field, a commit that did not commit — is
    * invisible at the moment it happens and visible here.
+   *
+   * A field that is missing here is DIAGNOSED before anything is done about it,
+   * because the repairs diverge completely. A field the save discarded should
+   * be built again; a field that is present and merely unreadable must NOT be,
+   * because building it again is how a form ends up with two of everything.
    */
   private async verifyForm(
     visit: IrVisit,
@@ -1014,75 +1556,169 @@ export class Builder {
     }
 
     const snapshot = await this.page.capture();
+    const labels = form.fields.map((f) => f.label);
+    const seen = {
+      canvasEntries: this.designer.canvasEntries(snapshot),
+      visible: this.designer.visibleLabels(snapshot, labels),
+    };
+
     const missingIndexes: number[] = [];
     for (let xi = 0; xi < form.fields.length; xi++) {
       const field = form.fields[xi]!;
       const fieldPointer = irPointer.field(vi, fi, xi);
-      const present = this.fieldOnCanvas(snapshot, field.label);
-      if (present) {
+      if (this.fieldOnCanvas(snapshot, field.label)) {
         this.mark(fieldPointer, 'verified');
         this.store.state.counters.verified++;
       } else {
         missingIndexes.push(xi);
-        this.mark(fieldPointer, 'failed', 'not found when read back');
-        this.audit(fieldPointer, `verify "${field.label}"`, {
-          level: 'error',
-          observed: 'the field is not on the form after saving',
-          verification: 'fail',
-        });
       }
     }
     const missing = missingIndexes.length;
 
-    if (missing) {
-      this.log(`${missing} field(s) are missing from "${form.name}" after saving.`, 'error');
-      const resolution = await this.gate.raise({
-        id: `missing:${pointer}:${attempt}`,
-        kind: 'missing_after_readback',
-        question: `${missing} field(s) are missing from "${form.name}" after saving. How should this be handled?`,
-        reason: 'They were built, but reading the saved form back does not show them.',
-        consequence:
-          'A missing field is the most costly failure here: nobody notices until data collection has already started, by which point the study is live.',
-        affectedCount: missing,
-        affected: [pointer],
-        options: [
-          { id: 'rebuild', label: 'Build the missing fields again', confidence: 0.6, agreements: [], conflicts: [] },
-          { id: 'accept', label: 'Leave it and flag the form in the report', confidence: 0.1, agreements: [], conflicts: [] },
-        ],
-        allowsManual: true,
-        createdAt: Date.now(),
-      });
-
-      // One retry, not a loop. If building them a second time does not make
-      // them survive a save, the cause is not the attempt — it is the platform
-      // or the form — and asking a person to watch it fail again wastes the
-      // one thing the gate is spending, which is their attention.
-      if (attempt === 0 && (resolution.choice === 'option' && resolution.optionId === 'rebuild')) {
-        this.log(`Building the ${missing} missing field(s) of "${form.name}" again, as asked.`);
-        for (const xi of missingIndexes) {
-          if (this.store.aborted) break;
-          const field = form.fields[xi]!;
-          const fieldPointer = irPointer.field(vi, fi, xi);
-          this.mark(fieldPointer, 'running');
-          const built = await this.buildField(field, fieldPointer);
-          this.mark(fieldPointer, built ? 'built' : 'failed');
-        }
-        await this.commit(pointer, form);
-        this.store.state.counters.repaired += missing;
-        return this.verifyForm(visit, form, vi, fi, pointer, attempt + 1);
-      }
-
-      // "I'll do it by hand" is checked, not believed: read the form back once
-      // more and let what is on screen decide.
-      if (attempt === 0 && resolution.choice === 'manual') {
-        return this.verifyForm(visit, form, vi, fi, pointer, attempt + 1);
-      }
-
-      return false;
+    if (!missing) {
+      this.audit(pointer, `verify "${form.name}"`, { observed: `all ${form.fields.length} field(s) read back`, verification: 'pass' });
+      return true;
     }
 
-    this.audit(pointer, `verify "${form.name}"`, { observed: `all ${form.fields.length} field(s) read back`, verification: 'pass' });
-    return true;
+    // Work out why, field by field, before spending a person's attention or a
+    // rebuild on any of them.
+    const diagnoses = new Map<number, Diagnosis>();
+    for (const xi of missingIndexes) {
+      const field = form.fields[xi]!;
+      const fieldPointer = irPointer.field(vi, fi, xi);
+      const evidence = this.evidenceForReadBack(field, fieldPointer, labels, seen);
+      const diagnosis = await this.diagnostician.diagnose(evidence, {
+        before: this.beforeCommit?.reading ?? this.designer.readCanvas(snapshot),
+        after: this.designer.readCanvas(snapshot),
+        spec: specOf(field),
+      });
+      diagnoses.set(xi, diagnosis);
+      this.fieldEvidence.set(fieldPointer, evidence);
+
+      this.mark(fieldPointer, 'failed', describeCause(diagnosis.cause));
+      this.audit(fieldPointer, `verify "${field.label}"`, {
+        level: 'error',
+        observed: `the field is not on the form after saving — ${describeCause(diagnosis.cause)}: ${diagnosis.why}`,
+        confidence: diagnosis.confidence,
+        verification: 'fail',
+        diagnosis: {
+          cause: diagnosis.cause,
+          confidence: diagnosis.confidence,
+          source: diagnosis.source,
+          why: diagnosis.why,
+          ...(diagnosis.modelProposal ? { modelProposal: diagnosis.modelProposal } : {}),
+        },
+      });
+    }
+
+    // Fields the read-back cannot see, but which the evidence says are there.
+    // Rebuilding these is not a repair, it is a duplicate.
+    const blind = missingIndexes.filter((xi) => !retryIsWorthwhile(diagnoses.get(xi)!.cause));
+    const rebuildable = missingIndexes.filter((xi) => !blind.includes(xi));
+
+    const causes = [...new Set(missingIndexes.map((xi) => describeCause(diagnoses.get(xi)!.cause)))];
+    this.log(`${missing} field(s) are missing from "${form.name}" after saving — ${causes.join('; ')}.`, 'error');
+
+    const examples = missingIndexes
+      .slice(0, 3)
+      .map((xi) => `"${form.fields[xi]!.label}": ${diagnoses.get(xi)!.why}`)
+      .join(' ');
+
+    const resolution = await this.gate.raise({
+      id: `missing:${pointer}:${attempt}`,
+      kind: 'missing_after_readback',
+      question: `${missing} field(s) are missing from "${form.name}" after saving — ${causes.join('; ')}. How should this be handled?`,
+      reason:
+        'They were built, but reading the saved form back does not show them. ' +
+        `Diagnosed as: ${causes.join('; ')}. ` +
+        (blind.length
+          ? `${blind.length} of them look present and merely unreadable, so building those again would duplicate them. `
+          : '') +
+        examples,
+      consequence:
+        'A missing field is the most costly failure here: nobody notices until data collection has already started, by which point the study is live.',
+      affectedCount: missing,
+      affected: missingIndexes.map((xi) => irPointer.field(vi, fi, xi)),
+      options: [
+        {
+          id: 'rebuild',
+          label: rebuildable.length === missing
+            ? 'Build the missing fields again'
+            : `Build the ${rebuildable.length} genuinely missing field(s) again, and leave the rest`,
+          confidence: rebuildable.length ? 0.6 : 0.1,
+          agreements: [],
+          conflicts: blind.length ? [`${blind.length} field(s) appear to be there already`] : [],
+        },
+        { id: 'accept', label: 'Leave it and flag the form in the report', confidence: 0.1, agreements: [], conflicts: [] },
+      ],
+      allowsManual: true,
+      createdAt: Date.now(),
+    });
+
+    // One retry, not a loop, and only over the fields a rebuild could help. If
+    // building them a second time does not make them survive a save, the cause
+    // is not the attempt — it is the platform or the form — and asking a person
+    // to watch it fail again wastes the one thing the gate is spending, which
+    // is their attention.
+    if (attempt === 0 && resolution.choice === 'option' && resolution.optionId === 'rebuild' && rebuildable.length) {
+      this.log(`Building the ${rebuildable.length} missing field(s) of "${form.name}" again, as asked.`);
+
+      // Whatever DID read back is this form's context for the rebuild, so a
+      // name landing in one of their editors is still caught.
+      this.builtInForm = form.fields
+        .map((f, xi) => ({ label: f.label, pointer: irPointer.field(vi, fi, xi), xi }))
+        .filter((e) => !missingIndexes.includes(e.xi))
+        .map((e) => ({ label: e.label, pointer: e.pointer }));
+
+      for (const xi of rebuildable) {
+        if (this.store.aborted) break;
+        const field = form.fields[xi]!;
+        const fieldPointer = irPointer.field(vi, fi, xi);
+        this.mark(fieldPointer, 'running');
+        const built = await this.buildFieldWithRetry(field, fieldPointer);
+        this.settle(fieldPointer, built ? 'built' : 'failed');
+        if (built) this.builtInForm.push({ label: field.label, pointer: fieldPointer });
+      }
+
+      await this.noteCanvasBeforeCommit(form, vi, fi);
+      await this.commit(pointer, form);
+      this.store.state.counters.repaired += rebuildable.length;
+      return this.verifyForm(visit, form, vi, fi, pointer, attempt + 1);
+    }
+
+    // "I'll do it by hand" is checked, not believed: read the form back once
+    // more and let what is on screen decide.
+    if (attempt === 0 && resolution.choice === 'manual') {
+      return this.verifyForm(visit, form, vi, fi, pointer, attempt + 1);
+    }
+
+    return false;
+  }
+
+  /**
+   * Everything known about a field that did not read back.
+   *
+   * The rule itself lives in `diagnose.ts` so that the classifier, the tests
+   * and this one caller cannot drift apart.
+   */
+  private evidenceForReadBack(
+    field: IrField,
+    fieldPointer: string,
+    labels: string[],
+    seen: { canvasEntries: string[]; visible: string[] },
+  ): FieldAttemptEvidence {
+    const prior =
+      this.fieldEvidence.get(fieldPointer) ??
+      emptyFieldEvidence(field.label, field.type, this.libraryNameFor(field.type), 1);
+
+    return mergeReadBackEvidence(prior, {
+      label: field.label,
+      allLabels: labels,
+      beforeCommit: this.beforeCommit
+        ? { canvasEntries: this.beforeCommit.reading.canvasEntries, visible: this.beforeCommit.visible }
+        : null,
+      afterCommit: seen,
+    });
   }
 
   // ── escalation helpers ──────────────────────────────────────────────────────
@@ -1201,4 +1837,35 @@ export class Builder {
     });
     return { ref: node.ref, node, confidence: 1, rationale: `named by a reviewer`, source: 'human', alternatives: [] };
   }
+}
+
+/**
+ * The field as the specification states it, for a question put to the model.
+ *
+ * Canonical domain vocabulary only — this describes what is WANTED, never what
+ * any platform calls it.
+ */
+function specOf(field: IrField): Record<string, string> {
+  const spec: Record<string, string> = { label: field.label, type: field.type, required: String(Boolean(field.required)) };
+  if (field.min !== undefined) spec['minimum'] = String(field.min);
+  if (field.max !== undefined) spec['maximum'] = String(field.max);
+  if (field.units) spec['units'] = field.units;
+  if (field.formula) spec['formula'] = field.formula;
+  if (field.options?.length) spec['coded values'] = String(field.options.length);
+  if (field.skip_logic) spec['shown when'] = `${field.skip_logic.when_field_label} is ${field.skip_logic.equals_value}`;
+  return spec;
+}
+
+/** What actually happened during an attempt, in one line, for the audit log. */
+function describeAttempt(evidence: FieldAttemptEvidence): string {
+  const said = (name: string, value: boolean | null) => (value === null ? '' : `${name}: ${value ? 'yes' : 'no'}`);
+  const parts = [
+    said('element appeared', evidence.elementAppeared),
+    said('editor on the new element', evidence.labelEditorOnSelection),
+    said('label read back', evidence.labelWriteAccepted),
+    said('label on the canvas', evidence.addedElementShowsLabel),
+    said('type as expected', evidence.typeMatches),
+    ...evidence.notes,
+  ].filter(Boolean);
+  return parts.join('; ');
 }

@@ -14,6 +14,7 @@
 
 import { Builder, type Gate } from './builder';
 import { Designer } from './designer';
+import { FieldDiagnostician } from './diagnose';
 import { Gemini } from './gemini';
 import { Grounder } from './grounder';
 import { Page } from './page';
@@ -208,7 +209,8 @@ async function startRun(tabId: number): Promise<void> {
     const grounder = new Grounder(() => store.profile!, llm, (m) => log(m, 'warn'));
     const designer = new Designer(page, grounder, store, log);
     const typeMapper = new TypeMapper(designer, store, llm, log);
-    const builder = new Builder(page, grounder, designer, typeMapper, store, gate, log);
+    const diagnostician = new FieldDiagnostician(llm, log);
+    const builder = new Builder(page, grounder, designer, typeMapper, store, gate, diagnostician, log);
 
     await builder.run();
 
