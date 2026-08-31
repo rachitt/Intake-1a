@@ -19,6 +19,7 @@ import { emptyObservation } from '../shared/types';
 import type { Grounder, Intent } from './grounder';
 import type { Observation, PageLike } from './page';
 import type { ObservedBehaviour, ValueKind } from '../shared/types';
+import type { CanvasReading } from './diagnose';
 import type { Ref, Snapshot, SnapshotNode } from '../shared/snapshot';
 import type { Store } from './store';
 
@@ -277,6 +278,131 @@ export class Designer {
     if (this.fieldOnCanvas(snapshot, label)) return true;
     const canvas = this.canvasRegionIds(snapshot);
     return snapshot.regions.some((r) => canvas.has(r.id) && r.texts.some((t) => t === label || t.startsWith(`${label} `)));
+  }
+
+  /** Which of these labels can be seen on the canvas right now. */
+  visibleLabels(snapshot: Snapshot, labels: readonly string[]): string[] {
+    return labels.filter((label) => this.fieldPresentOnCanvas(snapshot, label));
+  }
+
+  // ── reading the canvas as evidence ──────────────────────────────────────────
+  //
+  // Everything below produces plain strings for the diagnosis layer. It is
+  // deliberately observational: it says what is on screen and never what that
+  // means, so the same readings serve a deterministic check and a question put
+  // to the model.
+
+  /**
+   * The property editor, identified positively.
+   *
+   * Preferring the region classifier's own verdict and falling back to wherever
+   * the label control lives, which is the same trick `readRendering` uses. The
+   * point of naming it at all is to be able to take it OUT of the canvas: a
+   * designer canvas and a property panel look alike from the outside, and
+   * counting the editor's controls as canvas entries makes the canvas appear to
+   * gain and lose fields every time a selection changes.
+   */
+  private editorRegionId(snapshot: Snapshot): number | null {
+    const classified = snapshot.regions
+      .filter((r) => r.kind === 'editor')
+      .sort((a, b) => b.confidence - a.confidence)[0];
+    if (classified) return classified.id;
+    const ranked = this.grounder.rank(snapshot, { ...INTENTS.fieldLabel(), ignoreMemory: true })[0];
+    return ranked && ranked.score >= 0.5 ? ranked.node.region : null;
+  }
+
+  /**
+   * The entries a person would say are on the canvas, by name.
+   *
+   * Names and rendered text both count, because some field types render a
+   * preview that carries no accessible name at all and the printed label beside
+   * it is the only trace of them. Callers use this by DIFFERENCE — before
+   * against after — so a little noise in the list is harmless while a missing
+   * entry is not.
+   */
+  canvasEntries(snapshot: Snapshot): string[] {
+    const editor = this.editorRegionId(snapshot);
+    const canvas = this.canvasRegionIds(snapshot);
+    if (editor !== null) canvas.delete(editor);
+
+    const seen = new Set<string>();
+    for (const node of snapshot.nodes) {
+      if (canvas.has(node.region) && node.name) seen.add(node.name);
+    }
+    for (const region of snapshot.regions) {
+      if (!canvas.has(region.id)) continue;
+      for (const text of region.texts) if (text) seen.add(text);
+    }
+    return [...seen];
+  }
+
+  /** The canvas entry the platform says is selected, where it says at all. */
+  selectedCanvasEntry(snapshot: Snapshot): string | null {
+    const editor = this.editorRegionId(snapshot);
+    const canvas = this.canvasRegionIds(snapshot);
+    if (editor !== null) canvas.delete(editor);
+    const selected = snapshot.nodes.find((n) => canvas.has(n.region) && n.state.selected === true && n.name);
+    return selected?.name ?? null;
+  }
+
+  /** The property editor's controls, as name/role/value. */
+  editorControls(snapshot: Snapshot): { name: string; role: string; value: string }[] {
+    const editor = this.editorRegionId(snapshot);
+    if (editor === null) return [];
+    return snapshot.nodes
+      .filter((n) => n.region === editor && (n.name || n.value))
+      .map((n) => ({ name: n.name, role: n.role, value: n.value ?? '' }));
+  }
+
+  /** One structured reading of the screen, for the audit log and for the model. */
+  readCanvas(snapshot: Snapshot): CanvasReading {
+    return {
+      canvasEntries: this.canvasEntries(snapshot),
+      selectedEntry: this.selectedCanvasEntry(snapshot),
+      editorControls: this.editorControls(snapshot),
+      appSaid: snapshot.liveText.slice(),
+    };
+  }
+
+  /**
+   * The label control for whatever is selected, and what it currently holds.
+   *
+   * Scoped away from the canvas, because the canvas is full of inert preview
+   * inputs named after the fields they preview and one of those is an excellent
+   * false match for "the box holding this field's label".
+   */
+  labelEditor(snapshot: Snapshot): { node: SnapshotNode; value: string } | null {
+    const editor = this.editorRegionId(snapshot);
+    const node = this.fieldLabelBox(snapshot, (n) => (editor === null ? true : n.region === editor));
+    if (!node) return null;
+    return { node, value: node.value ?? '' };
+  }
+
+  /**
+   * What the editor says the selected element's type is, in the platform's own
+   * words — or `null` where the platform does not show a type at all.
+   *
+   * Held to the same bar as `has`: a control has to be NAMED like a type
+   * selector, not merely sit in the right place with the right role. A wrong
+   * answer here would report a correctly built field as the wrong type and get
+   * it deleted and rebuilt.
+   */
+  displayedType(snapshot: Snapshot): string | null {
+    const intent = { ...INTENTS.fieldType(), ignoreMemory: true };
+    const editor = this.editorRegionId(snapshot);
+    const ranked = this.grounder
+      .rank(snapshot, intent)
+      .filter((c) => (editor === null ? true : c.node.region === editor));
+    const top = ranked[0];
+    if (!top || top.score < (intent.threshold ?? 0.55)) return null;
+    if (!top.why.some((reason) => reason.includes("matches the intent's vocabulary"))) return null;
+
+    const shown = top.node.value ?? '';
+    if (shown) return shown;
+    // A listbox may carry its choice on the selected option rather than on
+    // itself. Nothing selected is "could not tell", never "no type".
+    const chosen = snapshot.nodes.find((n) => n.role === 'option' && n.state.selected === true && n.region === top.node.region);
+    return chosen?.name || null;
   }
 
   /**
