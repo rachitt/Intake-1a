@@ -32,7 +32,7 @@ const DESTRUCTIVE = ['cancel', 'discard', 'delete', 'remove', 'reset', 'clear', 
  */
 const COMMIT_LOOKALIKES = [
   'template', 'preview', 'validate', 'check', 'test', 'export', 'print',
-  'duplicate', 'copy', 'draft copy', 'save as', 'download', 'share',
+  'duplicate', 'copy', 'draft copy', 'save as template', 'download', 'share',
 ];
 
 export const INTENTS = {
@@ -46,13 +46,13 @@ export const INTENTS = {
    * the affordance that means "go back to the schedule" — rather than by
    * driving the address bar.
    */
-  gotoVisitSchedule: (): Intent => ({
+  gotoVisitSchedule: (context: string[] = []): Intent => ({
     id: 'nav.visitSchedule',
     goal: "Go to the screen listing the study's visits.",
     roles: ['button', 'link', 'tab', 'menuitem'],
     lexicon: [
       'visit schedule', 'visits', 'visit list', 'schedule', 'study plan', 'study design',
-      'timepoints', 'events', 'back to visits', 'study', 'plan', 'home', 'back',
+      'timepoints', 'events', 'back to visits', 'study', 'plan', 'home', 'back', ...context,
     ],
     avoid: [...DESTRUCTIVE, 'subject', 'patient', 'report', 'user', 'settings', 'logout'],
     regionKinds: ['navigation', 'toolbar', 'unknown'],
@@ -66,7 +66,15 @@ export const INTENTS = {
     goal: 'Start creating a new visit (a scheduled study timepoint) in the visit schedule.',
     roles: ['button', 'link'],
     lexicon: ['add visit', 'new visit', 'create visit', 'add timepoint', 'add event', 'add row', 'new', 'add', 'create'],
-    avoid: [...DESTRUCTIVE, 'add form', 'add document', 'add field', 'add element'],
+    // The generic words above are what make this work on a platform whose
+    // button is just "New". They are also what make it match "New Source
+    // Document", so the nouns of every OTHER thing that can be created have to
+    // be named as hazards — otherwise "am I on the visit schedule?" answers yes
+    // on the screen listing one visit's documents, and the agent loops.
+    avoid: [
+      ...DESTRUCTIVE, 'source document', 'document', 'form', 'case report form', 'crf',
+      'field', 'element', 'page', 'value', 'subject', 'patient',
+    ],
     regionKinds: ['toolbar', 'table', 'unknown'],
     threshold: 0.5,
   }),
@@ -117,7 +125,10 @@ export const INTENTS = {
       'add form', 'new form', 'create form', 'add source document', 'new source document',
       'add document', 'new document', 'add case report form', 'add crf', 'new', 'add', 'create',
     ],
-    avoid: [...DESTRUCTIVE, 'add visit', 'new visit', 'add field', 'add element', 'add page'],
+    avoid: [
+      ...DESTRUCTIVE, 'visit', 'timepoint', 'event', 'field', 'element', 'page', 'value',
+      'subject', 'patient',
+    ],
     regionKinds: ['toolbar', 'table', 'unknown'],
     threshold: 0.5,
   }),
@@ -205,12 +216,22 @@ export const INTENTS = {
     threshold: 0.5,
   }),
 
-  leaveDesigner: (): Intent => ({
+  /**
+   * Leave the designer.
+   *
+   * `context` should carry the names of the things this screen was opened from
+   * — the visit, the study — because the way back out of a nested editor is
+   * very often a breadcrumb named after its parent rather than the word "back".
+   * That name is data the agent already has, and no amount of generic
+   * vocabulary substitutes for it: nothing about the words "Screening" or
+   * "Cohort B" says "this returns you one level up".
+   */
+  leaveDesigner: (context: string[] = []): Intent => ({
     id: 'builder.leave',
     goal: 'Leave the form designer and return to the list it was opened from.',
     roles: ['button', 'link'],
-    lexicon: ['back', 'return', 'close', 'exit', 'done', 'finish', 'up', 'breadcrumb', 'list'],
-    avoid: [...DESTRUCTIVE, 'save', 'delete'],
+    lexicon: ['back', 'return', 'close', 'exit', 'done', 'finish', 'up', 'breadcrumb', 'list', ...context],
+    avoid: [...DESTRUCTIVE, 'save', 'delete', 'preview', 'activate', 'publish'],
     regionKinds: ['toolbar', 'navigation', 'unknown'],
   }),
 
@@ -277,6 +298,26 @@ export const INTENTS = {
     lexicon: ['decimal places', 'decimals', 'precision', 'scale', 'digits after', 'fraction digits'],
     avoid: ['minimum', 'maximum', 'units', 'label'],
     regionKinds: ['editor'],
+  }),
+
+  /**
+   * Calendar or clock specific settings.
+   *
+   * Their presence is what separates a date, time or datetime field from free
+   * text on a platform that renders every preview as a plain box — which is
+   * most of them.
+   */
+  fieldTemporalOptions: (): Intent => ({
+    id: 'element.temporalOptions',
+    goal: 'Settings that only apply to a field holding a date or a time.',
+    roles: ['checkbox', 'switch', 'combobox', 'textbox', 'radio'],
+    lexicon: [
+      'allow past', 'allow future', 'past dates', 'future dates', 'earliest date', 'latest date',
+      'date format', 'time format', 'calendar', 'picker options', 'date options', 'time zone',
+    ],
+    avoid: ['required', 'hidden', 'label', 'units', 'minimum', 'maximum', 'formula'],
+    regionKinds: ['editor'],
+    threshold: 0.6,
   }),
 
   fieldFormula: (): Intent => ({

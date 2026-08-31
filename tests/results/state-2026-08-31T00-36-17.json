@@ -1,0 +1,15 @@
+{
+  "platform": "esource-mock-a",
+  "specVersion": "esource-mock-a/1.0.0",
+  "study": {
+    "name": "ABC-101",
+    "visits": [
+      {
+        "name": "Screening",
+        "windowStart": "-28",
+        "windowEnd": "-1",
+        "forms": []
+      }
+    ]
+  }
+}

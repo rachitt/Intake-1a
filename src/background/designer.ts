@@ -13,10 +13,11 @@
  */
 
 import { INTENTS } from './intents';
+import { nameSimilarity } from './grounder';
 import { rippledBeyond } from '../shared/diff';
 import { emptyObservation } from '../shared/types';
 import type { Grounder, Intent } from './grounder';
-import type { Observation, Page } from './page';
+import type { Observation, PageLike } from './page';
 import type { ObservedBehaviour, ValueKind } from '../shared/types';
 import type { Ref, Snapshot, SnapshotNode } from '../shared/snapshot';
 import type { Store } from './store';
@@ -41,7 +42,7 @@ export interface ProbeResult {
 
 export class Designer {
   constructor(
-    private page: Page,
+    private page: PageLike,
     private grounder: Grounder,
     private store: Store,
     private log: (message: string, level?: 'info' | 'warn' | 'error') => void,
@@ -72,13 +73,17 @@ export class Designer {
       // Tolerate a couple of entries being filtered out of view; re-discover if
       // the remembered list has clearly stopped describing this screen.
       if (found.length >= Math.ceil(remembered.length * 0.6)) return found;
-      this.log('The remembered element library no longer matches this screen; rediscovering it.', 'warn');
     }
 
     const discovered = this.discoverPalette(snap);
     if (discovered.length) {
-      this.profile.libraryEntries = discovered.map((e) => e.name);
-      this.log(`Element library discovered with ${discovered.length} entries: ${discovered.map((e) => e.name).join(', ')}`);
+      const names = discovered.map((e) => e.name);
+      const changed = names.join('|') !== remembered.join('|');
+      this.profile.libraryEntries = names;
+      // Only worth saying when the answer actually changed. This method is also
+      // how the agent asks "am I in a form designer?", so it runs on every
+      // screen, and announcing a rediscovery each time buries the real events.
+      if (changed) this.log(`Element library discovered with ${names.length} entries: ${names.join(', ')}`);
     }
     return discovered;
   }
@@ -99,12 +104,20 @@ export class Designer {
       .filter((r) => r.kind === 'palette')
       .sort((a, b) => b.confidence * b.members.length - a.confidence * a.members.length);
 
+    // The fallback is deliberately stricter than the classifier, not looser: it
+    // only runs when nothing was confidently classified, and accepting the
+    // wrong cluster here is expensive. A wrong palette does not merely fail —
+    // it makes "am I in a form designer?" answer yes on the wrong screen, and
+    // every later judgement inherits that mistake.
+    const MIN_CONFIDENT = 5;
+    const MIN_FALLBACK = 8;
+
     const regions = candidates.length
       ? candidates
-      : // Fall back to any region that is mostly short-named activatable items.
-        snapshot.regions
-          .filter((r) => r.kind !== 'toolbar' && r.kind !== 'navigation' && r.members.length >= 5)
+      : snapshot.regions
+          .filter((r) => r.kind !== 'toolbar' && r.kind !== 'navigation' && r.members.length >= MIN_FALLBACK)
           .sort((a, b) => b.members.length - a.members.length);
+    const minimum = candidates.length ? MIN_CONFIDENT : MIN_FALLBACK;
 
     for (const region of regions) {
       const nodes = region.members
@@ -114,7 +127,7 @@ export class Designer {
 
       // A palette's entries are distinct from one another and there are several.
       const names = new Set(nodes.map((n) => n.name));
-      if (names.size >= 5 && names.size >= nodes.length * 0.9) {
+      if (names.size >= minimum && names.size >= nodes.length * 0.9) {
         return nodes.map((n) => ({ name: n.name, ref: n.ref }));
       }
     }
@@ -188,13 +201,86 @@ export class Designer {
     return observation.diff.removedNames.length > 0 || observation.diff.magnitude > 0;
   }
 
+  // ── the canvas ──────────────────────────────────────────────────────────────
+
+  /**
+   * Where a built field could be showing.
+   *
+   * Only the palette and the application chrome are ruled out, and both are
+   * classified from shape rather than appearance. Nothing is excluded for
+   * "looking like an editor": a designer canvas is full of inert previews of
+   * the fields being built, so it looks exactly like a panel of inputs, and
+   * excluding panels of inputs leaves the agent unable to see anything it has
+   * made.
+   *
+   * The property editor is left in deliberately. Its controls are named after
+   * PROPERTIES — "Label", "Code", "Minimum" — never after the field being
+   * edited, so matching a field by its own label cannot collide with them.
+   * Palette entries are excluded precisely because they can: a field labelled
+   * "Date" would otherwise match the palette's "Date" button.
+   */
+  canvasRegionIds(snapshot: Snapshot): Set<number> {
+    const ids = new Set<number>();
+    for (const region of snapshot.regions) {
+      if (region.kind === 'palette' || region.kind === 'toolbar' || region.kind === 'navigation') continue;
+      ids.add(region.id);
+    }
+    return ids;
+  }
+
+  /**
+   * The control on the canvas that represents a field with this label.
+   *
+   * Matched on the label being the whole name or its leading part, because a
+   * choice field renders one control per option, each named "<field>: <choice>".
+   * Substring matching anywhere in the name would let a field called "Date"
+   * match "Date of Birth".
+   */
+  fieldOnCanvas(snapshot: Snapshot, label: string): SnapshotNode | undefined {
+    const canvas = this.canvasRegionIds(snapshot);
+    return snapshot.nodes
+      .filter(
+        (n) =>
+          canvas.has(n.region) &&
+          (n.name === label || n.name.startsWith(`${label}:`) || n.name.startsWith(`${label} `)),
+      )
+      .sort((a, b) => a.name.length - b.name.length)[0];
+  }
+
+  /**
+   * Select a field on the canvas so the property editor shows it.
+   *
+   * Clicking the preview control works even though the preview itself is inert,
+   * because the click bubbles to whatever wraps it — which is how a person
+   * selects a field too. If nothing changes, the click landed somewhere with no
+   * handler and the caller is told so rather than left assuming.
+   */
+  async selectFieldOnCanvas(label: string): Promise<boolean> {
+    const snapshot = await this.page.capture();
+    const node = this.fieldOnCanvas(snapshot, label);
+    if (!node) return false;
+    const observation = await this.page.click(node.ref);
+    return observation.diff.magnitude > 0;
+  }
+
   // ── properties ──────────────────────────────────────────────────────────────
 
-  /** Is there a control on this screen that satisfies the intent at all? */
+  /**
+   * Is there a control on this screen that satisfies the intent at all?
+   *
+   * Used to ask a platform what a field type is allowed to carry, so a false
+   * positive here mismaps a type. The bar is therefore not just a score — a
+   * control also has to be NAMED like the thing being looked for. Role and
+   * position alone can push an unrelated input over a score threshold, and
+   * "there is a formula box because some text input sits in the right panel"
+   * is exactly the kind of inference that produces a confident wrong answer.
+   */
   async has(intent: Intent, snapshot?: Snapshot): Promise<boolean> {
     const snap = snapshot ?? (await this.page.current());
     const ranked = this.grounder.rank(snap, { ...intent, ignoreMemory: true });
-    return Boolean(ranked[0] && ranked[0].score >= (intent.threshold ?? 0.55));
+    const top = ranked[0];
+    if (!top || top.score < (intent.threshold ?? 0.55)) return false;
+    return top.why.some((reason) => reason.includes("matches the intent's vocabulary"));
   }
 
   /**
@@ -271,17 +357,25 @@ export class Designer {
     const observation = emptyObservation();
     const sentinel = `ZZProbe${Math.floor(Math.random() * 9000 + 1000)}`;
 
+    // Remember what was on screen BEFORE the field existed. Everything the
+    // field brings with it is then identifiable by subtraction, which is the
+    // only way to find a designer's canvas that does not depend on the canvas
+    // looking different from a property panel — and it does not, because it is
+    // full of inert previews of the very controls being built.
+    const before = await this.page.capture();
+    const preExisting = new Set(before.nodes.map(nodeKey));
+
     const added = await this.addElement(entryName);
     if (!added.ok) {
       notes.push(added.detail);
       return { observation, cleanedUp: true, notes };
     }
 
-    // Name it, which both identifies its rendering on the canvas and proves the
-    // label control is a live editor rather than a decoy.
+    // Name it. This is not only to identify its rendering: adding a control and
+    // naming it are separate acts on every designer, and a probe that skips the
+    // second one is not exercising the same path a real field will take.
     const labelled = await this.setText(INTENTS.fieldLabel(), sentinel);
     if (!labelled.ok) notes.push(`Could not set a probe label: ${labelled.detail}`);
-    else if (!labelled.live) notes.push('The label input accepted text without anything else on the page reacting — it may be inert.');
 
     // What does the property editor offer for this type?
     let snapshot = await this.page.capture();
@@ -291,16 +385,19 @@ export class Designer {
       (await this.has(INTENTS.fieldMin(), snapshot)) && (await this.has(INTENTS.fieldMax(), snapshot));
     observation.offersFormula = await this.has(INTENTS.fieldFormula(), snapshot);
     observation.offersPrecision = await this.has(INTENTS.fieldPrecision(), snapshot);
+    observation.offersTemporalOptions = await this.has(INTENTS.fieldTemporalOptions(), snapshot);
 
     // A choice control renders nothing informative until it has choices, so give
     // it two before looking at how it presents them.
     if (observation.offersOptionEditor) {
       const seeded = await this.seedProbeOptions();
-      if (!seeded) notes.push('The coded-value editor was present but two probe values could not be entered.');
+      if (!seeded.ok) {
+        notes.push(`The coded-value editor was present but two probe values could not be entered: ${seeded.detail}`);
+      }
       snapshot = await this.page.capture();
     }
 
-    this.readRendering(snapshot, sentinel, observation, notes);
+    this.readRendering(snapshot, preExisting, sentinel, observation, notes);
 
     const cleanedUp = await this.deleteSelected();
     if (!cleanedUp) notes.push(`The probe field "${sentinel}" could not be deleted and may still be on the form.`);
@@ -310,70 +407,158 @@ export class Designer {
   }
 
   /** Two throwaway coded values, enough to reveal how choices are presented. */
-  private async seedProbeOptions(): Promise<boolean> {
+  private async seedProbeOptions(): Promise<{ ok: boolean; detail: string }> {
     let entered = 0;
+    let detail = '';
     for (const [code, label] of [['P1', 'Probe One'], ['P2', 'Probe Two']] as const) {
-      const snapshot = await this.page.capture();
-      const addResult = await this.grounder.ground(snapshot, INTENTS.optionAdd());
-      if (!addResult.ok) break;
-      await this.page.click(addResult.ref);
-
-      const after = await this.page.capture();
-      const codeRefs = this.grounder.rank(after, { ...INTENTS.optionCode(), ignoreMemory: true });
-      const labelRefs = this.grounder.rank(after, { ...INTENTS.optionLabel(), ignoreMemory: true });
-      // The row just added is the last one, so take the last candidate of each.
-      const codeNode = codeRefs.filter((c) => c.score > 0.4).at(-1);
-      const labelNode = labelRefs.filter((c) => c.score > 0.4).at(-1);
-      if (codeNode) await this.page.setText(codeNode.node.ref, code);
-      if (labelNode) await this.page.setText(labelNode.node.ref, label);
-      if (codeNode || labelNode) entered++;
+      const row = await this.addOptionRow(code, label);
+      if (!row.ok) {
+        detail = row.detail;
+        break;
+      }
+      entered++;
     }
-    return entered >= 2;
+    return { ok: entered >= 2, detail };
+  }
+
+  /**
+   * Add one coded value and fill in both halves of it.
+   *
+   * The row to write into is the one that JUST APPEARED — identified from the
+   * diff, not by taking the last of a ranked list. That distinction matters
+   * more than it looks: a property panel typically has a field-level "Label"
+   * input as well as a "Label" input per coded value, they are named
+   * identically, and picking the wrong one overwrites the field's own name with
+   * the text of its last option. The field then looks built and is mislabelled.
+   */
+  async addOptionRow(code: string, label: string): Promise<{ ok: boolean; detail: string }> {
+    const snapshot = await this.page.capture();
+    const add = await this.grounder.ground(snapshot, INTENTS.optionAdd());
+    if (!add.ok) return { ok: false, detail: add.reason };
+
+    const observation = await this.page.click(add.ref);
+    const fresh = observation.diff.addedNodes.filter(
+      (n) => n.role === 'textbox' || n.role === 'spinbutton' || n.role === 'searchbox',
+    );
+    if (fresh.length < 2) {
+      return {
+        ok: false,
+        detail: `Adding a coded value produced ${fresh.length} new input(s); expected a code and a label.`,
+      };
+    }
+
+    // Which of the new inputs is the code and which is the label? Decided by
+    // what they are named; if the platform names neither, fall back to reading
+    // order and say so, rather than silently assuming a convention.
+    const scored = fresh.map((node) => ({
+      node,
+      codeScore: bestLexicalName(node.name, INTENTS.optionCode().lexicon),
+      labelScore: bestLexicalName(node.name, INTENTS.optionLabel().lexicon),
+    }));
+
+    let codeNode = scored.slice().sort((a, b) => b.codeScore - a.codeScore)[0];
+    let labelNode = scored.filter((s) => s.node !== codeNode?.node).sort((a, b) => b.labelScore - a.labelScore)[0];
+
+    if (!codeNode || !labelNode || (codeNode.codeScore === 0 && labelNode.labelScore === 0)) {
+      const ordered = fresh
+        .slice()
+        .sort((a, b) => (a.box?.y ?? 0) - (b.box?.y ?? 0) || (a.box?.x ?? 0) - (b.box?.x ?? 0));
+      codeNode = { node: ordered[0]!, codeScore: 0, labelScore: 0 };
+      labelNode = { node: ordered[1]!, codeScore: 0, labelScore: 0 };
+    }
+
+    await this.page.setText(codeNode.node.ref, code);
+    await this.page.setText(labelNode.node.ref, label);
+
+    // Read back by looking for the values on the page rather than through the
+    // refs just written to. Entering a value can cause the editor to re-render,
+    // which replaces the very elements those refs point at — so a ref-based
+    // check reports a failure that did not happen, and, worse, would report
+    // success if the platform had quietly moved the value somewhere else.
+    const after = await this.page.capture();
+    const values = after.nodes.map((n) => n.value ?? '');
+    const ok = values.includes(code) && values.includes(label);
+    return {
+      ok,
+      detail: ok
+        ? `entered ${code} = ${label}`
+        : `wrote ${code} = ${label} but neither value can be found on the page afterwards`,
+    };
   }
 
   /**
    * Read how the built field renders, which is what separates the types that
    * names cannot.
    *
-   * The canvas is identified structurally: it is the region, other than the
-   * palette, the property editor and the chrome, that contains a control the
-   * agent has just named. Every judgement stays `null` when it could not be
-   * observed — "could not tell" and "no" must never be conflated, because a
-   * false negative here silently picks the wrong widget.
+   * Finding the canvas is the subtle part. It cannot be done by excluding
+   * whatever "looks like an editor", because a designer canvas is full of inert
+   * preview inputs and therefore looks exactly like one — that resemblance is
+   * the trap. So the property editor is identified positively, as the region
+   * containing the control that just accepted the field's label, and the canvas
+   * is what remains once that, the palette and the chrome are set aside.
+   *
+   * Every judgement stays `null` when it could not be observed. "Could not
+   * tell" and "no" must never be conflated, because a false negative here
+   * silently picks the wrong widget.
    */
-  private readRendering(snapshot: Snapshot, sentinel: string, out: ObservedBehaviour, notes: string[]): void {
-    const excludedKinds = new Set(['palette', 'editor', 'toolbar', 'navigation']);
-    const excludedRegions = new Set(snapshot.regions.filter((r) => excludedKinds.has(r.kind)).map((r) => r.id));
-
-    const candidates = snapshot.nodes.filter((n) => !excludedRegions.has(n.region));
-
-    // The card wrapping the field carries the sentinel plus other chrome text;
-    // the field's own rendering is either named exactly the sentinel, named
-    // "<sentinel>: <choice>", or is an unnamed two-state control beside it.
-    const controls = candidates.filter((n) => CONTROL_ROLES.has(n.role));
-    const named = controls.filter((n) => n.name === sentinel || n.name.startsWith(`${sentinel}:`) || n.name.startsWith(`${sentinel} `));
-    const preview = named.length ? named : controls;
-
-    if (!preview.length) {
-      // A two-state control is often rendered as a pair of plain buttons.
-      const buttons = candidates.filter(
-        (n) => n.role === 'button' && !n.name.includes(sentinel) && n.name.length > 0 && n.name.length <= 24,
-      );
-      if (buttons.length === 2) {
-        out.rendersBinary = true;
-        out.rendersMultiSelect = false;
-        out.rendersExpandedChoices = null;
-        out.rendersValueKind = 'binary';
-        return;
-      }
-      notes.push('Could not find the field on the canvas, so how it renders is unknown.');
-      return;
+  private readRendering(
+    snapshot: Snapshot,
+    preExisting: Set<string>,
+    sentinel: string,
+    out: ObservedBehaviour,
+    notes: string[],
+  ): void {
+    const excluded = new Set<number>();
+    for (const region of snapshot.regions) {
+      if (region.kind === 'palette' || region.kind === 'toolbar' || region.kind === 'navigation') excluded.add(region.id);
     }
+
+    // The property editor, found by where the label control lives.
+    const labelRanked = this.grounder.rank(snapshot, { ...INTENTS.fieldLabel(), ignoreMemory: true });
+    const labelNode = labelRanked[0] && labelRanked[0].score >= 0.5 ? labelRanked[0].node : undefined;
+    if (labelNode) excluded.add(labelNode.region);
+    else notes.push('The property editor could not be located, so the canvas was identified by elimination alone.');
+
+    // Only what the field itself brought onto the page. Page tabs, palette
+    // filters and every other permanent control were there beforehand and are
+    // not part of how this field renders.
+    let candidates = snapshot.nodes.filter((n) => !excluded.has(n.region) && !preExisting.has(nodeKey(n)));
+
+    // Drop the card that wraps the field. Its accessible name is the run-together
+    // text of everything inside it, so it swallows SEVERAL of the other names —
+    // and it is never itself a form control.
+    //
+    // Both conditions are needed. Filtering anything that merely contains one
+    // other name removes real choices, because a choice list names its options
+    // "<field>: <choice>" and an option whose label has not yet rendered is a
+    // prefix of the one that has.
+    const names = candidates.map((n) => n.name).filter(Boolean);
+    candidates = candidates.filter((n) => {
+      if (CONTROL_ROLES.has(n.role)) return true;
+      const swallowed = names.filter((other) => other !== n.name && other.length > 0 && n.name.includes(other)).length;
+      return swallowed < 2;
+    });
+
+    const preferred = candidates.filter(
+      (n) => n.name === sentinel || n.name.startsWith(`${sentinel}:`) || n.name.startsWith(`${sentinel} `),
+    );
+    const preview = preferred.length ? preferred : candidates;
+
+    // Recorded so an escalation can show a reviewer what the agent actually saw
+    // on the canvas, rather than only the conclusion it drew from it.
+    notes.push(
+      preview.length
+        ? `canvas rendered: ${preview.map((n) => `${n.role} "${n.name}"`).join(', ')}`
+        : 'canvas rendered nothing the agent could identify',
+    );
 
     const radios = preview.filter((n) => n.role === 'radio');
     const checks = preview.filter((n) => n.role === 'checkbox' || n.role === 'switch');
     const combos = preview.filter((n) => n.role === 'combobox' || n.role === 'listbox');
     const texts = preview.filter((n) => n.role === 'textbox' || n.role === 'spinbutton' || n.role === 'searchbox');
+    // A two-state control is very often a pair of plain buttons rather than a
+    // native control — "Yes" and "No" side by side.
+    const pills = preview.filter((n) => n.role === 'button' && n.name.length > 0 && n.name.length <= 24);
 
     if (combos.length) {
       out.rendersMultiSelect = Boolean(combos[0]!.state.multiSelectable);
@@ -390,24 +575,30 @@ export class Designer {
       out.rendersExpandedChoices = true;
       out.rendersBinary = false;
       out.rendersValueKind = 'coded';
-    } else if (checks.length === 1 || radios.length === 1) {
-      // A lone tick with no choice list is a single boolean flag, not a list.
+    } else if (checks.length === 1) {
+      // A lone tick with no choice list is a single flag, not a list.
       out.rendersBinary = true;
+      out.rendersBinaryShape = 'tick';
       out.rendersMultiSelect = false;
-      out.rendersExpandedChoices = null;
+      out.rendersValueKind = 'binary';
+    } else if (!texts.length && pills.length === 2) {
+      out.rendersBinary = true;
+      out.rendersBinaryShape = 'named-pair';
+      out.rendersMultiSelect = false;
       out.rendersValueKind = 'binary';
     } else if (texts.length) {
       const text = texts[0]!;
       out.rendersBinary = false;
-      out.rendersMultiSelect = null;
-      out.rendersExpandedChoices = null;
       out.rendersMultiline = Boolean(text.state.multiline);
       out.rendersReadOnly = Boolean(text.state.readOnly);
-      out.rendersValueKind = valueKindFromInput(text.state.inputKind);
+      out.rendersValueKind = valueKindFromControl(text.state.inputKind, text.state.formatHint);
+    } else {
+      notes.push('Could not find the field on the canvas, so how it renders is unknown.');
+      return;
     }
 
-    if (out.rendersMultiline === null && texts.length === 0) out.rendersMultiline = false;
-    if (out.rendersReadOnly === null && texts.length === 0) out.rendersReadOnly = false;
+    if (out.rendersMultiline === null && !texts.length) out.rendersMultiline = false;
+    if (out.rendersReadOnly === null && !texts.length) out.rendersReadOnly = false;
   }
 
   /** Which region is the canvas, for drag fallbacks. */
@@ -418,11 +609,33 @@ export class Designer {
 }
 
 /**
- * Only commit to a value kind when the platform states one. Many designers
- * render every preview as a plain text box, and inferring "text" from that
- * would argue against date, time and numeric types for no reason.
+ * Identity of a control across snapshots.
+ *
+ * Refs and region ids are per-snapshot; role plus accessible name is what
+ * survives a re-render, which is exactly what is needed to ask "was this here
+ * before?".
  */
-function valueKindFromInput(inputKind: string | undefined): ValueKind | null {
+function nodeKey(node: SnapshotNode): string {
+  return `${node.role}|${node.name}`;
+}
+
+function bestLexicalName(name: string, lexicon: readonly string[]): number {
+  let best = 0;
+  for (const term of lexicon) best = Math.max(best, nameSimilarity(name, term));
+  return best;
+}
+
+/**
+ * What kind of value does this control hold?
+ *
+ * A native input type settles it outright. Failing that, many designers render
+ * every preview as a plain text box and advertise the expected shape in a
+ * placeholder — "DD-MMM-YYYY", "HH:MM" — which is then the only thing telling a
+ * date from a time from free text. That hint is read here.
+ *
+ * Returning `null` is normal and safe: an unknown kind simply does not vote.
+ */
+function valueKindFromControl(inputKind: string | undefined, formatHint: string | undefined): ValueKind | null {
   switch (inputKind) {
     case 'number':
       return 'number';
@@ -433,6 +646,18 @@ function valueKindFromInput(inputKind: string | undefined): ValueKind | null {
     case 'datetime-local':
       return 'datetime';
     default:
-      return null;
+      break;
   }
+
+  if (!formatHint) return null;
+  const hint = formatHint.toLowerCase();
+  // A clock component: an hour token, or a colon between digit placeholders.
+  const hasTime = /\bhh\b/.test(hint) || /\bhour/.test(hint) || /:\s*mm\b/.test(hint) || /\bmm\s*:/.test(hint);
+  // A calendar component: a year or day token, or a month name token.
+  const hasDate = /y{2,4}/.test(hint) || /\bdd\b/.test(hint) || /\bmmm\b/.test(hint) || /\bmonth\b/.test(hint) || /\bday\b/.test(hint);
+
+  if (hasDate && hasTime) return 'datetime';
+  if (hasDate) return 'date';
+  if (hasTime) return 'time';
+  return null;
 }

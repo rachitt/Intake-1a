@@ -76,6 +76,15 @@ export interface NodeState {
   focusable?: boolean;
   /** Input type hint when the platform gives one (number, date, time, …). */
   inputKind?: string;
+  /**
+   * A format the control advertises — a placeholder or title such as
+   * "DD-MMM-YYYY" or "HH:MM".
+   *
+   * Worth capturing because many designers render every field preview as a
+   * plain text box and let the expected format be the only thing distinguishing
+   * a date from a time from free text. It is a hint, never a guarantee.
+   */
+  formatHint?: string;
 }
 
 export interface SnapshotNode {
@@ -207,6 +216,7 @@ function renderNode(node: SnapshotNode): string {
   if (s.multiline) flags.push('multiline');
   if (s.multiSelectable) flags.push('multi-selectable');
   if (s.inputKind) flags.push(`kind=${s.inputKind}`);
+  if (s.formatHint) flags.push(`format=${JSON.stringify(s.formatHint)}`);
   if (flags.length) bits.push(`(${flags.join(' ')})`);
   return bits.join(' ');
 }

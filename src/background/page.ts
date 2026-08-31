@@ -21,7 +21,28 @@ export interface Observation {
   diff: SnapshotDiff;
 }
 
-export class Page {
+/**
+ * What the rest of the orchestrator is allowed to do to a page.
+ *
+ * Stated as an interface rather than a class so the same build pipeline can be
+ * driven against a real tab or against an in-page harness, without either one
+ * being a special case. Note what is absent: nothing here accepts a selector.
+ */
+export interface PageLike {
+  attach(): Promise<void>;
+  current(force?: boolean): Promise<Snapshot>;
+  capture(): Promise<Snapshot>;
+  act(action: ContentCommand, settleMs?: number): Promise<Observation>;
+  read(ref: Ref): Promise<ReadValue | null>;
+  click(ref: Ref, settleMs?: number): Promise<Observation>;
+  setText(ref: Ref, value: string, settleMs?: number): Promise<Observation>;
+  chooseOption(ref: Ref, value: string, settleMs?: number): Promise<Observation>;
+  setToggle(ref: Ref, desired: boolean, settleMs?: number): Promise<Observation>;
+  pressKey(ref: Ref, key: string, settleMs?: number): Promise<Observation>;
+  url(): Promise<string>;
+}
+
+export class Page implements PageLike {
   private snapshot: Snapshot | null = null;
 
   constructor(readonly tabId: number) {}

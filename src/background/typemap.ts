@@ -34,7 +34,7 @@ import { TYPE_RANKING_SCHEMA, LlmUnavailable, type Gemini } from './gemini';
 import type { Designer } from './designer';
 import type { Store } from './store';
 import type { Escalation, EscalationOption, TypeMappingEntry } from '../shared/protocol';
-import type { ObservedBehaviour, SignatureScore } from '../shared/types';
+import type { ObservedBehaviour, PlatformCapabilities, SignatureScore } from '../shared/types';
 
 /** How well an entry has to match before the agent will build 195 fields on it. */
 const ACCEPT_SCORE = 0.82;
@@ -66,6 +66,23 @@ export class TypeMapper {
 
   private get profile() {
     return this.store.profile!;
+  }
+
+  /**
+   * Which distinctions this platform has been observed to make at all.
+   *
+   * Derived from every probe so far rather than assumed. If nothing in the
+   * element library ever revealed a decimal-places setting, then the absence of
+   * one tells us about the product, not about the field — and scoring it as
+   * evidence would send every numeric field to the human gate on a platform
+   * that simply does not model precision.
+   */
+  private capabilities(): PlatformCapabilities {
+    const probes = Object.values(this.profile.probes);
+    return {
+      expressesPrecision: probes.some((o) => o.offersPrecision === true),
+      expressesTemporalOptions: probes.some((o) => o.offersTemporalOptions === true),
+    };
   }
 
   /**
@@ -106,9 +123,11 @@ export class TypeMapper {
       const probe = await this.designer.probeEntry(entry);
       for (const note of probe.notes) this.log(`  ${entry}: ${note}`, probe.cleanedUp ? 'info' : 'warn');
 
-      const ranked = CANONICAL_TYPES.map((type) => ({ type, result: scoreSignature(type, probe.observation) })).sort(
-        (a, b) => b.result.score - a.result.score,
-      );
+      const capabilities = this.capabilities();
+      const ranked = CANONICAL_TYPES.map((type) => ({
+        type,
+        result: scoreSignature(type, probe.observation, capabilities),
+      })).sort((a, b) => b.result.score - a.result.score);
       classifications.set(entry, { entry, observation: probe.observation, ranked, notes: probe.notes });
 
       const best = ranked[0];
@@ -232,15 +251,20 @@ export class TypeMapper {
     classifications: Map<string, EntryClassification>,
     prior: Map<string, number>,
   ): { entry: string | null; confidence: number; why: string; agreements: string[]; conflicts: string[] } {
+    const capabilities = this.capabilities();
     const scored = [...classifications.values()]
       .map((c) => {
-        const result = scoreSignature(type, c.observation);
+        const result = scoreSignature(type, c.observation, capabilities);
         // An entry that behaves more like some OTHER type is not this type,
         // however well it happens to score here. This cross-check is what stops
         // a single tick box being accepted as a multi-select.
-        const ownBest = c.ranked[0];
+        //
+        // Recomputed rather than taken from the classification, because what
+        // the platform has been seen to express grows as probing proceeds.
+        const ownBest = CANONICAL_TYPES.map((t) => ({ type: t, result: scoreSignature(t, c.observation, capabilities) }))
+          .sort((a, b) => b.result.score - a.result.score)[0];
         const claimedElsewhere = Boolean(ownBest && ownBest.type !== type && ownBest.result.score > result.score + 0.05);
-        return { entry: c.entry, result, claimedElsewhere, classification: c };
+        return { entry: c.entry, result, claimedElsewhere, classification: c, ownBest };
       })
       .filter((s) => s.result.coverage >= MIN_COVERAGE)
       .sort((a, b) => b.result.score - a.result.score);
@@ -265,7 +289,7 @@ export class TypeMapper {
         entry: null,
         confidence: top.result.score,
         why: top.claimedElsewhere
-          ? `The closest entry, "${top.entry}", behaves more like ${top.classification.ranked[0]?.type} than like ${type}.`
+          ? `The closest entry, "${top.entry}", behaves more like ${top.ownBest?.type} than like ${type}.`
           : `The closest entry, "${top.entry}", contradicts this type: ${top.result.conflicts.join('; ')}.`,
         agreements: top.result.agreements,
         conflicts: top.result.conflicts,
@@ -321,9 +345,10 @@ export class TypeMapper {
     why: string,
   ): Escalation {
     const affected = this.pointersForType(type);
+    const capabilities = this.capabilities();
     const options: EscalationOption[] = [...classifications.values()]
       .map((c) => {
-        const result = scoreSignature(type, c.observation);
+        const result = scoreSignature(type, c.observation, capabilities);
         return {
           id: c.entry,
           label: c.entry,

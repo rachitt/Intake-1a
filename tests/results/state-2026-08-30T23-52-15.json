@@ -1,0 +1,52 @@
+{
+  "platform": "esource-mock-a",
+  "specVersion": "esource-mock-a/1.0.0",
+  "study": {
+    "name": "ABC-101",
+    "visits": [
+      {
+        "name": "Screening",
+        "windowStart": "-28",
+        "windowEnd": "-1",
+        "forms": [
+          {
+            "name": "Informed Consent",
+            "repeating": false,
+            "status": "draft",
+            "fields": []
+          },
+          {
+            "name": "Eligibility Criteria",
+            "repeating": false,
+            "status": "draft",
+            "fields": []
+          },
+          {
+            "name": "Medical History",
+            "repeating": true,
+            "status": "draft",
+            "fields": []
+          },
+          {
+            "name": "Prior and Concomitant Medications",
+            "repeating": true,
+            "status": "draft",
+            "fields": []
+          },
+          {
+            "name": "Vital Signs",
+            "repeating": false,
+            "status": "draft",
+            "fields": []
+          },
+          {
+            "name": "Local Laboratory - Hematology",
+            "repeating": false,
+            "status": "draft",
+            "fields": []
+          }
+        ]
+      }
+    ]
+  }
+}

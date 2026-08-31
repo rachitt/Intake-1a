@@ -21,7 +21,7 @@ import { irPointer } from '../shared/ir';
 import type { Designer } from './designer';
 import type { Grounder } from './grounder';
 import type { IrField, IrForm } from '../shared/ir';
-import type { Page } from './page';
+import type { PageLike } from './page';
 import type { Snapshot, SnapshotNode } from '../shared/snapshot';
 import type { Store } from './store';
 import type { CoverageRow } from '../shared/protocol';
@@ -29,7 +29,7 @@ import type { CoverageRow } from '../shared/protocol';
 type Log = (message: string, level?: 'info' | 'warn' | 'error') => void;
 
 export async function runCoverageSweep(
-  page: Page,
+  page: PageLike,
   grounder: Grounder,
   designer: Designer,
   store: Store,
@@ -44,8 +44,13 @@ export async function runCoverageSweep(
     const visit = ir.visits[vi]!;
     if (store.aborted) break;
 
-    const visitOpen = await openVisit(page, grounder, visit.name);
+    const visitOpen = await openVisit(page, grounder, designer, visit.name);
     if (!visitOpen) {
+      const where = await page.capture();
+      log(
+        `Could not open visit "${visit.name}" to read it back; stopped on "${where.screenTitle || where.title}".`,
+        'error',
+      );
       rows.push(missingVisit(vi, visit.name, visit.forms));
       for (let fi = 0; fi < visit.forms.length; fi++) {
         rows.push(...missingForm(vi, fi, visit.name, visit.forms[fi]!, 'the visit could not be opened'));
@@ -67,6 +72,7 @@ export async function runCoverageSweep(
 
       const opened = await openDesigner(page, grounder, designer, form.name);
       if (!opened) {
+        log(`Could not open the designer for "${form.name}" to read it back.`, 'warn');
         rows.push({
           ...blankRow(irPointer.form(vi, fi), visit.name, form.name),
           present: true,
@@ -76,10 +82,10 @@ export async function runCoverageSweep(
       }
 
       rows.push(await readFormRow(page, grounder, vi, fi, visit.name, form));
-      rows.push(...(await readFieldRows(page, grounder, vi, fi, visit.name, form)));
+      rows.push(...(await readFieldRows(page, grounder, designer, vi, fi, visit.name, form)));
 
-      await leaveDesigner(page, grounder);
-      await openVisit(page, grounder, visit.name);
+      await leaveDesigner(page, grounder, designer, [visit.name]);
+      await openVisit(page, grounder, designer, visit.name);
     }
   }
 
@@ -95,46 +101,118 @@ export async function runCoverageSweep(
 
 // ── navigation ────────────────────────────────────────────────────────────────
 
-async function openVisit(page: Page, grounder: Grounder, name: string): Promise<boolean> {
-  for (let attempt = 0; attempt < 3; attempt++) {
-    let snapshot = await page.capture();
-    let node = findNamed(snapshot, name);
-    if (!node) {
-      const back = await grounder.ground(snapshot, INTENTS.gotoVisitSchedule());
-      if (!back.ok) return false;
-      await page.click(back.ref);
-      snapshot = await page.capture();
-      node = findNamed(snapshot, name);
-      if (!node) continue;
+/**
+ * Open a visit by name, from wherever we happen to be.
+ *
+ * Every step is judged by whether it achieved the goal rather than by whether
+ * the page moved, and any control that did not is ruled out for the rest of the
+ * attempt. Applications are full of controls that navigate somewhere — just not
+ * where you asked.
+ */
+async function openVisit(page: PageLike, grounder: Grounder, designer: Designer, name: string): Promise<boolean> {
+  const wrongTurns: string[] = [];
+
+  const onVisit = (snapshot: Snapshot): boolean => {
+    const ranked = grounder.rank(snapshot, { ...INTENTS.formCreate(), ignoreMemory: true })[0];
+    return Boolean(ranked && ranked.score >= 0.5);
+  };
+
+  /**
+   * Already looking at this visit?
+   *
+   * The screen's own heading is the evidence. A visit's detail screen names the
+   * visit and offers somewhere to add a document to it. Without this check the
+   * agent navigates away from the very screen it wanted in order to come back
+   * to it — and on a platform where that round trip does not land where it
+   * expects, it never arrives at all.
+   */
+  const alreadyHere = (snapshot: Snapshot): boolean =>
+    onVisit(snapshot) && snapshot.screenTitle.includes(name);
+
+  for (let attempt = 0; attempt < 8; attempt++) {
+    const snapshot = await page.capture();
+    if (alreadyHere(snapshot)) return true;
+
+
+    const row = snapshot.nodes.find((n) => n.role === 'row' && n.name.includes(name));
+    if (row) {
+      const observation = await page.click(row.ref);
+      if (onVisit(observation.after)) return true;
+      continue;
     }
-    await page.click(node.ref);
-    const after = await page.capture();
-    const ranked = grounder.rank(after, { ...INTENTS.formCreate(), ignoreMemory: true });
-    if (ranked[0] && ranked[0].score >= 0.5) return true;
+
+    // Not on a screen listing this visit. Climb out: first out of any designer,
+    // then towards the schedule.
+    if ((await designer.paletteEntries(snapshot)).length) {
+      const leave = await grounder.ground(snapshot, {
+        ...INTENTS.leaveDesigner([name]),
+        excludeNames: wrongTurns,
+        ignoreMemory: wrongTurns.length > 0,
+      });
+      if (!leave.ok) return false;
+      const moved = await page.click(leave.ref);
+      if ((await designer.paletteEntries(moved.after)).length) {
+        wrongTurns.push(leave.node.name);
+        grounder.forget(INTENTS.leaveDesigner().id);
+      }
+      continue;
+    }
+
+    const back = await grounder.ground(snapshot, {
+      ...INTENTS.gotoVisitSchedule(),
+      excludeNames: wrongTurns,
+      ignoreMemory: wrongTurns.length > 0,
+    });
+    if (!back.ok) return false;
+
+    const moved = await page.click(back.ref);
+    const reached = moved.after.nodes.some((n) => n.role === 'row' && n.name.includes(name));
+    if (!reached) {
+      wrongTurns.push(back.node.name);
+      grounder.forget(INTENTS.gotoVisitSchedule().id);
+    }
   }
   return false;
 }
 
-async function openDesigner(page: Page, grounder: Grounder, designer: Designer, formName: string): Promise<boolean> {
+async function openDesigner(page: PageLike, grounder: Grounder, designer: Designer, formName: string): Promise<boolean> {
   const snapshot = await page.capture();
-  const row = findNamed(snapshot, formName);
-  const result = await grounder.ground(snapshot, { ...INTENTS.formOpenDesigner(), nearName: row?.name ?? formName });
+  const rows = snapshot.nodes.filter((n) => n.role === 'row' && n.name.includes(formName));
+  const row = rows.sort((a, b) => a.name.length - b.name.length)[0] ?? findNamed(snapshot, formName);
+  const result = await grounder.ground(snapshot, {
+    ...INTENTS.formOpenDesigner(),
+    nearName: row?.name ?? formName,
+    ...(row?.box ? { withinBox: row.box } : {}),
+  });
   if (!result.ok) return false;
   await page.click(result.ref);
   const entries = await designer.paletteEntries(await page.capture());
   return entries.length > 0;
 }
 
-async function leaveDesigner(page: Page, grounder: Grounder): Promise<void> {
-  const snapshot = await page.capture();
-  const result = await grounder.ground(snapshot, INTENTS.leaveDesigner());
-  if (result.ok) await page.click(result.ref);
+async function leaveDesigner(page: PageLike, grounder: Grounder, designer: Designer, context: string[] = []): Promise<void> {
+  const inert: string[] = [];
+  for (let attempt = 0; attempt < 4; attempt++) {
+    const snapshot = await page.capture();
+    if (!(await designer.paletteEntries(snapshot)).length) return;
+    const result = await grounder.ground(snapshot, {
+      ...INTENTS.leaveDesigner(context),
+      excludeNames: inert,
+      ignoreMemory: inert.length > 0,
+    });
+    if (!result.ok) return;
+    const observation = await page.click(result.ref);
+    if (observation.diff.magnitude === 0) {
+      inert.push(result.node.name);
+      grounder.forget(INTENTS.leaveDesigner().id);
+    }
+  }
 }
 
 // ── reading back ──────────────────────────────────────────────────────────────
 
 async function readFormRow(
-  page: Page,
+  page: PageLike,
   grounder: Grounder,
   vi: number,
   fi: number,
@@ -158,8 +236,9 @@ async function readFormRow(
 }
 
 async function readFieldRows(
-  page: Page,
+  page: PageLike,
   grounder: Grounder,
+  designer: Designer,
   vi: number,
   fi: number,
   visitName: string,
@@ -172,7 +251,7 @@ async function readFieldRows(
     const row: CoverageRow = { ...blankRow(irPointer.field(vi, fi, xi), visitName, form.name), field: field.label };
 
     const snapshot = await page.capture();
-    const node = canvasNode(snapshot, field.label);
+    const node = designer.fieldOnCanvas(snapshot, field.label);
     if (!node) {
       row.present = false;
       row.notes.push('not found on the form');
@@ -329,14 +408,6 @@ function findNamed(snapshot: Snapshot, name: string): SnapshotNode | undefined {
   const exact = snapshot.nodes.find((n) => n.name === name);
   if (exact) return exact;
   return snapshot.nodes.filter((n) => n.name.includes(name)).sort((a, b) => a.name.length - b.name.length)[0];
-}
-
-function canvasNode(snapshot: Snapshot, label: string): SnapshotNode | undefined {
-  const excluded = new Set(['palette', 'toolbar', 'navigation', 'editor']);
-  const excludedRegions = new Set(snapshot.regions.filter((r) => excluded.has(r.kind)).map((r) => r.id));
-  return snapshot.nodes
-    .filter((n) => !excludedRegions.has(n.region) && n.name.includes(label))
-    .sort((a, b) => a.name.length - b.name.length)[0];
 }
 
 function blankRow(pointer: string, visit: string, form: string): CoverageRow {

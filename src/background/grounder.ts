@@ -46,6 +46,36 @@ export interface Intent {
   /** Prefer controls near a node with this accessible name. */
   nearName?: string;
   excludeRefs?: Ref[];
+  /**
+   * Accessible names already shown not to do the job.
+   *
+   * Real applications are full of controls that look right and do nothing — a
+   * decorative module tab, a breadcrumb to the screen you are already on. The
+   * only way to know is to press one and watch, so when a candidate turns out
+   * to be inert it is named here and the search moves on rather than pressing
+   * it again on the next attempt.
+   */
+  excludeNames?: string[];
+  /**
+   * Accessible names that appeared on screen as a result of the step just
+   * taken.
+   *
+   * This is how a dialog's own confirm button is told apart from the button
+   * that opened the dialog, on any platform: "Save Visit" appeared when the
+   * form opened and "+ Add Visit" did not. Without it, an opener whose name
+   * happens to share vocabulary with the confirm action ("Add…" / "…Add") wins
+   * on wording alone and the agent loops.
+   */
+  preferNames?: string[];
+  /**
+   * Restrict candidates to those laid out inside this box.
+   *
+   * A list of forms has one identical "Edit" control per row, and proximity
+   * alone cannot separate rows that are forty pixels apart. Containment can:
+   * the control that edits a given row is inside that row. This is geometry,
+   * not markup, so it holds however the table is built.
+   */
+  withinBox?: { x: number; y: number; w: number; h: number };
   /** Score a candidate must reach to be acted on without asking the model. */
   threshold?: number;
   /** How far ahead of the runner-up the winner must be. */
@@ -111,7 +141,13 @@ export function nameSimilarity(name: string, term: string): number {
     const stem = b.some((w) => a.some((x) => w.length >= 4 && (x.startsWith(w) || w.startsWith(x))));
     return stem ? 0.45 : 0;
   }
-  return 0.5 + 0.4 * (overlap / Math.max(a.length, b.length));
+
+  // Partial overlap has to be scored conservatively in BOTH directions.
+  // Scoring it generously is not a small inaccuracy: "Save Visit" shares one
+  // word with the hazard phrase "save as", and "+ Add Visit" shares one with
+  // "add form", so an over-generous overlap score makes the agent avoid exactly
+  // the buttons it needs and click the ones it must not.
+  return 0.5 * (overlap / b.length) + 0.3 * (overlap / a.length);
 }
 
 function bestLexical(name: string, lexicon: string[]): number {
@@ -142,11 +178,24 @@ function scoreCandidates(snapshot: Snapshot, intent: Intent): Scored[] {
     : undefined;
 
   const excluded = new Set(intent.excludeRefs ?? []);
+  const ruledOut = new Set(intent.excludeNames ?? []);
+  const preferred = new Set(intent.preferNames ?? []);
   const scored: Scored[] = [];
 
   for (const node of snapshot.nodes) {
     if (excluded.has(node.ref)) continue;
+    if (ruledOut.has(node.name)) continue;
     if (!node.name && node.role !== 'row') continue;
+
+    if (intent.withinBox) {
+      const box = node.box;
+      if (!box) continue;
+      const cx = box.x + box.w / 2;
+      const cy = box.y + box.h / 2;
+      const b = intent.withinBox;
+      const inside = cx >= b.x - 2 && cx <= b.x + b.w + 2 && cy >= b.y - 2 && cy <= b.y + b.h + 2;
+      if (!inside) continue;
+    }
 
     const why: string[] = [];
     let score = 0;
@@ -170,7 +219,10 @@ function scoreCandidates(snapshot: Snapshot, intent: Intent): Scored[] {
 
     if (intent.avoid?.length) {
       const bad = bestLexical(node.name, intent.avoid);
-      if (bad > 0.55) {
+      // Only a strong match counts as a hazard — an exact name, or one that
+      // contains the hazard phrase outright. Sharing a single common word with
+      // it does not.
+      if (bad >= 0.75) {
         score -= bad * 0.7;
         why.push(`name resembles a look-alike control to avoid (${bad.toFixed(2)})`);
       }
@@ -186,6 +238,11 @@ function scoreCandidates(snapshot: Snapshot, intent: Intent): Scored[] {
     // A name the author wrote is more trustworthy than one we inferred.
     if (node.nameFrom === 'aria-label' || node.nameFrom === 'label' || node.nameFrom === 'legend') score += 0.05;
     else if (node.nameFrom === 'placeholder' || node.nameFrom === 'title') score -= 0.05;
+
+    if (preferred.size && preferred.has(node.name)) {
+      score += 0.25;
+      why.push('appeared as a result of the step just taken');
+    }
 
     if (node.state.disabled) {
       score -= 0.5;
@@ -213,15 +270,41 @@ function scoreCandidates(snapshot: Snapshot, intent: Intent): Scored[] {
 
 // ── memory ────────────────────────────────────────────────────────────────────
 
-function fromMemory(snapshot: Snapshot, learned: LearnedControl): SnapshotNode | undefined {
-  const exact = snapshot.nodes.find(
-    (n) => n.role === learned.role && n.name === learned.name && !n.state.disabled,
-  );
+/**
+ * Re-find a control the profile remembers.
+ *
+ * The intent's HARD constraints are applied here too, and that is not a detail.
+ * A list of forms has one identically-named "Edit" control per row; once one of
+ * them has been remembered, an unconstrained lookup returns the first one on
+ * every subsequent screen — so every form after the first gets edited in the
+ * first form's designer, and every field in the study lands in one form. Memory
+ * must narrow the search, never widen it.
+ */
+function fromMemory(snapshot: Snapshot, learned: LearnedControl, intent: Intent): SnapshotNode | undefined {
+  const ruledOut = new Set(intent.excludeNames ?? []);
+  const excludedRefs = new Set(intent.excludeRefs ?? []);
+
+  const allowed = (n: SnapshotNode): boolean => {
+    if (n.state.disabled) return false;
+    if (ruledOut.has(n.name)) return false;
+    if (excludedRefs.has(n.ref)) return false;
+    if (intent.withinBox) {
+      const box = n.box;
+      if (!box) return false;
+      const cx = box.x + box.w / 2;
+      const cy = box.y + box.h / 2;
+      const b = intent.withinBox;
+      if (cx < b.x - 2 || cx > b.x + b.w + 2 || cy < b.y - 2 || cy > b.y + b.h + 2) return false;
+    }
+    return true;
+  };
+
+  const exact = snapshot.nodes.find((n) => n.role === learned.role && n.name === learned.name && allowed(n));
   if (exact) return exact;
   // Tolerate cosmetic re-wording ("Save" → "Save form"), but not a different
   // control: the role still has to match and the name still has to mean the same.
   return snapshot.nodes.find(
-    (n) => n.role === learned.role && !n.state.disabled && nameSimilarity(n.name, learned.name) >= 0.85,
+    (n) => n.role === learned.role && allowed(n) && nameSimilarity(n.name, learned.name) >= 0.85,
   );
 }
 
@@ -246,7 +329,7 @@ export class Grounder {
     if (!intent.ignoreMemory) {
       const learned = profile.controls[intent.id];
       if (learned) {
-        const node = fromMemory(snapshot, learned);
+        const node = fromMemory(snapshot, learned, intent);
         if (node) {
           return {
             ok: true,

@@ -21,14 +21,27 @@ import type { Ref, Role, Snapshot, SnapshotNode, SnapshotRegion } from '../share
 
 let snapshotCounter = 0;
 let refCounter = 0;
-/** Two generations are kept so a ref taken from the previous snapshot still resolves. */
-let currentRefs = new Map<Ref, Element>();
-let previousRefs = new Map<Ref, Element>();
+
+/**
+ * Several generations of refs are kept alive at once.
+ *
+ * A single logical step routinely spans more than two snapshots — write a code,
+ * write a label, then read both back — and each action re-captures. Keeping
+ * only the latest two generations means the ref taken at the start of the step
+ * has already been evicted by the time it is read, which looks exactly like the
+ * control having vanished. Callers must still cope with `null`, because a
+ * re-render genuinely does replace elements; this only removes the failures
+ * that were an artefact of bookkeeping.
+ */
+const REF_GENERATIONS = 5;
+const generations: Map<Ref, Element>[] = [new Map()];
 
 export function resolveRef(ref: Ref): Element | null {
-  const el = currentRefs.get(ref) ?? previousRefs.get(ref) ?? null;
-  if (!el || !el.isConnected) return null;
-  return el;
+  for (const generation of generations) {
+    const el = generation.get(ref);
+    if (el && el.isConnected) return el;
+  }
+  return null;
 }
 
 // ── visibility ────────────────────────────────────────────────────────────────
@@ -158,6 +171,9 @@ function nodeState(el: Element, role: Role, inModal: boolean): SnapshotNode['sta
     state.inputKind = 'textarea';
   }
 
+  const hint = normaliseText(el.getAttribute('placeholder') ?? el.getAttribute('title'));
+  if (hint) state.formatHint = hint;
+
   if (he.tabIndex >= 0) state.focusable = true;
 
   return state;
@@ -225,8 +241,13 @@ function partitionRegions(interactive: Element[]): Map<Element, Element[]> {
     }
     if (groups.size === 0) return assign(container, members);
 
+    // A semantic boundary is a good place to CUT, but it must never stop a
+    // descent: a whole form designer is usually wrapped in one <main>, and
+    // treating that as a single cluster collapses the palette, the canvas and
+    // the property editor into one undifferentiated blob — which is precisely
+    // the structure the agent needs to tell apart.
     for (const [child, list] of groups) {
-      if (list.length <= MAX_CLUSTER || isSemanticBoundary(child)) assign(child, list);
+      if (list.length <= MAX_CLUSTER) assign(child, list);
       else descend(child, list);
     }
     if (direct.length) assign(container, direct);
@@ -294,8 +315,13 @@ function classifyRegion(container: Element, members: Element[], nodes: SnapshotN
     return { kind: 'dialog', confidence: 0.9, evidence };
   }
 
-  // A palette: many similar activatable items, structurally uniform, few inputs.
-  if (buttons >= 4 && inputs <= 1 && buttons / Math.max(count, 1) > 0.7) {
+  // A palette: MANY similar activatable items, structurally uniform, few inputs.
+  //
+  // The threshold is deliberately well above what a navigation bar or a button
+  // group contains. A palette of field types is a long list by nature, and
+  // mistaking a four-item nav strip for one sends the agent clicking around the
+  // application chrome looking for a place to add a field.
+  if (buttons >= 6 && inputs <= 1 && buttons / Math.max(count, 1) > 0.7) {
     const uniform = structuralUniformity(members);
     evidence.push(`${buttons} similar activatable items`, `structural uniformity ${uniform.toFixed(2)}`);
     if (tall) evidence.push('arranged as a tall column');
@@ -396,8 +422,9 @@ function liveRegionText(): string[] {
  * doing reconnaissance and needs to read what is on screen rather than act.
  */
 export function captureSnapshot(opts: { includeGeneric?: boolean } = {}): Snapshot {
-  previousRefs = currentRefs;
-  currentRefs = new Map();
+  generations.unshift(new Map());
+  generations.length = Math.min(generations.length, REF_GENERATIONS);
+  const currentRefs = generations[0]!;
   const id = ++snapshotCounter;
 
   const modal = findActiveModal(document);

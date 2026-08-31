@@ -46,6 +46,20 @@ export interface CapabilitySignature {
   readonly valueKind: ValueKind;
   readonly presentation: Presentation;
   /**
+   * Holds a point in time, so a platform may offer calendar/clock-specific
+   * settings for it (allowed date ranges, pickers, formats).
+   */
+  readonly temporal: boolean;
+  /**
+   * How a two-state control presents itself, for the types that have one.
+   *
+   * `tick` is a single box that is on or off. `named-pair` offers two named
+   * states — Yes and No. Their capability signatures are otherwise identical,
+   * so without this the agent cannot tell a checkbox from a yes/no field, and
+   * that is one of the pairs the brief singles out as routinely confused.
+   */
+  readonly binaryShape: 'tick' | 'named-pair' | null;
+  /**
    * Vocabulary hints used ONLY as a weak prior when ranking candidates before
    * probing. These are canonical-domain words, not any platform's words — the
    * agent must still work when a library calls a dropdown a "Combo".
@@ -63,12 +77,17 @@ function sig(s: CapabilitySignature): CapabilitySignature {
   return s;
 }
 
+function isTemporal(kind: ValueKind): boolean {
+  return kind === 'date' || kind === 'time' || kind === 'datetime';
+}
+
 export const SIGNATURES: Record<CanonicalType, CapabilitySignature> = {
   text: sig({
     id: 'text',
     meaning: 'Free text, one line.',
     hasOptions: false, multiSelect: null, hasRange: false, hasFormula: false,
     multiline: false, valueKind: 'text', presentation: 'none',
+    temporal: false, binaryShape: null,
     lexicon: ['text', 'single line', 'one line', 'string', 'short answer', 'textbox', 'free text', 'input'],
     confusableWith: ['textarea'],
   }),
@@ -77,6 +96,7 @@ export const SIGNATURES: Record<CanonicalType, CapabilitySignature> = {
     meaning: 'Free text, multiple lines.',
     hasOptions: false, multiSelect: null, hasRange: false, hasFormula: false,
     multiline: true, valueKind: 'text', presentation: 'none',
+    temporal: false, binaryShape: null,
     lexicon: ['multi line', 'multiline', 'paragraph', 'long text', 'text area', 'comment', 'notes', 'memo'],
     confusableWith: ['text'],
   }),
@@ -85,6 +105,7 @@ export const SIGNATURES: Record<CanonicalType, CapabilitySignature> = {
     meaning: 'Whole number; may carry a min/max range and units.',
     hasOptions: false, multiSelect: null, hasRange: true, hasFormula: false,
     multiline: false, valueKind: 'number', presentation: 'none',
+    temporal: false, binaryShape: null,
     lexicon: ['integer', 'whole', 'number', 'numeric', 'count'],
     confusableWith: ['decimal'],
   }),
@@ -93,6 +114,7 @@ export const SIGNATURES: Record<CanonicalType, CapabilitySignature> = {
     meaning: 'Number with a fractional part; may carry a min/max range and units.',
     hasOptions: false, multiSelect: null, hasRange: true, hasFormula: false,
     multiline: false, valueKind: 'number', presentation: 'none',
+    temporal: false, binaryShape: null,
     lexicon: ['decimal', 'float', 'fractional', 'real', 'number', 'numeric', 'precision'],
     confusableWith: ['integer'],
   }),
@@ -101,6 +123,7 @@ export const SIGNATURES: Record<CanonicalType, CapabilitySignature> = {
     meaning: 'Calendar date, no time of day.',
     hasOptions: false, multiSelect: null, hasRange: false, hasFormula: false,
     multiline: false, valueKind: 'date', presentation: 'none',
+    temporal: true, binaryShape: null,
     lexicon: ['date', 'calendar', 'day'],
     confusableWith: ['datetime'],
   }),
@@ -109,6 +132,7 @@ export const SIGNATURES: Record<CanonicalType, CapabilitySignature> = {
     meaning: 'Time of day, no date.',
     hasOptions: false, multiSelect: null, hasRange: false, hasFormula: false,
     multiline: false, valueKind: 'time', presentation: 'none',
+    temporal: true, binaryShape: null,
     lexicon: ['time', 'clock', 'hour', 'time of day'],
     confusableWith: ['datetime'],
   }),
@@ -117,6 +141,7 @@ export const SIGNATURES: Record<CanonicalType, CapabilitySignature> = {
     meaning: 'Date and time of day together.',
     hasOptions: false, multiSelect: null, hasRange: false, hasFormula: false,
     multiline: false, valueKind: 'datetime', presentation: 'none',
+    temporal: true, binaryShape: null,
     lexicon: ['date time', 'datetime', 'timestamp', 'date and time'],
     confusableWith: ['date', 'time'],
   }),
@@ -125,6 +150,7 @@ export const SIGNATURES: Record<CanonicalType, CapabilitySignature> = {
     meaning: 'Yes / No. Two named states, not a list and not a single tick.',
     hasOptions: false, multiSelect: null, hasRange: false, hasFormula: false,
     multiline: false, valueKind: 'binary', presentation: 'none',
+    temporal: false, binaryShape: 'named-pair',
     lexicon: ['yes no', 'yes/no', 'boolean', 'toggle', 'switch', 'true false'],
     confusableWith: ['checkbox', 'radio'],
   }),
@@ -133,6 +159,7 @@ export const SIGNATURES: Record<CanonicalType, CapabilitySignature> = {
     meaning: 'Choose exactly one from a coded list; choices are hidden until opened.',
     hasOptions: true, multiSelect: false, hasRange: false, hasFormula: false,
     multiline: false, valueKind: 'coded', presentation: 'collapsed',
+    temporal: false, binaryShape: null,
     lexicon: ['dropdown', 'drop down', 'select', 'picklist', 'pick list', 'combo', 'combobox', 'choice', 'select one', 'list'],
     confusableWith: ['radio', 'multi_select'],
   }),
@@ -141,6 +168,7 @@ export const SIGNATURES: Record<CanonicalType, CapabilitySignature> = {
     meaning: 'Choose zero or more from a coded list. A LIST of ticks, not one tick.',
     hasOptions: true, multiSelect: true, hasRange: false, hasFormula: false,
     multiline: false, valueKind: 'coded', presentation: 'expanded',
+    temporal: false, binaryShape: null,
     lexicon: ['multi select', 'multiple', 'check list', 'checklist', 'select many', 'select all that apply', 'multi'],
     confusableWith: ['checkbox', 'single_select'],
   }),
@@ -149,6 +177,7 @@ export const SIGNATURES: Record<CanonicalType, CapabilitySignature> = {
     meaning: 'Choose exactly one from a coded list, with all choices visible at once.',
     hasOptions: true, multiSelect: false, hasRange: false, hasFormula: false,
     multiline: false, valueKind: 'coded', presentation: 'expanded',
+    temporal: false, binaryShape: null,
     lexicon: ['radio', 'option button', 'radio group', 'single choice', 'one of'],
     confusableWith: ['single_select', 'multi_select'],
   }),
@@ -157,14 +186,16 @@ export const SIGNATURES: Record<CanonicalType, CapabilitySignature> = {
     meaning: 'A single tick — on or off. NOT a list of choices.',
     hasOptions: false, multiSelect: null, hasRange: false, hasFormula: false,
     multiline: false, valueKind: 'binary', presentation: 'none',
+    temporal: false, binaryShape: 'tick',
     lexicon: ['checkbox', 'check box', 'tick', 'tick box', 'single check', 'flag'],
     confusableWith: ['multi_select', 'boolean'],
   }),
   calculated: sig({
     id: 'calculated',
     meaning: 'Derived from other fields by a formula; never entered by hand.',
-    hasOptions: false, multiSelect: null, hasRange: false, hasFormula: false,
+    hasOptions: false, multiSelect: null, hasRange: false, hasFormula: true,
     multiline: false, valueKind: 'derived', presentation: 'none',
+    temporal: false, binaryShape: null,
     lexicon: ['calculated', 'computed', 'derived', 'formula', 'expression', 'auto'],
     confusableWith: [],
   }),
@@ -184,6 +215,8 @@ export interface ObservedBehaviour {
   offersFormula: boolean | null;
   /** The editor revealed a decimal-places / precision input. */
   offersPrecision: boolean | null;
+  /** The editor revealed calendar/clock settings — allowed dates, pickers, formats. */
+  offersTemporalOptions: boolean | null;
   /** The rendered control lets more than one choice be held at once. */
   rendersMultiSelect: boolean | null;
   /** The rendered control shows all its choices at once. */
@@ -194,6 +227,8 @@ export interface ObservedBehaviour {
   rendersMultiline: boolean | null;
   /** The rendered control is read-only / not user-enterable. */
   rendersReadOnly: boolean | null;
+  /** Shape of a two-state control, when the rendering is one. */
+  rendersBinaryShape: 'tick' | 'named-pair' | null;
   /** Best guess at the value domain from the rendered control, when detectable. */
   rendersValueKind: ValueKind | null;
 }
@@ -204,11 +239,13 @@ export function emptyObservation(): ObservedBehaviour {
     offersRange: null,
     offersFormula: null,
     offersPrecision: null,
+    offersTemporalOptions: null,
     rendersMultiSelect: null,
     rendersExpandedChoices: null,
     rendersBinary: null,
     rendersMultiline: null,
     rendersReadOnly: null,
+    rendersBinaryShape: null,
     rendersValueKind: null,
   };
 }
@@ -242,7 +279,26 @@ interface Check {
  * multi_select differ — and that pair is the single most expensive confusion
  * in the assignment.
  */
-export function scoreSignature(type: CanonicalType, obs: ObservedBehaviour): SignatureScore {
+/**
+ * Which distinctions this platform is capable of expressing at all.
+ *
+ * Absence of an affordance only means something once the platform has been
+ * shown to have the concept. If no entry anywhere revealed a decimal-places
+ * setting, then "this one has no decimal-places setting" is not evidence
+ * against it being the decimal type — it is evidence about the platform. Making
+ * that distinction is what keeps the agent from escalating every numeric field
+ * on a product that simply does not model precision.
+ */
+export interface PlatformCapabilities {
+  expressesPrecision: boolean;
+  expressesTemporalOptions: boolean;
+}
+
+export function scoreSignature(
+  type: CanonicalType,
+  obs: ObservedBehaviour,
+  capabilities: PlatformCapabilities = { expressesPrecision: true, expressesTemporalOptions: true },
+): SignatureScore {
   const s = SIGNATURES[type];
 
   const checks: Check[] = [
@@ -304,11 +360,24 @@ export function scoreSignature(type: CanonicalType, obs: ObservedBehaviour): Sig
     },
     // Precision separates integer from decimal on platforms that expose it.
     {
-      expected: type === 'decimal' ? true : type === 'integer' ? false : null,
+      expected: !capabilities.expressesPrecision ? null : type === 'decimal' ? true : type === 'integer' ? false : null,
       observed: obs.offersPrecision,
       weight: 3,
       agreeText: type === 'decimal' ? 'offers a decimal-places setting' : 'offers no decimal-places setting, correct for whole numbers',
       conflictText: type === 'decimal' ? 'offers no decimal-places setting, but this type is fractional' : 'offers a decimal-places setting, but this type is whole-number only',
+    },
+    // Calendar/clock settings separate the temporal types from free text on
+    // platforms that offer them.
+    {
+      expected: capabilities.expressesTemporalOptions ? s.temporal : null,
+      observed: obs.offersTemporalOptions,
+      weight: 3,
+      agreeText: s.temporal
+        ? 'offers calendar/clock settings, as a date or time field does'
+        : 'offers no calendar/clock settings, correct for a non-temporal type',
+      conflictText: s.temporal
+        ? 'offers no calendar/clock settings, but this type holds a point in time'
+        : 'offers calendar/clock settings, but this type does not hold a point in time',
     },
   ];
 
@@ -333,12 +402,42 @@ export function scoreSignature(type: CanonicalType, obs: ObservedBehaviour): Sig
     }
   }
 
-  // Value-kind agreement is a soft bonus; many platforms do not expose enough
-  // to infer it, so it never counts against a candidate.
-  if (obs.rendersValueKind && obs.rendersValueKind === s.valueKind) {
-    earned += 1;
-    possible += 1;
-    agreements.push(`holds ${s.valueKind} values`);
+  // Value-kind agreement is a strong POSITIVE signal but rarely a negative one:
+  // many designers render every preview as a plain text box, and concluding
+  // "not a date" from that would be reading absence as evidence. The exception
+  // is between temporal kinds, which are mutually exclusive — something
+  // advertising a clock format is not a calendar field.
+  if (obs.rendersValueKind) {
+    if (obs.rendersValueKind === s.valueKind) {
+      earned += 3;
+      possible += 3;
+      agreements.push(`holds ${s.valueKind} values`);
+    } else if (isTemporal(obs.rendersValueKind) && isTemporal(s.valueKind)) {
+      possible += 3;
+      conflicts.push(`holds ${obs.rendersValueKind} values, but this type holds ${s.valueKind}`);
+    } else if (isTemporal(obs.rendersValueKind) !== isTemporal(s.valueKind)) {
+      possible += 3;
+      conflicts.push(`holds ${obs.rendersValueKind} values, but this type holds ${s.valueKind}`);
+    }
+  }
+
+  // The shape of a two-state control: a single tick, or two named states.
+  if (obs.rendersBinaryShape && s.binaryShape) {
+    possible += 3;
+    if (obs.rendersBinaryShape === s.binaryShape) {
+      earned += 3;
+      agreements.push(s.binaryShape === 'tick' ? 'is a single tick box' : 'offers two named states');
+    } else {
+      conflicts.push(
+        s.binaryShape === 'tick'
+          ? 'offers two named states, but this type is a single tick'
+          : 'is a single tick, but this type offers two named states',
+      );
+    }
+  } else if (obs.rendersBinaryShape === 'named-pair' && !s.binaryShape) {
+    // Two named states is a strong claim to being a yes/no field specifically.
+    possible += 2;
+    conflicts.push('offers two named states, which this type does not');
   }
 
   return {

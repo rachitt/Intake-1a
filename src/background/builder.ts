@@ -30,7 +30,7 @@ import { SIGNATURES } from '../shared/types';
 import { formFingerprint, irPointer, type CanonicalType, type IrField, type IrForm, type IrStudy, type IrVisit } from '../shared/ir';
 import type { Designer } from './designer';
 import type { Grounder } from './grounder';
-import type { Page } from './page';
+import type { PageLike } from './page';
 import type { Store } from './store';
 import type { TypeMapper } from './typemap';
 import type { Escalation, EscalationResolution, ProgressNode, TaskStatus } from '../shared/protocol';
@@ -49,7 +49,7 @@ export class Builder {
   private commitProven = false;
 
   constructor(
-    private page: Page,
+    private page: PageLike,
     private grounder: Grounder,
     private designer: Designer,
     private typeMapper: TypeMapper,
@@ -148,33 +148,123 @@ export class Builder {
    * its address, and a platform that does is not owed a special case.
    */
   private async goToVisitSchedule(): Promise<boolean> {
-    for (let attempt = 0; attempt < 4; attempt++) {
+    const wrongTurns: string[] = [];
+
+    for (let attempt = 0; attempt < 6; attempt++) {
       const snapshot = await this.page.capture();
       if (this.visitScheduleVisible(snapshot)) return true;
 
-      const result = await this.grounder.ground(snapshot, INTENTS.gotoVisitSchedule());
+      const result = await this.grounder.ground(snapshot, {
+        ...INTENTS.gotoVisitSchedule([this.ir.study?.protocol_id ?? ''].filter(Boolean)),
+        excludeNames: wrongTurns,
+        ignoreMemory: wrongTurns.length > 0,
+      });
       if (!result.ok) break;
-      await this.page.click(result.ref);
+
+      const observation = await this.page.click(result.ref);
+      if (this.visitScheduleVisible(observation.after)) return true;
+
+      // Judged by the GOAL, not by whether anything moved. A decorative module
+      // tab produces no change; a breadcrumb to the wrong level produces plenty.
+      // Both are equally not the way to the visit schedule, and testing for
+      // "did something happen" mistakes the second kind for success.
+      wrongTurns.push(result.node.name);
+      this.grounder.forget(INTENTS.gotoVisitSchedule().id);
+      this.log(`"${result.node.name}" did not lead to the visit schedule; trying another way.`);
     }
 
     const snapshot = await this.page.capture();
     if (this.visitScheduleVisible(snapshot)) return true;
-    this.log('Could not get back to the visit schedule.', 'warn');
+    const considered = this.grounder
+      .rank(snapshot, { ...INTENTS.gotoVisitSchedule(), ignoreMemory: true })
+      .slice(0, 3)
+      .map((c) => `"${c.node.name}" (${c.score.toFixed(2)})`)
+      .join(', ');
+    this.log(
+      `Could not get back to the visit schedule; still on "${snapshot.screenTitle || snapshot.title}". Considered: ${considered || 'nothing'}.`,
+      'warn',
+    );
     return false;
   }
 
   /**
    * Are we looking at the visit list?
    *
-   * Judged by evidence rather than by a screen name: either a visit we expect
-   * is on screen, or there is somewhere to create one. Both hold on an empty
-   * study, which is where a run starts.
+   * Judged by evidence, not by a screen title, since screen titles are one of
+   * the things that differ between platforms. Two signals, in order:
+   *
+   *   - A palette of field types means we are inside a form designer, whatever
+   *     else is on screen. This check has to come first: a designer usually
+   *     shows the visit's name in its breadcrumb, and matching on that alone
+   *     would conclude we are on the schedule while standing in an editor.
+   *   - Otherwise, the presence of somewhere to create a VISIT specifically —
+   *     which is distinguishable from somewhere to create a document only
+   *     because the intents name each other's nouns as hazards.
    */
   private visitScheduleVisible(snapshot: Snapshot): boolean {
-    const anyVisitVisible = this.ir.visits.some((v) => this.findByName(snapshot, v.name));
-    if (anyVisitVisible) return true;
+    if (this.inDesigner(snapshot)) return false;
     const ranked = this.grounder.rank(snapshot, { ...INTENTS.visitCreate(), ignoreMemory: true });
-    return Boolean(ranked[0] && ranked[0].score >= 0.55);
+    if (ranked[0] && ranked[0].score >= 0.55) return true;
+    // A schedule with rows for visits we expect is a schedule even if its
+    // create affordance is worded unusually.
+    return this.ir.visits.some((v) => snapshot.nodes.some((n) => n.role === 'row' && n.name.includes(v.name)));
+  }
+
+  /** Looking at one visit's list of source documents. */
+  private onVisitDetail(snapshot: Snapshot, visitName: string): boolean {
+    if (this.inDesigner(snapshot)) return false;
+    const canAddDocument = this.grounder.rank(snapshot, { ...INTENTS.formCreate(), ignoreMemory: true })[0];
+    if (!canAddDocument || canAddDocument.score < 0.5) return false;
+    // The visit's name must be in the screen's own heading. Accepting a mention
+    // anywhere would match the schedule itself, where every visit is named in a
+    // row — and the agent would then start building documents without ever
+    // opening a visit.
+    return snapshot.screenTitle.includes(visitName);
+  }
+
+  /** A palette of field types is present, so we are inside a form designer. */
+  private inDesigner(snapshot: Snapshot): boolean {
+    return snapshot.regions.some((r) => r.kind === 'palette' && r.confidence >= 0.6);
+  }
+
+  /**
+   * Get out of the form designer, if we are in one.
+   *
+   * Always via the platform's own affordance, and never while there is unsaved
+   * work — navigating away from a designer commonly discards the working copy
+   * without warning, which is the single easiest way to lose an entire form.
+   */
+  private async leaveDesignerIfOpen(context: string[] = []): Promise<void> {
+    const wrongTurns: string[] = [];
+    for (let attempt = 0; attempt < 4; attempt++) {
+      const snapshot = await this.page.capture();
+      if (!this.inDesigner(snapshot)) return;
+
+      const leave = await this.grounder.ground(snapshot, {
+        ...INTENTS.leaveDesigner(context),
+        excludeNames: wrongTurns,
+        ignoreMemory: wrongTurns.length > 0,
+      });
+      if (!leave.ok) return;
+
+      const observation = await this.page.click(leave.ref);
+      if (!this.inDesigner(observation.after)) return;
+
+      wrongTurns.push(leave.node.name);
+      this.grounder.forget(INTENTS.leaveDesigner().id);
+    }
+  }
+
+  /**
+   * The list row for a named thing.
+   *
+   * Prefers a node whose role actually is a row, because its box is the band
+   * that owns the per-row actions. Falls back to whatever carries the name.
+   */
+  private rowFor(snapshot: Snapshot, name: string): SnapshotNode | undefined {
+    const rows = snapshot.nodes.filter((n) => n.role === 'row' && n.name.includes(name));
+    if (rows.length) return rows.sort((a, b) => a.name.length - b.name.length)[0];
+    return this.findByName(snapshot, name);
   }
 
   /** A control on screen that carries this exact name, or clearly contains it. */
@@ -209,23 +299,32 @@ export class Builder {
       return false;
     }
 
-    await this.page.click(open.ref);
+    const opened = await this.page.click(open.ref);
     this.audit(pointer, `open the "create visit" form`, {
       chose: { role: open.node.role, name: open.node.name },
       rationale: open.rationale,
       confidence: open.confidence,
     });
 
-    const nameResult = await this.designer.setText(INTENTS.visitName(), visit.name);
+    // The controls that appeared when the form opened are the form's own. This
+    // is what keeps the agent from mistaking the button it just pressed for the
+    // one that confirms — a loop that costs nothing to enter and never ends.
+    const appeared = opened.diff.addedNodes.map((n) => n.name).filter(Boolean);
+
+    const nameResult = await this.designer.setText({ ...INTENTS.visitName(), preferNames: appeared }, visit.name);
     if (!nameResult.ok) this.log(`Visit name could not be entered: ${nameResult.detail}`, 'warn');
 
     // Window days are entered verbatim. A platform that wants calendar dates
     // instead cannot be satisfied without a baseline date, which the input file
     // does not carry — that is recorded as an assumption, not silently guessed.
-    await this.designer.setText(INTENTS.visitWindowStart(), String(visit.window_start_day));
-    await this.designer.setText(INTENTS.visitWindowEnd(), String(visit.window_end_day));
+    await this.designer.setText({ ...INTENTS.visitWindowStart(), preferNames: appeared }, String(visit.window_start_day));
+    await this.designer.setText({ ...INTENTS.visitWindowEnd(), preferNames: appeared }, String(visit.window_end_day));
 
-    const confirm = await this.grounder.ground(await this.page.capture(), INTENTS.visitConfirm());
+    const confirm = await this.grounder.ground(await this.page.capture(), {
+      ...INTENTS.visitConfirm(),
+      preferNames: appeared,
+      excludeRefs: [open.ref],
+    });
     if (!confirm.ok) {
       await this.escalateGrounding(pointer, 'save the new visit', confirm.reason, confirm.candidates);
       this.mark(pointer, 'escalated');
@@ -255,6 +354,14 @@ export class Builder {
   }
 
   private async openVisit(visit: IrVisit): Promise<boolean> {
+    await this.leaveDesignerIfOpen([visit.name]);
+
+    // Already on it? Its detail screen names the visit and offers somewhere to
+    // add a document to it. Navigating away and back happens to work here and
+    // may not on the next platform, so the cheapest correct move is to notice.
+    const here = await this.page.capture();
+    if (this.onVisitDetail(here, visit.name)) return true;
+
     await this.goToVisitSchedule();
     const snapshot = await this.page.capture();
     const node = this.findByName(snapshot, visit.name);
@@ -290,6 +397,9 @@ export class Builder {
     const pointer = irPointer.form(vi, fi);
     this.mark(pointer, 'running');
 
+    const entry = await this.page.capture();
+    this.log(`Building "${form.name}" (starting from "${entry.screenTitle || entry.title}").`);
+
     const created = await this.ensureForm(form, pointer);
     if (!created) {
       this.mark(pointer, 'escalated');
@@ -309,7 +419,7 @@ export class Builder {
     await this.applySkipLogic(form, vi, fi);
 
     const committed = await this.commit(pointer, form);
-    const verified = await this.verifyForm(form, vi, fi, pointer);
+    const verified = await this.verifyForm(visit, form, vi, fi, pointer);
 
     this.mark(pointer, verified ? 'verified' : committed ? 'built' : 'failed');
     this.store.state.counters.formsBuilt++;
@@ -336,13 +446,14 @@ export class Builder {
       await this.escalateGrounding(pointer, 'create a source document', open.reason, open.candidates);
       return false;
     }
-    await this.page.click(open.ref);
+    const opened = await this.page.click(open.ref);
+    const appeared = opened.diff.addedNodes.map((n) => n.name).filter(Boolean);
 
-    const nameResult = await this.designer.setText(INTENTS.formName(), form.name);
+    const nameResult = await this.designer.setText({ ...INTENTS.formName(), preferNames: appeared }, form.name);
     if (!nameResult.ok) this.log(`Form name could not be entered: ${nameResult.detail}`, 'warn');
 
     if (form.repeating) {
-      const repeating = await this.designer.setToggle(INTENTS.formRepeating(), true);
+      const repeating = await this.designer.setToggle({ ...INTENTS.formRepeating(), preferNames: appeared }, true);
       if (!repeating.ok) {
         await this.gate.raise({
           id: `repeating:${pointer}`,
@@ -362,7 +473,11 @@ export class Builder {
       }
     }
 
-    const confirm = await this.grounder.ground(await this.page.capture(), INTENTS.formConfirm());
+    const confirm = await this.grounder.ground(await this.page.capture(), {
+      ...INTENTS.formConfirm(),
+      preferNames: appeared,
+      excludeRefs: [open.ref],
+    });
     if (!confirm.ok) {
       await this.escalateGrounding(pointer, 'save the new source document', confirm.reason, confirm.candidates);
       return false;
@@ -393,13 +508,25 @@ export class Builder {
   private async openDesigner(form: IrForm, pointer: string): Promise<boolean> {
     for (let attempt = 0; attempt < 2; attempt++) {
       const snapshot = await this.page.capture();
-      const row = this.findByName(snapshot, form.name);
-      const intent = { ...INTENTS.formOpenDesigner(), nearName: row?.name ?? form.name };
+      const row = this.rowFor(snapshot, form.name);
+
+      // Scope the search to this form's own row. A list of documents has one
+      // identical edit control per row, and being "near" the right row is not
+      // enough to tell forty-pixel-apart rows apart — being INSIDE it is.
+      const intent = {
+        ...INTENTS.formOpenDesigner(),
+        nearName: row?.name ?? form.name,
+        ...(row?.box ? { withinBox: row.box } : {}),
+      };
 
       const edit = await this.grounder.ground(snapshot, intent);
       if (edit.ok) {
         await this.page.click(edit.ref);
         if (await this.designerOpen()) {
+          this.log(
+            `Opened the designer for "${form.name}" via "${edit.node.name}"` +
+              (row ? ` scoped to its row` : ' (no row found to scope to)'),
+          );
           this.audit(pointer, `open the designer for "${form.name}"`, {
             chose: { role: edit.node.role, name: edit.node.name },
             rationale: edit.rationale,
@@ -410,9 +537,12 @@ export class Builder {
       }
 
       // Perhaps it is locked. Look for the affordance that reopens it.
-      const version = await this.grounder.ground(await this.page.capture(), {
+      const versionSnapshot = await this.page.capture();
+      const versionRow = this.rowFor(versionSnapshot, form.name);
+      const version = await this.grounder.ground(versionSnapshot, {
         ...INTENTS.formNewVersion(),
-        nearName: row?.name ?? form.name,
+        nearName: versionRow?.name ?? form.name,
+        ...(versionRow?.box ? { withinBox: versionRow.box } : {}),
       });
       if (!version.ok) break;
       await this.page.click(version.ref);
@@ -561,35 +691,12 @@ export class Builder {
   private async enterOptions(field: IrField, pointer: string): Promise<void> {
     const options = field.options ?? [];
     let entered = 0;
+    const failures: string[] = [];
 
     for (const option of options) {
-      const snapshot = await this.page.capture();
-      const add = await this.grounder.ground(snapshot, INTENTS.optionAdd());
-      if (!add.ok) break;
-      await this.page.click(add.ref);
-
-      const after = await this.page.capture();
-      const codeCandidates = this.grounder.rank(after, { ...INTENTS.optionCode(), ignoreMemory: true }).filter((c) => c.score > 0.4);
-      const labelCandidates = this.grounder.rank(after, { ...INTENTS.optionLabel(), ignoreMemory: true }).filter((c) => c.score > 0.4);
-
-      // The row just added is the last one on screen.
-      const codeNode = codeCandidates.at(-1);
-      const labelNode = labelCandidates.at(-1);
-
-      // A code is what the system stores; a label is what a human reads.
-      // Entering only labels produces a field that looks right and stores the
-      // wrong thing, so both are required for the row to count.
-      let okCode = false;
-      let okLabel = false;
-      if (codeNode) {
-        await this.page.setText(codeNode.node.ref, option.code);
-        okCode = (await this.page.read(codeNode.node.ref))?.value === option.code;
-      }
-      if (labelNode) {
-        await this.page.setText(labelNode.node.ref, option.label);
-        okLabel = (await this.page.read(labelNode.node.ref))?.value === option.label;
-      }
-      if (okCode && okLabel) entered++;
+      const row = await this.designer.addOptionRow(option.code, option.label);
+      if (row.ok) entered++;
+      else failures.push(row.detail);
     }
 
     if (entered !== options.length) {
@@ -597,7 +704,9 @@ export class Builder {
         id: `values:${pointer}`,
         kind: 'coded_values',
         question: `The coded value list for "${field.label}" did not go in cleanly. How should it be handled?`,
-        reason: `${entered} of ${options.length} value(s) were entered and read back with both a code and a label.`,
+        reason:
+          `${entered} of ${options.length} value(s) were entered and read back with both a code and a label.` +
+          (failures.length ? ` First problem: ${failures[0]}` : ''),
         consequence:
           'A field whose value list is short or label-only looks correct on screen and stores the wrong thing, which is not discovered until data is being analysed.',
         affectedCount: 1,
@@ -613,9 +722,7 @@ export class Builder {
   }
 
   private fieldOnCanvas(snapshot: Snapshot, label: string): boolean {
-    const excluded = new Set(['palette', 'toolbar', 'navigation']);
-    const excludedRegions = new Set(snapshot.regions.filter((r) => excluded.has(r.kind)).map((r) => r.id));
-    return snapshot.nodes.some((n) => !excludedRegions.has(n.region) && (n.name === label || n.name.startsWith(`${label}:`)));
+    return Boolean(this.designer.fieldOnCanvas(snapshot, label));
   }
 
   // ── skip logic (second pass) ────────────────────────────────────────────────
@@ -639,13 +746,12 @@ export class Builder {
       const pointer = irPointer.field(vi, fi, xi);
       const rule = field.skip_logic!;
 
-      const snapshot = await this.page.capture();
-      const target = this.canvasNode(snapshot, field.label);
-      if (!target) {
-        this.log(`Cannot apply a display rule to "${field.label}" — it is not on the canvas.`, 'warn');
+      const selected = await this.designer.selectFieldOnCanvas(field.label);
+      if (!selected) {
+        this.log(`Cannot apply a display rule to "${field.label}" — it could not be selected on the canvas.`, 'warn');
+        await this.escalateSkipLogic(pointer, field, rule.when_field_label, 'the field could not be selected on the canvas');
         continue;
       }
-      await this.page.click(target.ref);
 
       const mode = await this.designer.chooseOption(INTENTS.visibilityMode(), 'when');
       if (!mode.ok) {
@@ -676,13 +782,6 @@ export class Builder {
         verification: 'not-checked',
       });
     }
-  }
-
-  private canvasNode(snapshot: Snapshot, label: string): SnapshotNode | undefined {
-    const excluded = new Set(['palette', 'toolbar', 'navigation', 'editor']);
-    const excludedRegions = new Set(snapshot.regions.filter((r) => excluded.has(r.kind)).map((r) => r.id));
-    const inCanvas = snapshot.nodes.filter((n) => !excludedRegions.has(n.region) && n.name.includes(label));
-    return inCanvas.sort((a, b) => a.name.length - b.name.length)[0];
   }
 
   private async escalateSkipLogic(pointer: string, field: IrField, controller: string, detail: string): Promise<void> {
@@ -807,13 +906,12 @@ export class Builder {
 
   /** Leave the designer and come back; report whether a known field is still there. */
   private async roundTrip(form: IrForm, witnessLabel: string): Promise<boolean> {
-    const snapshot = await this.page.capture();
-    const leave = await this.grounder.ground(snapshot, INTENTS.leaveDesigner());
-    if (leave.ok) await this.page.click(leave.ref);
-    else await this.goToVisitSchedule();
-
     const [vi] = this.locate(form);
-    if (vi >= 0) await this.openVisit(this.ir.visits[vi]!);
+    const visit = vi >= 0 ? this.ir.visits[vi] : undefined;
+
+    await this.leaveDesignerIfOpen(visit ? [visit.name] : []);
+    if (visit) await this.openVisit(visit);
+    else await this.goToVisitSchedule();
 
     if (!(await this.openDesigner(form, ''))) return false;
     const after = await this.page.capture();
@@ -842,7 +940,13 @@ export class Builder {
    * replaced value list, an unnamed field, a commit that did not commit — is
    * invisible at the moment it happens and visible here.
    */
-  private async verifyForm(form: IrForm, vi: number, fi: number, pointer: string): Promise<boolean> {
+  private async verifyForm(visit: IrVisit, form: IrForm, vi: number, fi: number, pointer: string): Promise<boolean> {
+    // Read-back has to start from outside the designer, so that what is read is
+    // the SAVED form rather than the working copy still open on screen. A check
+    // performed against the copy you just edited proves nothing.
+    await this.leaveDesignerIfOpen([visit.name]);
+    await this.openVisit(visit);
+
     if (!(await this.openDesigner(form, pointer))) {
       this.audit(pointer, `verify "${form.name}"`, { level: 'error', observed: 'could not reopen the designer to read it back', verification: 'fail' });
       return false;
