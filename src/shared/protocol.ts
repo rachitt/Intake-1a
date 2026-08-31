@@ -95,7 +95,9 @@ export interface Escalation {
     | 'missing_after_readback'
     | 'form_reuse'
     | 'repeating_unsupported'
-    | 'grounding_failed';
+    | 'grounding_failed'
+    /** One field could not be built, and the agent has worked out why. */
+    | 'field_build_failed';
   /** One line, written for a study builder rather than an engineer. */
   question: string;
   /** Why the agent could not settle it. */
@@ -149,6 +151,22 @@ export interface AuditRecord {
   observed?: string;
   /** Result of reading the artifact back afterwards. */
   verification?: 'pass' | 'fail' | 'not-checked';
+  /**
+   * Why something failed, where the agent could establish it.
+   *
+   * Kept structured rather than folded into `observed`, because the whole point
+   * of classifying a failure is that the next step differs by cause — and a log
+   * a person has to parse prose out of is not traceability.
+   */
+  diagnosis?: {
+    cause: string;
+    confidence: number;
+    /** Deterministic checks, the model checked against them, or neither. */
+    source: string;
+    why: string;
+    /** What the model suggested, kept even where the evidence overruled it. */
+    modelProposal?: { cause: string; why: string; rejectedBecause?: string };
+  };
   humanDecision?: string;
   level: 'info' | 'warn' | 'error';
 }
