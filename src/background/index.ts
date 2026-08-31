@@ -201,6 +201,9 @@ async function startRun(tabId: number): Promise<void> {
         store.state.counters.llmCalls++;
         store.notify();
       },
+      // A model name that had to be repaired is a run-level event, not a
+      // detail of one call: it changes who answered every question afterwards.
+      (message, level) => log(message, level ?? 'warn'),
     );
     if (!llm.configured) {
       log('No Gemini API key is set — the agent will use deterministic grounding only and escalate anything ambiguous.', 'warn');
@@ -259,6 +262,7 @@ chrome.runtime.onConnect.addListener((port) => {
     port.postMessage({ kind: 'state', state: store.state } satisfies BackgroundEvent);
   });
 });
+
 
 async function handle(message: PanelCommand, port: chrome.runtime.Port): Promise<void> {
   switch (message.kind) {

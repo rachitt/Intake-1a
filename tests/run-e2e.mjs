@@ -7,7 +7,7 @@
  *   --url        the eSource to build into        (default http://localhost:5173/)
  *   --ir         the study specification          (required)
  *   --api-key    a Gemini key, or $GEMINI_API_KEY (optional)
- *   --model      model id                          (default gemini-2.5-flash)
+ *   --model      model id                          (default gemini-3-flash)
  *   --headed     watch it work
  *   --out        where to write the run report     (default tests/results)
  *   --limit      build only the first N visits, for a quick smoke run
@@ -31,7 +31,7 @@ const url = args.url ?? 'http://localhost:5173/';
 const irPath = args.ir;
 const outDir = resolve(root, args.out ?? 'tests/results');
 const apiKey = args['api-key'] ?? process.env['GEMINI_API_KEY'] ?? '';
-const model = args.model ?? 'gemini-2.5-flash';
+const model = args.model ?? 'gemini-3-flash';
 
 // What a reviewer answers at the gate. Absent this, the run measures the agent
 // with nobody watching, which is not how the tool is meant to be used.

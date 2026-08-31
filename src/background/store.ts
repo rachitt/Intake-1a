@@ -17,6 +17,7 @@
  *     "Picklist" in a constant is the failure the assignment is testing for.
  */
 
+import { DEFAULT_MODEL, isOfferedModel } from './gemini';
 import type { AuditRecord, Escalation, RunState, Settings, TypeMappingEntry } from '../shared/protocol';
 import type { IrStudy } from '../shared/ir';
 import type { CanonicalType } from '../shared/ir';
@@ -129,7 +130,7 @@ export class Store {
   ir: IrStudy | null = null;
   irFilename = '';
   profile: PlatformProfile | null = null;
-  settings: Settings = { apiKey: '', model: 'gemini-2.5-flash', irLoaded: false };
+  settings: Settings = { apiKey: '', model: DEFAULT_MODEL, irLoaded: false };
 
   private seq = 0;
   private listeners = new Set<() => void>();
@@ -152,6 +153,16 @@ export class Store {
     const raw = await chrome.storage.local.get([STORAGE.settings, STORAGE.ir]);
     const settings = raw[STORAGE.settings] as Partial<Settings> | undefined;
     if (settings) this.settings = { ...this.settings, ...settings };
+
+    // A model this build no longer offers is almost certainly one that has been
+    // retired, and a retired name is not a degraded run — it is an HTTP 404 on
+    // every call. Migrating it here is what makes updating the list actually
+    // fix anything: without this, anyone who has used the tool once keeps the
+    // dead name forever, because a stored setting always beats a new default.
+    if (!isOfferedModel(this.settings.model)) {
+      this.settings.model = DEFAULT_MODEL;
+      await this.saveSettings();
+    }
 
     const ir = raw[STORAGE.ir] as { study: IrStudy; filename: string } | undefined;
     if (ir?.study) {

@@ -140,7 +140,18 @@ send({ kind: 'getState' });
 
 function applySettings(settings: Settings): void {
   if (settings.apiKey && !apiKey.value) apiKey.value = settings.apiKey;
+  // A model the settings name but this build does not offer — one carried over
+  // from an older install, or one substituted mid-run — is shown rather than
+  // silently swapped for whatever happens to be first in the list. A picker
+  // that disagrees with what is actually being called is worse than no picker.
   model.value = settings.model;
+  if (model.value !== settings.model) {
+    const carried = document.createElement('option');
+    carried.value = settings.model;
+    carried.textContent = `${settings.model} — not offered by this build`;
+    model.append(carried);
+    model.value = settings.model;
+  }
   if (settings.irLoaded && settings.irFilename) {
     const summary = $('ir-summary');
     if (summary.hidden) {
