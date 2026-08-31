@@ -134,8 +134,29 @@ interface RecordedQuestion {
   answered: string;
 }
 
-function makeGate(policy: GatePolicy, recorded: RecordedQuestion[]): Gate {
+/**
+ * A reviewer's answers, keyed by escalation id.
+ *
+ * This is how a run measures what the tool is actually for. The agent is
+ * human-in-the-loop by design: the number that matters is not what it does with
+ * nobody watching, but what a study builder ends up with after clearing a queue
+ * of the handful of things the agent honestly could not settle. Scoring only
+ * the unattended run reports on a tool nobody would use that way.
+ *
+ * Answers are supplied per run and never baked into the agent, so nothing here
+ * leaks a platform's vocabulary into the thing under test.
+ */
+export type ReviewerAnswers = Record<string, string>;
+
+function makeGate(policy: GatePolicy, recorded: RecordedQuestion[], answers: ReviewerAnswers = {}): Gate {
   const answer = (escalation: Escalation): EscalationResolution => {
+    const given = answers[escalation.id];
+    if (given) {
+      const match = escalation.options.find((o) => o.id === given || o.label === given);
+      // An answer naming an option the agent did not offer is still an answer —
+      // a reviewer may know something the agent could not see.
+      return { choice: 'option', optionId: match?.id ?? given, at: Date.now() };
+    }
     const best = escalation.options[0];
     // "accept-best" stands in for a reviewer taking the recommendation. It is
     // deliberately NOT a lower bar than a person would apply: below 0.5 the
@@ -216,6 +237,8 @@ export interface RunOptions {
   apiKey?: string;
   model?: string;
   policy?: GatePolicy;
+  /** What a reviewer answers, keyed by escalation id. See ReviewerAnswers. */
+  answers?: ReviewerAnswers;
   /** Skip the field-by-field sweep when only build behaviour is under test. */
   skipSweep?: boolean;
 }
@@ -272,7 +295,7 @@ async function run(irText: string, options: RunOptions = {}): Promise<RunReport>
     const grounder = new Grounder(() => store.profile!, llm, (m) => log(m, 'warn'));
     const designer = new Designer(page, grounder, store, log);
     const typeMapper = new TypeMapper(designer, store, llm, log);
-    const gate = makeGate(options.policy ?? 'accept-best', questions);
+    const gate = makeGate(options.policy ?? 'accept-best', questions, options.answers ?? {});
     const builder = new Builder(page, grounder, designer, typeMapper, store, gate, log);
 
     await builder.run();

@@ -55,7 +55,20 @@ export function layoutKey(store: MockBStore): string {
         design.dirty,
         design.working.elements.map((e) => e.id).join(','),
         design.selectedElementId ?? '-',
-        selected ? `${selected.kind}:${selected.values.length}:${selected.rule.mode}:${selected.mandatory}` : '-',
+        selected
+          ? [
+              selected.kind,
+              selected.values.length,
+              selected.rule.mode,
+              selected.mandatory,
+              // The chosen controlling question changes what the combobox
+              // DISPLAYS, so it has to repaint. Leaving it out left the widget
+              // showing its placeholder after a choice had been made — the
+              // choice was recorded and invisible, which is the one thing a
+              // control must never be.
+              selected.rule.mode === 'conditional' ? selected.rule.whenElementId : '',
+            ].join(':')
+          : '-',
         design.menuOpen,
         design.openCombo ?? '-',
         design.notice ?? '',
@@ -568,6 +581,7 @@ function inspectorColumn(store: MockBStore, state: MockBState): HTMLElement {
     labelled(
       'Element Kind',
       combobox({
+        name: 'Element Kind',
         options: ELEMENT_KINDS.map((k) => ({ value: k.canonical, text: k.label })),
         value: element.kind,
         placeholder: 'Choose a kind',
@@ -654,6 +668,7 @@ function ruleGroup(store: MockBStore, state: MockBState, element: BuiltElement):
     labelled(
       'When To Show',
       combobox({
+        name: 'When To Show',
         options: [
           { value: 'always', text: 'Always Show' },
           { value: 'conditional', text: 'Show Only When…' },
@@ -673,6 +688,7 @@ function ruleGroup(store: MockBStore, state: MockBState, element: BuiltElement):
       labelled(
         'Controlling Question',
         combobox({
+          name: 'Controlling Question',
           options: candidates.map((c) => ({ value: c.id, text: c.question })),
           value: element.rule.whenElementId,
           placeholder: 'Choose a question',

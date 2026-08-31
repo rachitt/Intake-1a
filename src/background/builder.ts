@@ -334,7 +334,7 @@ export class Builder {
    */
   private async ensureForm(form: IrForm, pointer: string): Promise<boolean> {
     let snapshot = await this.page.capture();
-    if (this.findByName(snapshot, form.name)) {
+    if (this.formAlreadyListed(snapshot, form.name)) {
       this.audit(pointer, `source document "${form.name}" already exists`, { verification: 'pass' });
       return true;
     }
@@ -580,6 +580,28 @@ export class Builder {
         createdAt: Date.now(),
       });
     }
+  }
+
+  /**
+   * Is this source document already in the list under the current visit?
+   *
+   * Looked for among the LIST ROWS, not anywhere on screen. A document is very
+   * often named after the visit that holds it — the study has a form called
+   * "End of Treatment" under a visit called "End of Treatment (Week 12)" — and
+   * a screen showing that visit says its name in the heading and again in the
+   * breadcrumb. Matching the whole screen therefore finds the visit's own name,
+   * concludes the document already exists, and never creates it. A form that
+   * silently never got built is the most expensive failure here, so the check
+   * is narrowed to the only place a document can actually be listed.
+   *
+   * Where a platform lists documents as something other than rows there is
+   * nothing to narrow to, and the broader check stands. Erring towards building
+   * is deliberate: a duplicate is visible and cheap, an absence is neither.
+   */
+  private formAlreadyListed(snapshot: Snapshot, name: string): boolean {
+    const rows = snapshot.nodes.filter((n) => n.role === 'row');
+    if (rows.length) return rows.some((r) => r.name.includes(name));
+    return Boolean(this.findByName(snapshot, name));
   }
 
   private fieldOnCanvas(snapshot: Snapshot, label: string): boolean {

@@ -523,13 +523,26 @@ export class Designer {
     const tried: { name: string; score: number }[] = [];
     for (const candidate of candidates) {
       tried.push({ name: candidate.node.name, score: candidate.score });
-      await this.page.chooseOption(candidate.node.ref, wanted);
 
-      const readBack = await this.page.read(candidate.node.ref);
-      const value = (readBack?.value ?? '').toLowerCase();
-      if (value && value.includes(wanted.toLowerCase())) {
-        this.grounder.remember(intent.id, candidate.node, candidate.score, 'probe', `verified by reading "${readBack?.value}" back`);
-        return { ok: true, detail: `"${candidate.node.name}" now reads "${readBack?.value}"`, tried };
+      // Re-find this candidate before acting on it.
+      //
+      // All the candidates were ranked from ONE snapshot, and trying the first
+      // of them re-renders a component-library page — which destroys the
+      // elements every later ref points at. Acting on a stale ref does not
+      // merely fail, it fails with "that control is no longer on the page",
+      // which reads as "this platform cannot do that" when the truth is that
+      // the agent was holding a dead handle to a control still sitting on
+      // screen. It cost the study every one of its display rules.
+      const here = await this.page.capture();
+      const live = here.nodes.find((n) => n.role === candidate.node.role && n.name === candidate.node.name);
+      if (!live) continue;
+
+      const observation = await this.page.chooseOption(live.ref, wanted);
+
+      const shows = this.optionTaken(observation.after, candidate.node.name, wanted);
+      if (shows !== null) {
+        this.grounder.remember(intent.id, live, candidate.score, 'probe', `verified by reading "${shows}" back`);
+        return { ok: true, detail: `"${candidate.node.name}" now reads "${shows}"`, tried };
       }
     }
 
@@ -540,6 +553,37 @@ export class Designer {
         : `Nothing on this screen looks like it could satisfy "${intent.goal}".`,
       tried,
     };
+  }
+
+  /**
+   * Did a choice control take the value? Read from a FRESH snapshot, by name.
+   *
+   * Never through the ref that was just written to. Choosing an option makes a
+   * component-library page re-render, which replaces the very element that ref
+   * points at — so a ref-based read returns the detached old node, still
+   * showing the old text, and reports a failure that did not happen. On a
+   * platform whose choices are custom `role="combobox"` widgets rather than
+   * native selects, that is every choice on the page: it made all thirteen of
+   * the study's display rules look impossible to set when they had in fact been
+   * set correctly.
+   *
+   * A native `<select>` reports its choice as a value. A div-based combobox
+   * reports it as the text it now shows. Both are covered, and the control is
+   * re-found by name because its ref will not have survived.
+   */
+  private optionTaken(after: Snapshot, controlName: string, wanted: string): string | null {
+    const want = wanted.toLowerCase();
+    const nodes = after.nodes.filter((n) => n.name === controlName);
+    for (const node of nodes) {
+      const shown = (node.value ?? '').toLowerCase();
+      if (shown && shown.includes(want)) return node.value ?? '';
+    }
+    // Some widgets carry the choice as the selected option rather than on the
+    // control, and a re-render may have renamed the control after it changed.
+    const selected = after.nodes.find(
+      (n) => n.role === 'option' && n.state.selected === true && n.name.toLowerCase().includes(want),
+    );
+    return selected ? selected.name : null;
   }
 
   async chooseOption(intent: Intent, value: string): Promise<{ ok: boolean; detail: string }> {

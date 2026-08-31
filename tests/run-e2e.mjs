@@ -11,6 +11,8 @@
  *   --headed     watch it work
  *   --out        where to write the run report     (default tests/results)
  *   --limit      build only the first N visits, for a quick smoke run
+ *   --answers    JSON file of reviewer answers, keyed by escalation id — what a
+ *                study builder would choose when clearing the human gate
  *
  * The agent under test is the same code the extension ships. Only the page
  * channel and the human gate are substituted — see tests/harness/agent-in-page.ts.
@@ -30,6 +32,10 @@ const irPath = args.ir;
 const outDir = resolve(root, args.out ?? 'tests/results');
 const apiKey = args['api-key'] ?? process.env['GEMINI_API_KEY'] ?? '';
 const model = args.model ?? 'gemini-2.5-flash';
+
+// What a reviewer answers at the gate. Absent this, the run measures the agent
+// with nobody watching, which is not how the tool is meant to be used.
+const answers = args.answers ? JSON.parse(await readFile(resolve(args.answers), 'utf8')) : {};
 
 if (!irPath) {
   console.error('--ir <study.ir.json> is required');
@@ -81,11 +87,11 @@ await page.addScriptTag({ content: harnessJs });
 
 const started = Date.now();
 const report = await page.evaluate(
-  async ({ irText, apiKey, model }) => {
+  async ({ irText, apiKey, model, answers }) => {
     const run = globalThis.__agentRun;
-    return run(irText, { apiKey, model, policy: 'accept-best' });
+    return run(irText, { apiKey, model, policy: 'accept-best', answers });
   },
-  { irText, apiKey, model },
+  { irText, apiKey, model, answers },
   { timeout: 0 },
 );
 

@@ -92,7 +92,13 @@ export const INTENTS = {
     id: 'visit.windowStart',
     goal: 'Enter the first study day of the visit window.',
     roles: ['textbox', 'spinbutton'],
-    lexicon: ['window start', 'start day', 'from day', 'day from', 'start', 'begin', 'earliest', 'lower', 'from'],
+    // A visit window OPENS and CLOSES as readily as it starts and ends. Both
+    // are ordinary clinical English for the same thing, and a vocabulary that
+    // knows only one of them is narrower than the domain, not more portable.
+    lexicon: [
+      'window start', 'start day', 'from day', 'day from', 'window opens', 'opens', 'first day',
+      'earliest day', 'start', 'begin', 'earliest', 'lower', 'from',
+    ],
     avoid: ['end', 'to', 'latest', 'name', 'upper'],
     regionKinds: ['editor', 'dialog', 'unknown'],
   }),
@@ -101,7 +107,10 @@ export const INTENTS = {
     id: 'visit.windowEnd',
     goal: 'Enter the last study day of the visit window.',
     roles: ['textbox', 'spinbutton'],
-    lexicon: ['window end', 'end day', 'to day', 'day to', 'end', 'finish', 'latest', 'upper', 'through', 'to'],
+    lexicon: [
+      'window end', 'end day', 'to day', 'day to', 'window closes', 'closes', 'last day',
+      'latest day', 'end', 'finish', 'latest', 'upper', 'through', 'to',
+    ],
     avoid: ['start', 'from', 'earliest', 'name', 'lower'],
     regionKinds: ['editor', 'dialog', 'unknown'],
   }),

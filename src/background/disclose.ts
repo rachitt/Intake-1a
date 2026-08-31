@@ -66,21 +66,36 @@ export class Discloser {
    */
   async ground(intent: Intent): Promise<DisclosedResult> {
     const snapshot = await this.page.capture();
-    const direct = await this.grounder.ground(snapshot, intent);
-    if (direct.ok) return { result: direct };
 
     // Candidates come from ONE snapshot and are used against it. Capturing
     // again between choosing a disclosure and opening it would mint fresh refs
     // and leave the chosen one pointing at nothing.
     const remembered = this.profile.disclosures?.[intent.id];
-    const candidates = this.disclosures(snapshot, remembered?.name);
-
-    // Somewhere this worked before? Try that first, then everything else.
     const rememberedNode = remembered ? this.byName(snapshot, remembered.name) : undefined;
-    const ordered = rememberedNode ? [rememberedNode, ...candidates] : candidates;
 
-    for (const node of ordered) {
-      const found = await this.tryThrough(intent, snapshot, node);
+    // If this platform is already known to hide this affordance, open the
+    // hiding place BEFORE grounding against the screen.
+    //
+    // Grounding first would be actively harmful here. What the agent learned is
+    // a name, and that name is not on screen while the menu is shut — so the
+    // lookup misses and scoring falls back to the best VISIBLE candidate, which
+    // on a platform whose real Save is hidden is by definition a look-alike.
+    // The agent then clicks something that is not Save, discovers as much only
+    // by round trip, and on a designer that discards its working copy when you
+    // navigate away has destroyed the form to learn it a second time.
+    if (rememberedNode) {
+      const found = await this.tryThrough(intent, snapshot, rememberedNode);
+      if (found) return found;
+    }
+
+    // Fresh, because opening and closing a disclosure above re-rendered the
+    // page and every ref from the first snapshot is now stale.
+    const current = await this.page.capture();
+    const direct = await this.grounder.ground(current, intent);
+    if (direct.ok) return { result: direct };
+
+    for (const node of this.disclosures(current, remembered?.name)) {
+      const found = await this.tryThrough(intent, current, node);
       if (found) return found;
     }
 

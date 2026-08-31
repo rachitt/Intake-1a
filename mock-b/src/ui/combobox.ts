@@ -29,6 +29,15 @@ export interface ComboOption {
 }
 
 export interface ComboboxSpec {
+  /**
+   * The control's accessible name.
+   *
+   * Set on the `role="combobox"` element itself rather than on the wrapper
+   * around it. A caption that names only the wrapper leaves the actual widget
+   * anonymous to anything reading the page the way a screen reader does, which
+   * is a real accessibility defect and not an interesting obstacle.
+   */
+  name: string;
   options: ComboOption[];
   value: string;
   placeholder: string;
@@ -51,6 +60,7 @@ export function combobox(spec: ComboboxSpec): HTMLElement {
       'aria-expanded': spec.open ? 'true' : 'false',
       'aria-haspopup': 'listbox',
       'aria-controls': listId,
+      'aria-label': spec.name,
     },
     [h('span', { class: '_tw9c_combo_text' }, [current ? current.text : spec.placeholder])],
   );
