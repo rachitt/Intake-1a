@@ -53,8 +53,17 @@ function log(message: string, level: 'info' | 'warn' | 'error' = 'info'): void {
 
 const pending = new Map<string, (resolution: EscalationResolution) => void>();
 
+const stopped = (): EscalationResolution => ({ choice: 'skip', note: 'the run was stopped', at: Date.now() });
+
 const gate: Gate = {
   raise(escalation: Escalation): Promise<EscalationResolution> {
+    // A stopped run must never open a new question. Work in progress unwinds
+    // through many layers, and several of them ask before they give up — so
+    // without this, pressing Stop mid-probe answers one question and is
+    // immediately met with the next, which is indistinguishable from Stop not
+    // working at all.
+    if (store.aborted) return Promise.resolve(stopped());
+
     return new Promise((resolve) => {
       store.addEscalation(escalation);
       pending.set(escalation.id, (resolution) => {
@@ -70,6 +79,8 @@ const gate: Gate = {
   },
 
   async raiseAll(escalations: Escalation[]): Promise<Map<string, EscalationResolution>> {
+    if (store.aborted) return new Map(escalations.map((e) => [e.id, stopped()]));
+
     const answers = new Map<string, EscalationResolution>();
     const results = await Promise.all(
       escalations.map(async (e) => [e.id, await gate.raise(e)] as const),
@@ -153,6 +164,8 @@ async function startRun(tabId: number): Promise<void> {
   } finally {
     store.state.finishedAt = Date.now();
     running = false;
+    // Said last, so nothing the run logs on its way out can talk over it.
+    if (store.aborted) store.setPhase('idle', 'Stopped.');
     store.notify();
   }
 }
@@ -240,10 +253,13 @@ async function handle(message: PanelCommand, port: chrome.runtime.Port): Promise
       store.aborted = true;
       // Release anything waiting on the gate so the run can unwind cleanly.
       for (const [id, resolve] of pending) {
-        resolve({ choice: 'skip', note: 'the run was stopped', at: Date.now() });
+        resolve(stopped());
         pending.delete(id);
       }
-      store.setPhase('idle', 'Stopped.');
+      // The run is not over until it has unwound out of whatever page work it
+      // was in the middle of; `finally` has the last word on the phase. Saying
+      // "stopping" rather than "stopped" is the honest report until then.
+      store.setPhase(running ? 'stopping' : 'idle', running ? 'Stopping…' : 'Stopped.');
       break;
 
     case 'resolveEscalation': {

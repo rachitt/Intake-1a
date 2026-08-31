@@ -99,6 +99,7 @@ h2 {
   animation: pulse 1.4s ease-in-out infinite;
 }
 .dot[data-phase="blocked"] { background: var(--warn); }
+.dot[data-phase="stopping"] { background: var(--ink-3); animation: pulse 1.4s ease-in-out infinite; }
 .dot[data-phase="done"] { background: var(--good); }
 .dot[data-phase="failed"] { background: var(--bad); }
 

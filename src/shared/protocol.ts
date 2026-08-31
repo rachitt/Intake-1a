@@ -60,6 +60,8 @@ export type RunPhase =
   | 'building'
   | 'verifying'
   | 'blocked'
+  /** Stop was pressed; the run is unwinding out of the page work it was in. */
+  | 'stopping'
   | 'done'
   | 'failed';
 

@@ -316,6 +316,14 @@ export class Builder {
     await this.buildFields(form, vi, fi, pointer);
     await this.applySkipLogic(form, vi, fi);
 
+    // Committing and verifying are each a round trip through the platform. A
+    // stopped run should not spend one: it has already been told the result
+    // does not matter.
+    if (this.store.aborted) {
+      this.mark(pointer, 'skipped', 'the run was stopped');
+      return;
+    }
+
     const committed = await this.commit(pointer, form);
     const verified = await this.verifyForm(visit, form, vi, fi, pointer);
 
@@ -443,7 +451,10 @@ export class Builder {
     this.store.setPhase('reconnaissance', 'Working out what this platform calls each kind of field…');
     const outcome = await this.typeMapper.resolve(outstanding);
 
-    if (outcome.escalations.length) {
+    // Probing stops early when the run is stopped, which leaves every type it
+    // never reached looking unresolved. Asking about those would block a run
+    // that is on its way out, on answers nothing will read.
+    if (outcome.escalations.length && !this.store.aborted) {
       this.store.setPhase('blocked', `Waiting on ${outcome.escalations.length} field-type decision(s).`);
       const answers = await this.gate.raiseAll(outcome.escalations);
       for (const [id, resolution] of answers) {
@@ -777,6 +788,8 @@ export class Builder {
    * like Save, reports success, and persists nothing.
    */
   private async commit(pointer: string, form: IrForm): Promise<boolean> {
+    if (this.store.aborted) return false;
+
     const tried: string[] = [];
 
     for (let attempt = 0; attempt < 3; attempt++) {
@@ -987,6 +1000,8 @@ export class Builder {
     pointer: string,
     attempt = 0,
   ): Promise<boolean> {
+    if (this.store.aborted) return false;
+
     // Read-back has to start from outside the designer, so that what is read is
     // the SAVED form rather than the working copy still open on screen. A check
     // performed against the copy you just edited proves nothing.

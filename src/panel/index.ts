@@ -108,7 +108,10 @@ function render(next: RunState): void {
   const active = next.phase !== 'idle' && next.phase !== 'done' && next.phase !== 'failed';
   $('start').hidden = active;
   $<HTMLButtonElement>('start').disabled = active;
-  $('stop').hidden = !active;
+  // Stop is offered while there is something to stop, and withdrawn the moment
+  // it has been pressed — a button that stays live after it has been obeyed
+  // reads as a button that did nothing.
+  $('stop').hidden = !active || next.phase === 'stopping';
 
   renderCounters(next);
   renderQueue(next);
