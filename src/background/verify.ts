@@ -253,6 +253,13 @@ async function readFieldRows(
     const snapshot = await page.capture();
     const node = designer.fieldOnCanvas(snapshot, field.label);
     if (!node) {
+      // The field may still be there while rendering as something unnamed.
+      if (designer.fieldPresentOnCanvas(snapshot, field.label)) {
+        row.present = true;
+        row.notes.push('present, but its preview carries no accessible name, so its properties could not be read back');
+        rows.push(row);
+        continue;
+      }
       row.present = false;
       row.notes.push('not found on the form');
       rows.push(row);

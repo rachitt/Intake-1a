@@ -518,6 +518,7 @@ export function captureSnapshot(opts: { includeGeneric?: boolean } = {}): Snapsh
       confidence: classified.confidence,
       members: memberNodes.map((n) => n.ref),
       box: { x: Math.round(rect.x), y: Math.round(rect.y), w: Math.round(rect.width), h: Math.round(rect.height) },
+      texts: regionTexts(container),
       evidence: classified.evidence,
     });
   }
@@ -534,6 +535,30 @@ export function captureSnapshot(opts: { includeGeneric?: boolean } = {}): Snapsh
     modalOpen: Boolean(modal),
     at: Date.now(),
   };
+}
+
+/**
+ * The visible text of a region, as rendered lines.
+ *
+ * `innerText` rather than `textContent` on purpose: it reflects what is
+ * actually laid out and visible, skipping hidden nodes, which is what makes it
+ * usable as evidence about the page rather than about the markup.
+ */
+const NEWLINE = /\r?\n/;
+
+function regionTexts(container: Element): string[] {
+  const raw = (container as HTMLElement).innerText ?? container.textContent ?? '';
+  const seen = new Set<string>();
+  const lines: string[] = [];
+  for (const line of raw.split(NEWLINE)) {
+    const text = normaliseText(line);
+    if (!text || text.length > 120) continue;
+    if (seen.has(text)) continue;
+    seen.add(text);
+    lines.push(text);
+    if (lines.length >= 80) break;
+  }
+  return lines;
 }
 
 /** A region's own name: its heading, its aria-label, or nothing. */

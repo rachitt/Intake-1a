@@ -131,8 +131,16 @@ export function nameSimilarity(name: string, term: string): number {
   const aj = a.join(' ');
   const bj = b.join(' ');
   if (aj === bj) return 1;
-  if (aj.startsWith(bj) || aj.endsWith(bj)) return 0.9;
-  if (aj.includes(bj)) return 0.8;
+
+  // Containment must respect word boundaries. Without the padding, the term
+  // "is" matches "Duration of Diagnos-is-" and a canvas preview outscores the
+  // actual condition-value input; short function words in a lexicon otherwise
+  // match a third of the page.
+  const paddedA = ` ${aj} `;
+  const paddedB = ` ${bj} `;
+  const at = paddedA.indexOf(paddedB);
+  if (at === 0 || (at > -1 && at + paddedB.length === paddedA.length)) return 0.9;
+  if (at > 0) return 0.8;
 
   const setA = new Set(a);
   const overlap = b.filter((w) => setA.has(w)).length;

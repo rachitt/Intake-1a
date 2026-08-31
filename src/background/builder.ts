@@ -151,26 +151,52 @@ export class Builder {
     const wrongTurns: string[] = [];
 
     for (let attempt = 0; attempt < 6; attempt++) {
-      const snapshot = await this.page.capture();
+      let snapshot = await this.page.capture();
       if (this.visitScheduleVisible(snapshot)) return true;
 
-      const result = await this.grounder.ground(snapshot, {
-        ...INTENTS.gotoVisitSchedule([this.ir.study?.protocol_id ?? ''].filter(Boolean)),
-        excludeNames: wrongTurns,
-        ignoreMemory: wrongTurns.length > 0,
-      });
-      if (!result.ok) break;
+      // Climb out of a designer first. Its breadcrumb is named after the visit
+      // it belongs to, so every visit's name is offered as context — the agent
+      // knows them all, and nothing generic about "back" matches a proper noun.
+      if (this.inDesigner(snapshot)) {
+        await this.leaveDesignerIfOpen(this.ir.visits.map((v) => v.name));
+        snapshot = await this.page.capture();
+        if (this.visitScheduleVisible(snapshot)) return true;
+      }
 
-      const observation = await this.page.click(result.ref);
-      if (this.visitScheduleVisible(observation.after)) return true;
+      // Ranked, not grounded, and deliberately so.
+      //
+      // Grounding refuses to act when two candidates are close, which is right
+      // for a choice that cannot be taken back — but going to the wrong screen
+      // costs a click and is instantly detectable. A module tab scoring 0.88
+      // against the real breadcrumb at 0.82 is not a question for a human; it
+      // is two things to try in order. Refusing to choose here does not make
+      // the agent careful, it makes it stuck.
+      const candidate = this.grounder
+        .rank(snapshot, {
+          ...INTENTS.gotoVisitSchedule([this.ir.study?.protocol_id ?? ''].filter(Boolean)),
+          excludeNames: wrongTurns,
+        })
+        .find((c) => c.score >= 0.5);
+      if (!candidate) break;
+
+      const observation = await this.page.click(candidate.node.ref);
+      if (this.visitScheduleVisible(observation.after)) {
+        this.grounder.remember(
+          INTENTS.gotoVisitSchedule().id,
+          candidate.node,
+          candidate.score,
+          'probe',
+          'verified by arriving at the visit schedule',
+        );
+        return true;
+      }
 
       // Judged by the GOAL, not by whether anything moved. A decorative module
       // tab produces no change; a breadcrumb to the wrong level produces plenty.
-      // Both are equally not the way to the visit schedule, and testing for
-      // "did something happen" mistakes the second kind for success.
-      wrongTurns.push(result.node.name);
+      // Both are equally not the way to the visit schedule.
+      wrongTurns.push(candidate.node.name);
       this.grounder.forget(INTENTS.gotoVisitSchedule().id);
-      this.log(`"${result.node.name}" did not lead to the visit schedule; trying another way.`);
+      this.log(`"${candidate.node.name}" did not lead to the visit schedule; trying another way.`);
     }
 
     const snapshot = await this.page.capture();
@@ -240,15 +266,24 @@ export class Builder {
       const snapshot = await this.page.capture();
       if (!this.inDesigner(snapshot)) return;
 
-      const leave = await this.grounder.ground(snapshot, {
-        ...INTENTS.leaveDesigner(context),
-        excludeNames: wrongTurns,
-        ignoreMemory: wrongTurns.length > 0,
-      });
-      if (!leave.ok) return;
+      // Same reasoning as the schedule: leaving a screen is reversible, so the
+      // plausible ways out are tried in order rather than escalated.
+      const leave = this.grounder
+        .rank(snapshot, { ...INTENTS.leaveDesigner(context), excludeNames: wrongTurns })
+        .find((c) => c.score >= 0.5);
+      if (!leave) return;
 
-      const observation = await this.page.click(leave.ref);
-      if (!this.inDesigner(observation.after)) return;
+      const observation = await this.page.click(leave.node.ref);
+      if (!this.inDesigner(observation.after)) {
+        this.grounder.remember(
+          INTENTS.leaveDesigner().id,
+          leave.node,
+          leave.score,
+          'probe',
+          'verified by leaving the form designer',
+        );
+        return;
+      }
 
       wrongTurns.push(leave.node.name);
       this.grounder.forget(INTENTS.leaveDesigner().id);
@@ -722,7 +757,7 @@ export class Builder {
   }
 
   private fieldOnCanvas(snapshot: Snapshot, label: string): boolean {
-    return Boolean(this.designer.fieldOnCanvas(snapshot, label));
+    return this.designer.fieldPresentOnCanvas(snapshot, label);
   }
 
   // ── skip logic (second pass) ────────────────────────────────────────────────
@@ -753,17 +788,25 @@ export class Builder {
         continue;
       }
 
-      const mode = await this.designer.chooseOption(INTENTS.visibilityMode(), 'when');
+      // Switching a field to conditional display is reversible and its result
+      // is readable, so the agent tries the plausible controls rather than
+      // asking. Only a genuine dead end reaches the reviewer.
+      const mode = await this.designer.chooseOptionVerified(INTENTS.visibilityMode(), 'when');
       if (!mode.ok) {
-        // Some platforms use a toggle rather than a choice for this.
+        // Some platforms model this as a toggle rather than a choice.
         const toggled = await this.designer.setToggle(INTENTS.visibilityMode(), true);
         if (!toggled.ok) {
-          await this.escalateSkipLogic(pointer, field, rule.when_field_label, 'no conditional-display control could be found');
+          await this.escalateSkipLogic(
+            pointer,
+            field,
+            rule.when_field_label,
+            `No conditional-display control could be used. ${mode.detail} A toggle was tried too: ${toggled.detail}`,
+          );
           continue;
         }
       }
 
-      const whenResult = await this.designer.chooseOption(INTENTS.visibilityWhenField(), rule.when_field_label);
+      const whenResult = await this.designer.chooseOptionVerified(INTENTS.visibilityWhenField(), rule.when_field_label);
       if (!whenResult.ok) {
         await this.escalateSkipLogic(pointer, field, rule.when_field_label, whenResult.detail);
         continue;
@@ -771,9 +814,14 @@ export class Builder {
 
       const valueResult = await this.designer.setText(INTENTS.visibilityValue(), rule.equals_value);
       if (!valueResult.ok) {
-        const chosen = await this.designer.chooseOption(INTENTS.visibilityValue(), rule.equals_value);
+        const chosen = await this.designer.chooseOptionVerified(INTENTS.visibilityValue(), rule.equals_value);
         if (!chosen.ok) {
-          await this.escalateSkipLogic(pointer, field, rule.when_field_label, valueResult.detail);
+          await this.escalateSkipLogic(
+            pointer,
+            field,
+            rule.when_field_label,
+            `The expected value could not be entered. ${valueResult.detail} ${chosen.detail}`,
+          );
           continue;
         }
       }

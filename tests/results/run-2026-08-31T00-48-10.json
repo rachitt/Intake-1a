@@ -1,0 +1,4644 @@
+{
+  "ok": true,
+  "elapsedMs": 32652,
+  "actions": 468,
+  "llmCalls": 0,
+  "counters": {
+    "visitsBuilt": 4,
+    "visitsTotal": 4,
+    "formsBuilt": 7,
+    "formsTotal": 28,
+    "fieldsBuilt": 47,
+    "fieldsTotal": 195,
+    "verified": 47,
+    "escalated": 0,
+    "repaired": 0,
+    "failed": 0,
+    "llmCalls": 0
+  },
+  "typeMap": [
+    {
+      "canonical": "text",
+      "libraryName": "Single Line Textbox",
+      "confidence": 0.9099999999999999,
+      "source": "probed"
+    },
+    {
+      "canonical": "date",
+      "libraryName": "Date",
+      "confidence": 0.9299999999999999,
+      "source": "probed"
+    },
+    {
+      "canonical": "radio",
+      "libraryName": "Radio Buttons",
+      "confidence": 0.9099999999999999,
+      "source": "probed"
+    },
+    {
+      "canonical": "multi_select",
+      "libraryName": "Check List",
+      "confidence": 0.9299999999999999,
+      "source": "probed"
+    },
+    {
+      "canonical": "single_select",
+      "libraryName": "Dropdown",
+      "confidence": 0.9299999999999999,
+      "source": "probed"
+    },
+    {
+      "canonical": "decimal",
+      "libraryName": "Number (Decimal)",
+      "confidence": 0.9099999999999999,
+      "source": "probed"
+    },
+    {
+      "canonical": "calculated",
+      "libraryName": "Calculated Field",
+      "confidence": 0.9099999999999999,
+      "source": "probed"
+    },
+    {
+      "canonical": "boolean",
+      "libraryName": "Yes/No Toggle",
+      "confidence": 0.9099999999999999,
+      "source": "probed"
+    },
+    {
+      "canonical": "time",
+      "libraryName": "Time",
+      "confidence": 0.9299999999999999,
+      "source": "probed"
+    },
+    {
+      "canonical": "checkbox",
+      "libraryName": "Checkbox",
+      "confidence": 0.9299999999999999,
+      "source": "probed"
+    },
+    {
+      "canonical": "integer",
+      "libraryName": "Number (Whole)",
+      "confidence": 0.9099999999999999,
+      "source": "probed"
+    },
+    {
+      "canonical": "textarea",
+      "libraryName": "Multi-line Textbox",
+      "confidence": 0.9099999999999999,
+      "source": "probed"
+    },
+    {
+      "canonical": "datetime",
+      "libraryName": "Date/Time",
+      "confidence": 0.9299999999999999,
+      "source": "probed"
+    }
+  ],
+  "libraryEntries": [
+    "Calculated Field",
+    "Check List",
+    "Checkbox",
+    "Date",
+    "Date/Time",
+    "Dropdown",
+    "Multi-line Textbox",
+    "Number (Decimal)",
+    "Number (Whole)",
+    "Radio Buttons",
+    "Single Line Textbox",
+    "Time",
+    "Yes/No Toggle"
+  ],
+  "rejectedCommits": [],
+  "provenCommit": {
+    "name": "Save",
+    "provenBy": "round trip on \"Demographics\""
+  },
+  "questions": [
+    {
+      "id": "ground:/visits/1:create a visit",
+      "kind": "grounding_failed",
+      "question": "Which control on this screen is used to create a visit?",
+      "reason": "No control clearly satisfies \"Start creating a new visit (a scheduled study timepoint) in the visit schedule.\". The best candidate scored 0.49, too close to the runner-up at 0.33 to choose safely.",
+      "affectedCount": 1,
+      "options": [
+        {
+          "label": "← Visit Schedule — button",
+          "confidence": 0.49400000000000005,
+          "agreements": [],
+          "conflicts": []
+        },
+        {
+          "label": "Patients — button",
+          "confidence": 0.33399999999999996,
+          "agreements": [],
+          "conflicts": []
+        },
+        {
+          "label": "Calendar — button",
+          "confidence": 0.33399999999999996,
+          "agreements": [],
+          "conflicts": []
+        },
+        {
+          "label": "Study Plan — button",
+          "confidence": 0.33399999999999996,
+          "agreements": [],
+          "conflicts": []
+        },
+        {
+          "label": "Reports — button",
+          "confidence": 0.33399999999999996,
+          "agreements": [],
+          "conflicts": []
+        }
+      ],
+      "answered": "skip"
+    },
+    {
+      "id": "ground:/visits/2:create a visit",
+      "kind": "grounding_failed",
+      "question": "Which control on this screen is used to create a visit?",
+      "reason": "No control clearly satisfies \"Start creating a new visit (a scheduled study timepoint) in the visit schedule.\". The best candidate scored 0.49, too close to the runner-up at 0.33 to choose safely.",
+      "affectedCount": 1,
+      "options": [
+        {
+          "label": "← Visit Schedule — button",
+          "confidence": 0.49400000000000005,
+          "agreements": [],
+          "conflicts": []
+        },
+        {
+          "label": "Patients — button",
+          "confidence": 0.33399999999999996,
+          "agreements": [],
+          "conflicts": []
+        },
+        {
+          "label": "Calendar — button",
+          "confidence": 0.33399999999999996,
+          "agreements": [],
+          "conflicts": []
+        },
+        {
+          "label": "Study Plan — button",
+          "confidence": 0.33399999999999996,
+          "agreements": [],
+          "conflicts": []
+        },
+        {
+          "label": "Reports — button",
+          "confidence": 0.33399999999999996,
+          "agreements": [],
+          "conflicts": []
+        }
+      ],
+      "answered": "skip"
+    },
+    {
+      "id": "ground:/visits/3:create a visit",
+      "kind": "grounding_failed",
+      "question": "Which control on this screen is used to create a visit?",
+      "reason": "No control clearly satisfies \"Start creating a new visit (a scheduled study timepoint) in the visit schedule.\". The best candidate scored 0.49, too close to the runner-up at 0.33 to choose safely.",
+      "affectedCount": 1,
+      "options": [
+        {
+          "label": "← Visit Schedule — button",
+          "confidence": 0.49400000000000005,
+          "agreements": [],
+          "conflicts": []
+        },
+        {
+          "label": "Patients — button",
+          "confidence": 0.33399999999999996,
+          "agreements": [],
+          "conflicts": []
+        },
+        {
+          "label": "Calendar — button",
+          "confidence": 0.33399999999999996,
+          "agreements": [],
+          "conflicts": []
+        },
+        {
+          "label": "Study Plan — button",
+          "confidence": 0.33399999999999996,
+          "agreements": [],
+          "conflicts": []
+        },
+        {
+          "label": "Reports — button",
+          "confidence": 0.33399999999999996,
+          "agreements": [],
+          "conflicts": []
+        }
+      ],
+      "answered": "skip"
+    }
+  ],
+  "coverage": [
+    {
+      "pointer": "/visits/0/forms/0",
+      "visit": "Screening",
+      "form": "Demographics",
+      "present": true,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "no control reports whether this document repeats; not checked"
+      ]
+    },
+    {
+      "pointer": "/visits/0/forms/0/fields/0",
+      "visit": "Screening",
+      "form": "Demographics",
+      "present": true,
+      "typeOk": null,
+      "labelOk": true,
+      "requiredOk": true,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [],
+      "field": "Subject Initials"
+    },
+    {
+      "pointer": "/visits/0/forms/0/fields/1",
+      "visit": "Screening",
+      "form": "Demographics",
+      "present": true,
+      "typeOk": null,
+      "labelOk": true,
+      "requiredOk": true,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [],
+      "field": "Date of Birth"
+    },
+    {
+      "pointer": "/visits/0/forms/0/fields/2",
+      "visit": "Screening",
+      "form": "Demographics",
+      "present": true,
+      "typeOk": null,
+      "labelOk": false,
+      "requiredOk": true,
+      "optionsOk": false,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "label reads \"Female\", specification says \"Sex at Birth\"",
+        "4 coded value(s) present, expected 3",
+        "value 1 label reads \"Sex at Birth\", expected \"Female\"",
+        "value 2 label reads \"Female\", expected \"Male\"",
+        "value 3 label reads \"Male\", expected \"Undisclosed\""
+      ],
+      "field": "Sex at Birth"
+    },
+    {
+      "pointer": "/visits/0/forms/0/fields/3",
+      "visit": "Screening",
+      "form": "Demographics",
+      "present": true,
+      "typeOk": null,
+      "labelOk": false,
+      "requiredOk": true,
+      "optionsOk": false,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "label reads \"White\", specification says \"Race\"",
+        "6 coded value(s) present, expected 5",
+        "value 1 label reads \"Race\", expected \"White\"",
+        "value 2 label reads \"White\", expected \"Black or African American\"",
+        "value 3 label reads \"Black or African American\", expected \"Asian\""
+      ],
+      "field": "Race"
+    },
+    {
+      "pointer": "/visits/0/forms/0/fields/4",
+      "visit": "Screening",
+      "form": "Demographics",
+      "present": true,
+      "typeOk": null,
+      "labelOk": false,
+      "requiredOk": true,
+      "optionsOk": false,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "label reads \"Hispanic or Latino\", specification says \"Ethnicity\"",
+        "4 coded value(s) present, expected 3",
+        "value 1 label reads \"Ethnicity\", expected \"Hispanic or Latino\"",
+        "value 2 label reads \"Hispanic or Latino\", expected \"Not Hispanic or Latino\"",
+        "value 3 label reads \"Not Hispanic or Latino\", expected \"Not Reported\""
+      ],
+      "field": "Ethnicity"
+    },
+    {
+      "pointer": "/visits/0/forms/0/fields/5",
+      "visit": "Screening",
+      "form": "Demographics",
+      "present": true,
+      "typeOk": null,
+      "labelOk": true,
+      "requiredOk": true,
+      "optionsOk": null,
+      "rangeOk": true,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [],
+      "field": "Height"
+    },
+    {
+      "pointer": "/visits/0/forms/0/fields/6",
+      "visit": "Screening",
+      "form": "Demographics",
+      "present": true,
+      "typeOk": null,
+      "labelOk": true,
+      "requiredOk": true,
+      "optionsOk": null,
+      "rangeOk": true,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [],
+      "field": "Weight"
+    },
+    {
+      "pointer": "/visits/0/forms/0/fields/7",
+      "visit": "Screening",
+      "form": "Demographics",
+      "present": true,
+      "typeOk": null,
+      "labelOk": true,
+      "requiredOk": true,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": true,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [],
+      "field": "Body Mass Index"
+    },
+    {
+      "pointer": "/visits/0/forms/1",
+      "visit": "Screening",
+      "form": "Informed Consent",
+      "present": true,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "no control reports whether this document repeats; not checked"
+      ]
+    },
+    {
+      "pointer": "/visits/0/forms/1/fields/0",
+      "visit": "Screening",
+      "form": "Informed Consent",
+      "present": true,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "present, but its preview carries no accessible name, so its properties could not be read back"
+      ],
+      "field": "Informed Consent Obtained"
+    },
+    {
+      "pointer": "/visits/0/forms/1/fields/1",
+      "visit": "Screening",
+      "form": "Informed Consent",
+      "present": true,
+      "typeOk": null,
+      "labelOk": true,
+      "requiredOk": true,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [],
+      "field": "Date of Consent"
+    },
+    {
+      "pointer": "/visits/0/forms/1/fields/2",
+      "visit": "Screening",
+      "form": "Informed Consent",
+      "present": true,
+      "typeOk": null,
+      "labelOk": true,
+      "requiredOk": true,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [],
+      "field": "Time of Consent"
+    },
+    {
+      "pointer": "/visits/0/forms/1/fields/3",
+      "visit": "Screening",
+      "form": "Informed Consent",
+      "present": true,
+      "typeOk": null,
+      "labelOk": true,
+      "requiredOk": true,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [],
+      "field": "Consent Form Version"
+    },
+    {
+      "pointer": "/visits/0/forms/1/fields/4",
+      "visit": "Screening",
+      "form": "Informed Consent",
+      "present": true,
+      "typeOk": null,
+      "labelOk": false,
+      "requiredOk": true,
+      "optionsOk": false,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "label reads \"Principal Investigator\", specification says \"Consented By\"",
+        "4 coded value(s) present, expected 3",
+        "value 1 label reads \"Consented By\", expected \"Principal Investigator\"",
+        "value 2 label reads \"Principal Investigator\", expected \"Sub-Investigator\"",
+        "value 3 label reads \"Sub-Investigator\", expected \"Study Coordinator\""
+      ],
+      "field": "Consented By"
+    },
+    {
+      "pointer": "/visits/0/forms/1/fields/5",
+      "visit": "Screening",
+      "form": "Informed Consent",
+      "present": true,
+      "typeOk": null,
+      "labelOk": true,
+      "requiredOk": true,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [],
+      "field": "Copy Provided to Subject"
+    },
+    {
+      "pointer": "/visits/0/forms/2",
+      "visit": "Screening",
+      "form": "Eligibility Criteria",
+      "present": true,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "no control reports whether this document repeats; not checked"
+      ]
+    },
+    {
+      "pointer": "/visits/0/forms/2/fields/0",
+      "visit": "Screening",
+      "form": "Eligibility Criteria",
+      "present": true,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "present, but its preview carries no accessible name, so its properties could not be read back"
+      ],
+      "field": "Age 18 Years or Older at Consent"
+    },
+    {
+      "pointer": "/visits/0/forms/2/fields/1",
+      "visit": "Screening",
+      "form": "Eligibility Criteria",
+      "present": true,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "present, but its preview carries no accessible name, so its properties could not be read back"
+      ],
+      "field": "Confirmed Diagnosis of Plaque Psoriasis"
+    },
+    {
+      "pointer": "/visits/0/forms/2/fields/2",
+      "visit": "Screening",
+      "form": "Eligibility Criteria",
+      "present": true,
+      "typeOk": null,
+      "labelOk": true,
+      "requiredOk": true,
+      "optionsOk": null,
+      "rangeOk": true,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [],
+      "field": "Duration of Diagnosis"
+    },
+    {
+      "pointer": "/visits/0/forms/2/fields/3",
+      "visit": "Screening",
+      "form": "Eligibility Criteria",
+      "present": true,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "present, but its preview carries no accessible name, so its properties could not be read back"
+      ],
+      "field": "Written Informed Consent Provided"
+    },
+    {
+      "pointer": "/visits/0/forms/2/fields/4",
+      "visit": "Screening",
+      "form": "Eligibility Criteria",
+      "present": true,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "present, but its preview carries no accessible name, so its properties could not be read back"
+      ],
+      "field": "Any Exclusionary Condition Present"
+    },
+    {
+      "pointer": "/visits/0/forms/2/fields/5",
+      "visit": "Screening",
+      "form": "Eligibility Criteria",
+      "present": true,
+      "typeOk": null,
+      "labelOk": false,
+      "requiredOk": true,
+      "optionsOk": false,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": true,
+      "repeatingOk": null,
+      "notes": [
+        "label reads \"Pregnant or Breastfeeding\", specification says \"Exclusionary Conditions\"",
+        "7 coded value(s) present, expected 5",
+        "value 1 label reads \"Exclusionary Conditions\", expected \"Pregnant or Breastfeeding\"",
+        "value 2 label reads \"Pregnant or Breastfeeding\", expected \"Active Malignancy\"",
+        "value 3 label reads \"Active Malignancy\", expected \"Active Serious Infection\""
+      ],
+      "field": "Exclusionary Conditions"
+    },
+    {
+      "pointer": "/visits/0/forms/3",
+      "visit": "Screening",
+      "form": "Medical History",
+      "present": true,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "no control reports whether this document repeats; not checked"
+      ]
+    },
+    {
+      "pointer": "/visits/0/forms/3/fields/0",
+      "visit": "Screening",
+      "form": "Medical History",
+      "present": true,
+      "typeOk": null,
+      "labelOk": true,
+      "requiredOk": true,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [],
+      "field": "Condition"
+    },
+    {
+      "pointer": "/visits/0/forms/3/fields/1",
+      "visit": "Screening",
+      "form": "Medical History",
+      "present": true,
+      "typeOk": null,
+      "labelOk": false,
+      "requiredOk": true,
+      "optionsOk": false,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "label reads \"Cardiovascular\", specification says \"Body System\"",
+        "7 coded value(s) present, expected 6",
+        "value 1 label reads \"Body System\", expected \"Cardiovascular\"",
+        "value 2 label reads \"Cardiovascular\", expected \"Respiratory\"",
+        "value 3 label reads \"Respiratory\", expected \"Gastrointestinal\""
+      ],
+      "field": "Body System"
+    },
+    {
+      "pointer": "/visits/0/forms/3/fields/2",
+      "visit": "Screening",
+      "form": "Medical History",
+      "present": true,
+      "typeOk": null,
+      "labelOk": true,
+      "requiredOk": true,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [],
+      "field": "Onset Date"
+    },
+    {
+      "pointer": "/visits/0/forms/3/fields/3",
+      "visit": "Screening",
+      "form": "Medical History",
+      "present": true,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "present, but its preview carries no accessible name, so its properties could not be read back"
+      ],
+      "field": "Ongoing"
+    },
+    {
+      "pointer": "/visits/0/forms/3/fields/4",
+      "visit": "Screening",
+      "form": "Medical History",
+      "present": true,
+      "typeOk": null,
+      "labelOk": true,
+      "requiredOk": true,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [],
+      "field": "Notes"
+    },
+    {
+      "pointer": "/visits/0/forms/4",
+      "visit": "Screening",
+      "form": "Prior and Concomitant Medications",
+      "present": true,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "no control reports whether this document repeats; not checked"
+      ]
+    },
+    {
+      "pointer": "/visits/0/forms/4/fields/0",
+      "visit": "Screening",
+      "form": "Prior and Concomitant Medications",
+      "present": true,
+      "typeOk": null,
+      "labelOk": true,
+      "requiredOk": true,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [],
+      "field": "Medication Name"
+    },
+    {
+      "pointer": "/visits/0/forms/4/fields/1",
+      "visit": "Screening",
+      "form": "Prior and Concomitant Medications",
+      "present": true,
+      "typeOk": null,
+      "labelOk": true,
+      "requiredOk": true,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [],
+      "field": "Indication"
+    },
+    {
+      "pointer": "/visits/0/forms/4/fields/2",
+      "visit": "Screening",
+      "form": "Prior and Concomitant Medications",
+      "present": true,
+      "typeOk": null,
+      "labelOk": true,
+      "requiredOk": true,
+      "optionsOk": null,
+      "rangeOk": true,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [],
+      "field": "Dose"
+    },
+    {
+      "pointer": "/visits/0/forms/4/fields/3",
+      "visit": "Screening",
+      "form": "Prior and Concomitant Medications",
+      "present": true,
+      "typeOk": null,
+      "labelOk": false,
+      "requiredOk": true,
+      "optionsOk": false,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "label reads \"Oral\", specification says \"Route\"",
+        "6 coded value(s) present, expected 5",
+        "value 1 label reads \"Route\", expected \"Oral\"",
+        "value 2 label reads \"\", expected \"Intravenous\"",
+        "value 3 label reads \"Oral\", expected \"Subcutaneous\""
+      ],
+      "field": "Route"
+    },
+    {
+      "pointer": "/visits/0/forms/4/fields/4",
+      "visit": "Screening",
+      "form": "Prior and Concomitant Medications",
+      "present": true,
+      "typeOk": null,
+      "labelOk": false,
+      "requiredOk": true,
+      "optionsOk": false,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "label reads \"Once Daily\", specification says \"Frequency\"",
+        "5 coded value(s) present, expected 4",
+        "value 1 label reads \"Frequency\", expected \"Once Daily\"",
+        "value 2 label reads \"\", expected \"Twice Daily\"",
+        "value 3 label reads \"Once Daily\", expected \"Three Times Daily\""
+      ],
+      "field": "Frequency"
+    },
+    {
+      "pointer": "/visits/0/forms/4/fields/5",
+      "visit": "Screening",
+      "form": "Prior and Concomitant Medications",
+      "present": true,
+      "typeOk": null,
+      "labelOk": true,
+      "requiredOk": true,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [],
+      "field": "Start Date"
+    },
+    {
+      "pointer": "/visits/0/forms/4/fields/6",
+      "visit": "Screening",
+      "form": "Prior and Concomitant Medications",
+      "present": true,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "present, but its preview carries no accessible name, so its properties could not be read back"
+      ],
+      "field": "Ongoing"
+    },
+    {
+      "pointer": "/visits/0/forms/5",
+      "visit": "Screening",
+      "form": "Vital Signs",
+      "present": true,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "no control reports whether this document repeats; not checked"
+      ]
+    },
+    {
+      "pointer": "/visits/0/forms/5/fields/0",
+      "visit": "Screening",
+      "form": "Vital Signs",
+      "present": true,
+      "typeOk": null,
+      "labelOk": true,
+      "requiredOk": true,
+      "optionsOk": null,
+      "rangeOk": true,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [],
+      "field": "Systolic Blood Pressure"
+    },
+    {
+      "pointer": "/visits/0/forms/5/fields/1",
+      "visit": "Screening",
+      "form": "Vital Signs",
+      "present": true,
+      "typeOk": null,
+      "labelOk": true,
+      "requiredOk": true,
+      "optionsOk": null,
+      "rangeOk": true,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [],
+      "field": "Diastolic Blood Pressure"
+    },
+    {
+      "pointer": "/visits/0/forms/5/fields/2",
+      "visit": "Screening",
+      "form": "Vital Signs",
+      "present": true,
+      "typeOk": null,
+      "labelOk": true,
+      "requiredOk": true,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": true,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [],
+      "field": "Pulse Pressure"
+    },
+    {
+      "pointer": "/visits/0/forms/5/fields/3",
+      "visit": "Screening",
+      "form": "Vital Signs",
+      "present": true,
+      "typeOk": null,
+      "labelOk": true,
+      "requiredOk": true,
+      "optionsOk": null,
+      "rangeOk": true,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [],
+      "field": "Heart Rate"
+    },
+    {
+      "pointer": "/visits/0/forms/5/fields/4",
+      "visit": "Screening",
+      "form": "Vital Signs",
+      "present": true,
+      "typeOk": null,
+      "labelOk": true,
+      "requiredOk": true,
+      "optionsOk": null,
+      "rangeOk": true,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [],
+      "field": "Respiratory Rate"
+    },
+    {
+      "pointer": "/visits/0/forms/5/fields/5",
+      "visit": "Screening",
+      "form": "Vital Signs",
+      "present": true,
+      "typeOk": null,
+      "labelOk": true,
+      "requiredOk": true,
+      "optionsOk": null,
+      "rangeOk": true,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [],
+      "field": "Body Temperature"
+    },
+    {
+      "pointer": "/visits/0/forms/5/fields/6",
+      "visit": "Screening",
+      "form": "Vital Signs",
+      "present": true,
+      "typeOk": null,
+      "labelOk": false,
+      "requiredOk": true,
+      "optionsOk": false,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "label reads \"Sitting\", specification says \"Position\"",
+        "4 coded value(s) present, expected 3",
+        "value 1 label reads \"Position\", expected \"Sitting\"",
+        "value 2 label reads \"Sitting\", expected \"Supine\"",
+        "value 3 label reads \"Supine\", expected \"Standing\""
+      ],
+      "field": "Position"
+    },
+    {
+      "pointer": "/visits/0/forms/5/fields/7",
+      "visit": "Screening",
+      "form": "Vital Signs",
+      "present": true,
+      "typeOk": null,
+      "labelOk": true,
+      "requiredOk": true,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [],
+      "field": "Time of Measurement"
+    },
+    {
+      "pointer": "/visits/0/forms/6",
+      "visit": "Screening",
+      "form": "Local Laboratory - Hematology",
+      "present": true,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "no control reports whether this document repeats; not checked"
+      ]
+    },
+    {
+      "pointer": "/visits/0/forms/6/fields/0",
+      "visit": "Screening",
+      "form": "Local Laboratory - Hematology",
+      "present": true,
+      "typeOk": null,
+      "labelOk": true,
+      "requiredOk": true,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [],
+      "field": "Collection Date"
+    },
+    {
+      "pointer": "/visits/0/forms/6/fields/1",
+      "visit": "Screening",
+      "form": "Local Laboratory - Hematology",
+      "present": true,
+      "typeOk": null,
+      "labelOk": true,
+      "requiredOk": true,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [],
+      "field": "Collection Time"
+    },
+    {
+      "pointer": "/visits/0/forms/6/fields/2",
+      "visit": "Screening",
+      "form": "Local Laboratory - Hematology",
+      "present": true,
+      "typeOk": null,
+      "labelOk": true,
+      "requiredOk": true,
+      "optionsOk": null,
+      "rangeOk": true,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [],
+      "field": "Hemoglobin"
+    },
+    {
+      "pointer": "/visits/0/forms/6/fields/3",
+      "visit": "Screening",
+      "form": "Local Laboratory - Hematology",
+      "present": true,
+      "typeOk": null,
+      "labelOk": true,
+      "requiredOk": true,
+      "optionsOk": null,
+      "rangeOk": true,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [],
+      "field": "Hematocrit"
+    },
+    {
+      "pointer": "/visits/0/forms/6/fields/4",
+      "visit": "Screening",
+      "form": "Local Laboratory - Hematology",
+      "present": true,
+      "typeOk": null,
+      "labelOk": true,
+      "requiredOk": true,
+      "optionsOk": null,
+      "rangeOk": true,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [],
+      "field": "White Blood Cell Count"
+    },
+    {
+      "pointer": "/visits/0/forms/6/fields/5",
+      "visit": "Screening",
+      "form": "Local Laboratory - Hematology",
+      "present": true,
+      "typeOk": null,
+      "labelOk": true,
+      "requiredOk": true,
+      "optionsOk": null,
+      "rangeOk": true,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [],
+      "field": "Platelet Count"
+    },
+    {
+      "pointer": "/visits/0/forms/6/fields/6",
+      "visit": "Screening",
+      "form": "Local Laboratory - Hematology",
+      "present": true,
+      "typeOk": null,
+      "labelOk": false,
+      "requiredOk": true,
+      "optionsOk": false,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "label reads \"Acceptable\", specification says \"Sample Condition\"",
+        "5 coded value(s) present, expected 4",
+        "value 1 label reads \"Sample Condition\", expected \"Acceptable\"",
+        "value 2 label reads \"Acceptable\", expected \"Hemolyzed\"",
+        "value 3 label reads \"Hemolyzed\", expected \"Clotted\""
+      ],
+      "field": "Sample Condition"
+    },
+    {
+      "pointer": "/visits/1",
+      "visit": "Baseline (Day 1)",
+      "form": "",
+      "present": false,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "the visit could not be found or opened"
+      ]
+    },
+    {
+      "pointer": "/visits/1/forms/0",
+      "visit": "Baseline (Day 1)",
+      "form": "Visit Status",
+      "present": false,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "the visit could not be opened"
+      ]
+    },
+    {
+      "pointer": "/visits/1/forms/0/fields/0",
+      "visit": "Baseline (Day 1)",
+      "form": "Visit Status",
+      "present": false,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "the visit could not be opened"
+      ],
+      "field": "Visit Date"
+    },
+    {
+      "pointer": "/visits/1/forms/0/fields/1",
+      "visit": "Baseline (Day 1)",
+      "form": "Visit Status",
+      "present": false,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "the visit could not be opened"
+      ],
+      "field": "Visit Occurred"
+    },
+    {
+      "pointer": "/visits/1/forms/0/fields/2",
+      "visit": "Baseline (Day 1)",
+      "form": "Visit Status",
+      "present": false,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "the visit could not be opened"
+      ],
+      "field": "Visit Type"
+    },
+    {
+      "pointer": "/visits/1/forms/0/fields/3",
+      "visit": "Baseline (Day 1)",
+      "form": "Visit Status",
+      "present": false,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "the visit could not be opened"
+      ],
+      "field": "Study Day"
+    },
+    {
+      "pointer": "/visits/1/forms/0/fields/4",
+      "visit": "Baseline (Day 1)",
+      "form": "Visit Status",
+      "present": false,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "the visit could not be opened"
+      ],
+      "field": "Reason Visit Not Performed"
+    },
+    {
+      "pointer": "/visits/1/forms/0/fields/5",
+      "visit": "Baseline (Day 1)",
+      "form": "Visit Status",
+      "present": false,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "the visit could not be opened"
+      ],
+      "field": "Visit Window Deviation"
+    },
+    {
+      "pointer": "/visits/1/forms/1",
+      "visit": "Baseline (Day 1)",
+      "form": "Vital Signs",
+      "present": false,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "the visit could not be opened"
+      ]
+    },
+    {
+      "pointer": "/visits/1/forms/1/fields/0",
+      "visit": "Baseline (Day 1)",
+      "form": "Vital Signs",
+      "present": false,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "the visit could not be opened"
+      ],
+      "field": "Systolic Blood Pressure"
+    },
+    {
+      "pointer": "/visits/1/forms/1/fields/1",
+      "visit": "Baseline (Day 1)",
+      "form": "Vital Signs",
+      "present": false,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "the visit could not be opened"
+      ],
+      "field": "Diastolic Blood Pressure"
+    },
+    {
+      "pointer": "/visits/1/forms/1/fields/2",
+      "visit": "Baseline (Day 1)",
+      "form": "Vital Signs",
+      "present": false,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "the visit could not be opened"
+      ],
+      "field": "Pulse Pressure"
+    },
+    {
+      "pointer": "/visits/1/forms/1/fields/3",
+      "visit": "Baseline (Day 1)",
+      "form": "Vital Signs",
+      "present": false,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "the visit could not be opened"
+      ],
+      "field": "Heart Rate"
+    },
+    {
+      "pointer": "/visits/1/forms/1/fields/4",
+      "visit": "Baseline (Day 1)",
+      "form": "Vital Signs",
+      "present": false,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "the visit could not be opened"
+      ],
+      "field": "Respiratory Rate"
+    },
+    {
+      "pointer": "/visits/1/forms/1/fields/5",
+      "visit": "Baseline (Day 1)",
+      "form": "Vital Signs",
+      "present": false,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "the visit could not be opened"
+      ],
+      "field": "Body Temperature"
+    },
+    {
+      "pointer": "/visits/1/forms/1/fields/6",
+      "visit": "Baseline (Day 1)",
+      "form": "Vital Signs",
+      "present": false,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "the visit could not be opened"
+      ],
+      "field": "Position"
+    },
+    {
+      "pointer": "/visits/1/forms/1/fields/7",
+      "visit": "Baseline (Day 1)",
+      "form": "Vital Signs",
+      "present": false,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "the visit could not be opened"
+      ],
+      "field": "Time of Measurement"
+    },
+    {
+      "pointer": "/visits/1/forms/2",
+      "visit": "Baseline (Day 1)",
+      "form": "Physical Examination",
+      "present": false,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "the visit could not be opened"
+      ]
+    },
+    {
+      "pointer": "/visits/1/forms/2/fields/0",
+      "visit": "Baseline (Day 1)",
+      "form": "Physical Examination",
+      "present": false,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "the visit could not be opened"
+      ],
+      "field": "Examination Performed"
+    },
+    {
+      "pointer": "/visits/1/forms/2/fields/1",
+      "visit": "Baseline (Day 1)",
+      "form": "Physical Examination",
+      "present": false,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "the visit could not be opened"
+      ],
+      "field": "Examination Date and Time"
+    },
+    {
+      "pointer": "/visits/1/forms/2/fields/2",
+      "visit": "Baseline (Day 1)",
+      "form": "Physical Examination",
+      "present": false,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "the visit could not be opened"
+      ],
+      "field": "Body Systems Examined"
+    },
+    {
+      "pointer": "/visits/1/forms/2/fields/3",
+      "visit": "Baseline (Day 1)",
+      "form": "Physical Examination",
+      "present": false,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "the visit could not be opened"
+      ],
+      "field": "General Appearance"
+    },
+    {
+      "pointer": "/visits/1/forms/2/fields/4",
+      "visit": "Baseline (Day 1)",
+      "form": "Physical Examination",
+      "present": false,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "the visit could not be opened"
+      ],
+      "field": "Abnormal Findings"
+    },
+    {
+      "pointer": "/visits/1/forms/2/fields/5",
+      "visit": "Baseline (Day 1)",
+      "form": "Physical Examination",
+      "present": false,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "the visit could not be opened"
+      ],
+      "field": "Subject Fasting"
+    },
+    {
+      "pointer": "/visits/1/forms/3",
+      "visit": "Baseline (Day 1)",
+      "form": "12-Lead ECG",
+      "present": false,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "the visit could not be opened"
+      ]
+    },
+    {
+      "pointer": "/visits/1/forms/3/fields/0",
+      "visit": "Baseline (Day 1)",
+      "form": "12-Lead ECG",
+      "present": false,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "the visit could not be opened"
+      ],
+      "field": "ECG Date and Time"
+    },
+    {
+      "pointer": "/visits/1/forms/3/fields/1",
+      "visit": "Baseline (Day 1)",
+      "form": "12-Lead ECG",
+      "present": false,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "the visit could not be opened"
+      ],
+      "field": "Ventricular Rate"
+    },
+    {
+      "pointer": "/visits/1/forms/3/fields/2",
+      "visit": "Baseline (Day 1)",
+      "form": "12-Lead ECG",
+      "present": false,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "the visit could not be opened"
+      ],
+      "field": "PR Interval"
+    },
+    {
+      "pointer": "/visits/1/forms/3/fields/3",
+      "visit": "Baseline (Day 1)",
+      "form": "12-Lead ECG",
+      "present": false,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "the visit could not be opened"
+      ],
+      "field": "QRS Duration"
+    },
+    {
+      "pointer": "/visits/1/forms/3/fields/4",
+      "visit": "Baseline (Day 1)",
+      "form": "12-Lead ECG",
+      "present": false,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "the visit could not be opened"
+      ],
+      "field": "QT Interval"
+    },
+    {
+      "pointer": "/visits/1/forms/3/fields/5",
+      "visit": "Baseline (Day 1)",
+      "form": "12-Lead ECG",
+      "present": false,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "the visit could not be opened"
+      ],
+      "field": "QTcF Interval"
+    },
+    {
+      "pointer": "/visits/1/forms/3/fields/6",
+      "visit": "Baseline (Day 1)",
+      "form": "12-Lead ECG",
+      "present": false,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "the visit could not be opened"
+      ],
+      "field": "Overall Interpretation"
+    },
+    {
+      "pointer": "/visits/1/forms/3/fields/7",
+      "visit": "Baseline (Day 1)",
+      "form": "12-Lead ECG",
+      "present": false,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "the visit could not be opened"
+      ],
+      "field": "Interpretation Comment"
+    },
+    {
+      "pointer": "/visits/1/forms/4",
+      "visit": "Baseline (Day 1)",
+      "form": "Randomization",
+      "present": false,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "the visit could not be opened"
+      ]
+    },
+    {
+      "pointer": "/visits/1/forms/4/fields/0",
+      "visit": "Baseline (Day 1)",
+      "form": "Randomization",
+      "present": false,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "the visit could not be opened"
+      ],
+      "field": "Randomization Date"
+    },
+    {
+      "pointer": "/visits/1/forms/4/fields/1",
+      "visit": "Baseline (Day 1)",
+      "form": "Randomization",
+      "present": false,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "the visit could not be opened"
+      ],
+      "field": "Randomization Time"
+    },
+    {
+      "pointer": "/visits/1/forms/4/fields/2",
+      "visit": "Baseline (Day 1)",
+      "form": "Randomization",
+      "present": false,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "the visit could not be opened"
+      ],
+      "field": "Randomization Number"
+    },
+    {
+      "pointer": "/visits/1/forms/4/fields/3",
+      "visit": "Baseline (Day 1)",
+      "form": "Randomization",
+      "present": false,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "the visit could not be opened"
+      ],
+      "field": "Treatment Arm Assigned"
+    },
+    {
+      "pointer": "/visits/1/forms/4/fields/4",
+      "visit": "Baseline (Day 1)",
+      "form": "Randomization",
+      "present": false,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "the visit could not be opened"
+      ],
+      "field": "Prior Biologic Use"
+    },
+    {
+      "pointer": "/visits/1/forms/4/fields/5",
+      "visit": "Baseline (Day 1)",
+      "form": "Randomization",
+      "present": false,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "the visit could not be opened"
+      ],
+      "field": "Randomization Confirmed in IRT"
+    },
+    {
+      "pointer": "/visits/1/forms/5",
+      "visit": "Baseline (Day 1)",
+      "form": "Study Drug Administration",
+      "present": false,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "the visit could not be opened"
+      ]
+    },
+    {
+      "pointer": "/visits/1/forms/5/fields/0",
+      "visit": "Baseline (Day 1)",
+      "form": "Study Drug Administration",
+      "present": false,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "the visit could not be opened"
+      ],
+      "field": "Study Drug Administered"
+    },
+    {
+      "pointer": "/visits/1/forms/5/fields/1",
+      "visit": "Baseline (Day 1)",
+      "form": "Study Drug Administration",
+      "present": false,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "the visit could not be opened"
+      ],
+      "field": "Administration Date"
+    },
+    {
+      "pointer": "/visits/1/forms/5/fields/2",
+      "visit": "Baseline (Day 1)",
+      "form": "Study Drug Administration",
+      "present": false,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "the visit could not be opened"
+      ],
+      "field": "Administration Time"
+    },
+    {
+      "pointer": "/visits/1/forms/5/fields/3",
+      "visit": "Baseline (Day 1)",
+      "form": "Study Drug Administration",
+      "present": false,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "the visit could not be opened"
+      ],
+      "field": "Dose Administered"
+    },
+    {
+      "pointer": "/visits/1/forms/5/fields/4",
+      "visit": "Baseline (Day 1)",
+      "form": "Study Drug Administration",
+      "present": false,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "the visit could not be opened"
+      ],
+      "field": "Route of Administration"
+    },
+    {
+      "pointer": "/visits/1/forms/5/fields/5",
+      "visit": "Baseline (Day 1)",
+      "form": "Study Drug Administration",
+      "present": false,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "the visit could not be opened"
+      ],
+      "field": "Injection Site"
+    },
+    {
+      "pointer": "/visits/1/forms/5/fields/6",
+      "visit": "Baseline (Day 1)",
+      "form": "Study Drug Administration",
+      "present": false,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "the visit could not be opened"
+      ],
+      "field": "Reason Not Administered"
+    },
+    {
+      "pointer": "/visits/1/forms/6",
+      "visit": "Baseline (Day 1)",
+      "form": "Disease Activity Assessment",
+      "present": false,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "the visit could not be opened"
+      ]
+    },
+    {
+      "pointer": "/visits/1/forms/6/fields/0",
+      "visit": "Baseline (Day 1)",
+      "form": "Disease Activity Assessment",
+      "present": false,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "the visit could not be opened"
+      ],
+      "field": "Assessment Date"
+    },
+    {
+      "pointer": "/visits/1/forms/6/fields/1",
+      "visit": "Baseline (Day 1)",
+      "form": "Disease Activity Assessment",
+      "present": false,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "the visit could not be opened"
+      ],
+      "field": "PASI Total Score"
+    },
+    {
+      "pointer": "/visits/1/forms/6/fields/2",
+      "visit": "Baseline (Day 1)",
+      "form": "Disease Activity Assessment",
+      "present": false,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "the visit could not be opened"
+      ],
+      "field": "Body Surface Area Involved"
+    },
+    {
+      "pointer": "/visits/1/forms/6/fields/3",
+      "visit": "Baseline (Day 1)",
+      "form": "Disease Activity Assessment",
+      "present": false,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "the visit could not be opened"
+      ],
+      "field": "Physician Global Assessment"
+    },
+    {
+      "pointer": "/visits/1/forms/6/fields/4",
+      "visit": "Baseline (Day 1)",
+      "form": "Disease Activity Assessment",
+      "present": false,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "the visit could not be opened"
+      ],
+      "field": "Patient Global Assessment"
+    },
+    {
+      "pointer": "/visits/1/forms/6/fields/5",
+      "visit": "Baseline (Day 1)",
+      "form": "Disease Activity Assessment",
+      "present": false,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "the visit could not be opened"
+      ],
+      "field": "Itch Numeric Rating Scale"
+    },
+    {
+      "pointer": "/visits/1/forms/6/fields/6",
+      "visit": "Baseline (Day 1)",
+      "form": "Disease Activity Assessment",
+      "present": false,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "the visit could not be opened"
+      ],
+      "field": "Assessment Complete"
+    },
+    {
+      "pointer": "/visits/2",
+      "visit": "Week 4",
+      "form": "",
+      "present": false,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "the visit could not be found or opened"
+      ]
+    },
+    {
+      "pointer": "/visits/2/forms/0",
+      "visit": "Week 4",
+      "form": "Visit Status",
+      "present": false,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "the visit could not be opened"
+      ]
+    },
+    {
+      "pointer": "/visits/2/forms/0/fields/0",
+      "visit": "Week 4",
+      "form": "Visit Status",
+      "present": false,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "the visit could not be opened"
+      ],
+      "field": "Visit Date"
+    },
+    {
+      "pointer": "/visits/2/forms/0/fields/1",
+      "visit": "Week 4",
+      "form": "Visit Status",
+      "present": false,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "the visit could not be opened"
+      ],
+      "field": "Visit Occurred"
+    },
+    {
+      "pointer": "/visits/2/forms/0/fields/2",
+      "visit": "Week 4",
+      "form": "Visit Status",
+      "present": false,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "the visit could not be opened"
+      ],
+      "field": "Visit Type"
+    },
+    {
+      "pointer": "/visits/2/forms/0/fields/3",
+      "visit": "Week 4",
+      "form": "Visit Status",
+      "present": false,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "the visit could not be opened"
+      ],
+      "field": "Study Day"
+    },
+    {
+      "pointer": "/visits/2/forms/0/fields/4",
+      "visit": "Week 4",
+      "form": "Visit Status",
+      "present": false,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "the visit could not be opened"
+      ],
+      "field": "Reason Visit Not Performed"
+    },
+    {
+      "pointer": "/visits/2/forms/0/fields/5",
+      "visit": "Week 4",
+      "form": "Visit Status",
+      "present": false,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "the visit could not be opened"
+      ],
+      "field": "Visit Window Deviation"
+    },
+    {
+      "pointer": "/visits/2/forms/1",
+      "visit": "Week 4",
+      "form": "Vital Signs",
+      "present": false,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "the visit could not be opened"
+      ]
+    },
+    {
+      "pointer": "/visits/2/forms/1/fields/0",
+      "visit": "Week 4",
+      "form": "Vital Signs",
+      "present": false,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "the visit could not be opened"
+      ],
+      "field": "Systolic Blood Pressure"
+    },
+    {
+      "pointer": "/visits/2/forms/1/fields/1",
+      "visit": "Week 4",
+      "form": "Vital Signs",
+      "present": false,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "the visit could not be opened"
+      ],
+      "field": "Diastolic Blood Pressure"
+    },
+    {
+      "pointer": "/visits/2/forms/1/fields/2",
+      "visit": "Week 4",
+      "form": "Vital Signs",
+      "present": false,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "the visit could not be opened"
+      ],
+      "field": "Pulse Pressure"
+    },
+    {
+      "pointer": "/visits/2/forms/1/fields/3",
+      "visit": "Week 4",
+      "form": "Vital Signs",
+      "present": false,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "the visit could not be opened"
+      ],
+      "field": "Heart Rate"
+    },
+    {
+      "pointer": "/visits/2/forms/1/fields/4",
+      "visit": "Week 4",
+      "form": "Vital Signs",
+      "present": false,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "the visit could not be opened"
+      ],
+      "field": "Respiratory Rate"
+    },
+    {
+      "pointer": "/visits/2/forms/1/fields/5",
+      "visit": "Week 4",
+      "form": "Vital Signs",
+      "present": false,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "the visit could not be opened"
+      ],
+      "field": "Body Temperature"
+    },
+    {
+      "pointer": "/visits/2/forms/1/fields/6",
+      "visit": "Week 4",
+      "form": "Vital Signs",
+      "present": false,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "the visit could not be opened"
+      ],
+      "field": "Position"
+    },
+    {
+      "pointer": "/visits/2/forms/1/fields/7",
+      "visit": "Week 4",
+      "form": "Vital Signs",
+      "present": false,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "the visit could not be opened"
+      ],
+      "field": "Time of Measurement"
+    },
+    {
+      "pointer": "/visits/2/forms/2",
+      "visit": "Week 4",
+      "form": "Study Drug Administration",
+      "present": false,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "the visit could not be opened"
+      ]
+    },
+    {
+      "pointer": "/visits/2/forms/2/fields/0",
+      "visit": "Week 4",
+      "form": "Study Drug Administration",
+      "present": false,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "the visit could not be opened"
+      ],
+      "field": "Study Drug Administered"
+    },
+    {
+      "pointer": "/visits/2/forms/2/fields/1",
+      "visit": "Week 4",
+      "form": "Study Drug Administration",
+      "present": false,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "the visit could not be opened"
+      ],
+      "field": "Administration Date"
+    },
+    {
+      "pointer": "/visits/2/forms/2/fields/2",
+      "visit": "Week 4",
+      "form": "Study Drug Administration",
+      "present": false,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "the visit could not be opened"
+      ],
+      "field": "Administration Time"
+    },
+    {
+      "pointer": "/visits/2/forms/2/fields/3",
+      "visit": "Week 4",
+      "form": "Study Drug Administration",
+      "present": false,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "the visit could not be opened"
+      ],
+      "field": "Dose Administered"
+    },
+    {
+      "pointer": "/visits/2/forms/2/fields/4",
+      "visit": "Week 4",
+      "form": "Study Drug Administration",
+      "present": false,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "the visit could not be opened"
+      ],
+      "field": "Route of Administration"
+    },
+    {
+      "pointer": "/visits/2/forms/2/fields/5",
+      "visit": "Week 4",
+      "form": "Study Drug Administration",
+      "present": false,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "the visit could not be opened"
+      ],
+      "field": "Injection Site"
+    },
+    {
+      "pointer": "/visits/2/forms/2/fields/6",
+      "visit": "Week 4",
+      "form": "Study Drug Administration",
+      "present": false,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "the visit could not be opened"
+      ],
+      "field": "Reason Not Administered"
+    },
+    {
+      "pointer": "/visits/2/forms/3",
+      "visit": "Week 4",
+      "form": "Disease Activity Assessment",
+      "present": false,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "the visit could not be opened"
+      ]
+    },
+    {
+      "pointer": "/visits/2/forms/3/fields/0",
+      "visit": "Week 4",
+      "form": "Disease Activity Assessment",
+      "present": false,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "the visit could not be opened"
+      ],
+      "field": "Assessment Date"
+    },
+    {
+      "pointer": "/visits/2/forms/3/fields/1",
+      "visit": "Week 4",
+      "form": "Disease Activity Assessment",
+      "present": false,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "the visit could not be opened"
+      ],
+      "field": "PASI Total Score"
+    },
+    {
+      "pointer": "/visits/2/forms/3/fields/2",
+      "visit": "Week 4",
+      "form": "Disease Activity Assessment",
+      "present": false,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "the visit could not be opened"
+      ],
+      "field": "Body Surface Area Involved"
+    },
+    {
+      "pointer": "/visits/2/forms/3/fields/3",
+      "visit": "Week 4",
+      "form": "Disease Activity Assessment",
+      "present": false,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "the visit could not be opened"
+      ],
+      "field": "Physician Global Assessment"
+    },
+    {
+      "pointer": "/visits/2/forms/3/fields/4",
+      "visit": "Week 4",
+      "form": "Disease Activity Assessment",
+      "present": false,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "the visit could not be opened"
+      ],
+      "field": "Patient Global Assessment"
+    },
+    {
+      "pointer": "/visits/2/forms/3/fields/5",
+      "visit": "Week 4",
+      "form": "Disease Activity Assessment",
+      "present": false,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "the visit could not be opened"
+      ],
+      "field": "Itch Numeric Rating Scale"
+    },
+    {
+      "pointer": "/visits/2/forms/3/fields/6",
+      "visit": "Week 4",
+      "form": "Disease Activity Assessment",
+      "present": false,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "the visit could not be opened"
+      ],
+      "field": "Assessment Complete"
+    },
+    {
+      "pointer": "/visits/2/forms/4",
+      "visit": "Week 4",
+      "form": "Adverse Events",
+      "present": false,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "the visit could not be opened"
+      ]
+    },
+    {
+      "pointer": "/visits/2/forms/4/fields/0",
+      "visit": "Week 4",
+      "form": "Adverse Events",
+      "present": false,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "the visit could not be opened"
+      ],
+      "field": "Adverse Event Term"
+    },
+    {
+      "pointer": "/visits/2/forms/4/fields/1",
+      "visit": "Week 4",
+      "form": "Adverse Events",
+      "present": false,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "the visit could not be opened"
+      ],
+      "field": "Onset Date and Time"
+    },
+    {
+      "pointer": "/visits/2/forms/4/fields/2",
+      "visit": "Week 4",
+      "form": "Adverse Events",
+      "present": false,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "the visit could not be opened"
+      ],
+      "field": "Severity"
+    },
+    {
+      "pointer": "/visits/2/forms/4/fields/3",
+      "visit": "Week 4",
+      "form": "Adverse Events",
+      "present": false,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "the visit could not be opened"
+      ],
+      "field": "Serious"
+    },
+    {
+      "pointer": "/visits/2/forms/4/fields/4",
+      "visit": "Week 4",
+      "form": "Adverse Events",
+      "present": false,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "the visit could not be opened"
+      ],
+      "field": "Relationship to Study Drug"
+    },
+    {
+      "pointer": "/visits/2/forms/4/fields/5",
+      "visit": "Week 4",
+      "form": "Adverse Events",
+      "present": false,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "the visit could not be opened"
+      ],
+      "field": "Action Taken with Study Drug"
+    },
+    {
+      "pointer": "/visits/2/forms/4/fields/6",
+      "visit": "Week 4",
+      "form": "Adverse Events",
+      "present": false,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "the visit could not be opened"
+      ],
+      "field": "Outcome"
+    },
+    {
+      "pointer": "/visits/2/forms/4/fields/7",
+      "visit": "Week 4",
+      "form": "Adverse Events",
+      "present": false,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "the visit could not be opened"
+      ],
+      "field": "Resolution Date"
+    },
+    {
+      "pointer": "/visits/2/forms/5",
+      "visit": "Week 4",
+      "form": "Concomitant Medications",
+      "present": false,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "the visit could not be opened"
+      ]
+    },
+    {
+      "pointer": "/visits/2/forms/5/fields/0",
+      "visit": "Week 4",
+      "form": "Concomitant Medications",
+      "present": false,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "the visit could not be opened"
+      ],
+      "field": "Medication Name"
+    },
+    {
+      "pointer": "/visits/2/forms/5/fields/1",
+      "visit": "Week 4",
+      "form": "Concomitant Medications",
+      "present": false,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "the visit could not be opened"
+      ],
+      "field": "Indication"
+    },
+    {
+      "pointer": "/visits/2/forms/5/fields/2",
+      "visit": "Week 4",
+      "form": "Concomitant Medications",
+      "present": false,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "the visit could not be opened"
+      ],
+      "field": "Dose"
+    },
+    {
+      "pointer": "/visits/2/forms/5/fields/3",
+      "visit": "Week 4",
+      "form": "Concomitant Medications",
+      "present": false,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "the visit could not be opened"
+      ],
+      "field": "Route"
+    },
+    {
+      "pointer": "/visits/2/forms/5/fields/4",
+      "visit": "Week 4",
+      "form": "Concomitant Medications",
+      "present": false,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "the visit could not be opened"
+      ],
+      "field": "Frequency"
+    },
+    {
+      "pointer": "/visits/2/forms/5/fields/5",
+      "visit": "Week 4",
+      "form": "Concomitant Medications",
+      "present": false,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "the visit could not be opened"
+      ],
+      "field": "Start Date"
+    },
+    {
+      "pointer": "/visits/2/forms/5/fields/6",
+      "visit": "Week 4",
+      "form": "Concomitant Medications",
+      "present": false,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "the visit could not be opened"
+      ],
+      "field": "Ongoing"
+    },
+    {
+      "pointer": "/visits/2/forms/6",
+      "visit": "Week 4",
+      "form": "Local Laboratory - Chemistry",
+      "present": false,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "the visit could not be opened"
+      ]
+    },
+    {
+      "pointer": "/visits/2/forms/6/fields/0",
+      "visit": "Week 4",
+      "form": "Local Laboratory - Chemistry",
+      "present": false,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "the visit could not be opened"
+      ],
+      "field": "Collection Date"
+    },
+    {
+      "pointer": "/visits/2/forms/6/fields/1",
+      "visit": "Week 4",
+      "form": "Local Laboratory - Chemistry",
+      "present": false,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "the visit could not be opened"
+      ],
+      "field": "Collection Time"
+    },
+    {
+      "pointer": "/visits/2/forms/6/fields/2",
+      "visit": "Week 4",
+      "form": "Local Laboratory - Chemistry",
+      "present": false,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "the visit could not be opened"
+      ],
+      "field": "Alanine Aminotransferase"
+    },
+    {
+      "pointer": "/visits/2/forms/6/fields/3",
+      "visit": "Week 4",
+      "form": "Local Laboratory - Chemistry",
+      "present": false,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "the visit could not be opened"
+      ],
+      "field": "Aspartate Aminotransferase"
+    },
+    {
+      "pointer": "/visits/2/forms/6/fields/4",
+      "visit": "Week 4",
+      "form": "Local Laboratory - Chemistry",
+      "present": false,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "the visit could not be opened"
+      ],
+      "field": "Total Bilirubin"
+    },
+    {
+      "pointer": "/visits/2/forms/6/fields/5",
+      "visit": "Week 4",
+      "form": "Local Laboratory - Chemistry",
+      "present": false,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "the visit could not be opened"
+      ],
+      "field": "Creatinine"
+    },
+    {
+      "pointer": "/visits/2/forms/6/fields/6",
+      "visit": "Week 4",
+      "form": "Local Laboratory - Chemistry",
+      "present": false,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "the visit could not be opened"
+      ],
+      "field": "Fasting Status"
+    },
+    {
+      "pointer": "/visits/3",
+      "visit": "End of Treatment (Week 12)",
+      "form": "",
+      "present": false,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "the visit could not be found or opened"
+      ]
+    },
+    {
+      "pointer": "/visits/3/forms/0",
+      "visit": "End of Treatment (Week 12)",
+      "form": "Visit Status",
+      "present": false,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "the visit could not be opened"
+      ]
+    },
+    {
+      "pointer": "/visits/3/forms/0/fields/0",
+      "visit": "End of Treatment (Week 12)",
+      "form": "Visit Status",
+      "present": false,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "the visit could not be opened"
+      ],
+      "field": "Visit Date"
+    },
+    {
+      "pointer": "/visits/3/forms/0/fields/1",
+      "visit": "End of Treatment (Week 12)",
+      "form": "Visit Status",
+      "present": false,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "the visit could not be opened"
+      ],
+      "field": "Visit Occurred"
+    },
+    {
+      "pointer": "/visits/3/forms/0/fields/2",
+      "visit": "End of Treatment (Week 12)",
+      "form": "Visit Status",
+      "present": false,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "the visit could not be opened"
+      ],
+      "field": "Visit Type"
+    },
+    {
+      "pointer": "/visits/3/forms/0/fields/3",
+      "visit": "End of Treatment (Week 12)",
+      "form": "Visit Status",
+      "present": false,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "the visit could not be opened"
+      ],
+      "field": "Study Day"
+    },
+    {
+      "pointer": "/visits/3/forms/0/fields/4",
+      "visit": "End of Treatment (Week 12)",
+      "form": "Visit Status",
+      "present": false,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "the visit could not be opened"
+      ],
+      "field": "Reason Visit Not Performed"
+    },
+    {
+      "pointer": "/visits/3/forms/0/fields/5",
+      "visit": "End of Treatment (Week 12)",
+      "form": "Visit Status",
+      "present": false,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "the visit could not be opened"
+      ],
+      "field": "Visit Window Deviation"
+    },
+    {
+      "pointer": "/visits/3/forms/1",
+      "visit": "End of Treatment (Week 12)",
+      "form": "Vital Signs",
+      "present": false,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "the visit could not be opened"
+      ]
+    },
+    {
+      "pointer": "/visits/3/forms/1/fields/0",
+      "visit": "End of Treatment (Week 12)",
+      "form": "Vital Signs",
+      "present": false,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "the visit could not be opened"
+      ],
+      "field": "Systolic Blood Pressure"
+    },
+    {
+      "pointer": "/visits/3/forms/1/fields/1",
+      "visit": "End of Treatment (Week 12)",
+      "form": "Vital Signs",
+      "present": false,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "the visit could not be opened"
+      ],
+      "field": "Diastolic Blood Pressure"
+    },
+    {
+      "pointer": "/visits/3/forms/1/fields/2",
+      "visit": "End of Treatment (Week 12)",
+      "form": "Vital Signs",
+      "present": false,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "the visit could not be opened"
+      ],
+      "field": "Pulse Pressure"
+    },
+    {
+      "pointer": "/visits/3/forms/1/fields/3",
+      "visit": "End of Treatment (Week 12)",
+      "form": "Vital Signs",
+      "present": false,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "the visit could not be opened"
+      ],
+      "field": "Heart Rate"
+    },
+    {
+      "pointer": "/visits/3/forms/1/fields/4",
+      "visit": "End of Treatment (Week 12)",
+      "form": "Vital Signs",
+      "present": false,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "the visit could not be opened"
+      ],
+      "field": "Respiratory Rate"
+    },
+    {
+      "pointer": "/visits/3/forms/1/fields/5",
+      "visit": "End of Treatment (Week 12)",
+      "form": "Vital Signs",
+      "present": false,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "the visit could not be opened"
+      ],
+      "field": "Body Temperature"
+    },
+    {
+      "pointer": "/visits/3/forms/1/fields/6",
+      "visit": "End of Treatment (Week 12)",
+      "form": "Vital Signs",
+      "present": false,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "the visit could not be opened"
+      ],
+      "field": "Position"
+    },
+    {
+      "pointer": "/visits/3/forms/1/fields/7",
+      "visit": "End of Treatment (Week 12)",
+      "form": "Vital Signs",
+      "present": false,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "the visit could not be opened"
+      ],
+      "field": "Time of Measurement"
+    },
+    {
+      "pointer": "/visits/3/forms/2",
+      "visit": "End of Treatment (Week 12)",
+      "form": "Physical Examination",
+      "present": false,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "the visit could not be opened"
+      ]
+    },
+    {
+      "pointer": "/visits/3/forms/2/fields/0",
+      "visit": "End of Treatment (Week 12)",
+      "form": "Physical Examination",
+      "present": false,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "the visit could not be opened"
+      ],
+      "field": "Examination Performed"
+    },
+    {
+      "pointer": "/visits/3/forms/2/fields/1",
+      "visit": "End of Treatment (Week 12)",
+      "form": "Physical Examination",
+      "present": false,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "the visit could not be opened"
+      ],
+      "field": "Examination Date and Time"
+    },
+    {
+      "pointer": "/visits/3/forms/2/fields/2",
+      "visit": "End of Treatment (Week 12)",
+      "form": "Physical Examination",
+      "present": false,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "the visit could not be opened"
+      ],
+      "field": "Body Systems Examined"
+    },
+    {
+      "pointer": "/visits/3/forms/2/fields/3",
+      "visit": "End of Treatment (Week 12)",
+      "form": "Physical Examination",
+      "present": false,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "the visit could not be opened"
+      ],
+      "field": "General Appearance"
+    },
+    {
+      "pointer": "/visits/3/forms/2/fields/4",
+      "visit": "End of Treatment (Week 12)",
+      "form": "Physical Examination",
+      "present": false,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "the visit could not be opened"
+      ],
+      "field": "Abnormal Findings"
+    },
+    {
+      "pointer": "/visits/3/forms/2/fields/5",
+      "visit": "End of Treatment (Week 12)",
+      "form": "Physical Examination",
+      "present": false,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "the visit could not be opened"
+      ],
+      "field": "Subject Fasting"
+    },
+    {
+      "pointer": "/visits/3/forms/3",
+      "visit": "End of Treatment (Week 12)",
+      "form": "12-Lead ECG",
+      "present": false,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "the visit could not be opened"
+      ]
+    },
+    {
+      "pointer": "/visits/3/forms/3/fields/0",
+      "visit": "End of Treatment (Week 12)",
+      "form": "12-Lead ECG",
+      "present": false,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "the visit could not be opened"
+      ],
+      "field": "ECG Date and Time"
+    },
+    {
+      "pointer": "/visits/3/forms/3/fields/1",
+      "visit": "End of Treatment (Week 12)",
+      "form": "12-Lead ECG",
+      "present": false,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "the visit could not be opened"
+      ],
+      "field": "Ventricular Rate"
+    },
+    {
+      "pointer": "/visits/3/forms/3/fields/2",
+      "visit": "End of Treatment (Week 12)",
+      "form": "12-Lead ECG",
+      "present": false,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "the visit could not be opened"
+      ],
+      "field": "PR Interval"
+    },
+    {
+      "pointer": "/visits/3/forms/3/fields/3",
+      "visit": "End of Treatment (Week 12)",
+      "form": "12-Lead ECG",
+      "present": false,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "the visit could not be opened"
+      ],
+      "field": "QRS Duration"
+    },
+    {
+      "pointer": "/visits/3/forms/3/fields/4",
+      "visit": "End of Treatment (Week 12)",
+      "form": "12-Lead ECG",
+      "present": false,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "the visit could not be opened"
+      ],
+      "field": "QT Interval"
+    },
+    {
+      "pointer": "/visits/3/forms/3/fields/5",
+      "visit": "End of Treatment (Week 12)",
+      "form": "12-Lead ECG",
+      "present": false,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "the visit could not be opened"
+      ],
+      "field": "QTcF Interval"
+    },
+    {
+      "pointer": "/visits/3/forms/3/fields/6",
+      "visit": "End of Treatment (Week 12)",
+      "form": "12-Lead ECG",
+      "present": false,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "the visit could not be opened"
+      ],
+      "field": "Overall Interpretation"
+    },
+    {
+      "pointer": "/visits/3/forms/3/fields/7",
+      "visit": "End of Treatment (Week 12)",
+      "form": "12-Lead ECG",
+      "present": false,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "the visit could not be opened"
+      ],
+      "field": "Interpretation Comment"
+    },
+    {
+      "pointer": "/visits/3/forms/4",
+      "visit": "End of Treatment (Week 12)",
+      "form": "Adverse Events",
+      "present": false,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "the visit could not be opened"
+      ]
+    },
+    {
+      "pointer": "/visits/3/forms/4/fields/0",
+      "visit": "End of Treatment (Week 12)",
+      "form": "Adverse Events",
+      "present": false,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "the visit could not be opened"
+      ],
+      "field": "Adverse Event Term"
+    },
+    {
+      "pointer": "/visits/3/forms/4/fields/1",
+      "visit": "End of Treatment (Week 12)",
+      "form": "Adverse Events",
+      "present": false,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "the visit could not be opened"
+      ],
+      "field": "Onset Date and Time"
+    },
+    {
+      "pointer": "/visits/3/forms/4/fields/2",
+      "visit": "End of Treatment (Week 12)",
+      "form": "Adverse Events",
+      "present": false,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "the visit could not be opened"
+      ],
+      "field": "Severity"
+    },
+    {
+      "pointer": "/visits/3/forms/4/fields/3",
+      "visit": "End of Treatment (Week 12)",
+      "form": "Adverse Events",
+      "present": false,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "the visit could not be opened"
+      ],
+      "field": "Serious"
+    },
+    {
+      "pointer": "/visits/3/forms/4/fields/4",
+      "visit": "End of Treatment (Week 12)",
+      "form": "Adverse Events",
+      "present": false,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "the visit could not be opened"
+      ],
+      "field": "Relationship to Study Drug"
+    },
+    {
+      "pointer": "/visits/3/forms/4/fields/5",
+      "visit": "End of Treatment (Week 12)",
+      "form": "Adverse Events",
+      "present": false,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "the visit could not be opened"
+      ],
+      "field": "Action Taken with Study Drug"
+    },
+    {
+      "pointer": "/visits/3/forms/4/fields/6",
+      "visit": "End of Treatment (Week 12)",
+      "form": "Adverse Events",
+      "present": false,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "the visit could not be opened"
+      ],
+      "field": "Outcome"
+    },
+    {
+      "pointer": "/visits/3/forms/4/fields/7",
+      "visit": "End of Treatment (Week 12)",
+      "form": "Adverse Events",
+      "present": false,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "the visit could not be opened"
+      ],
+      "field": "Resolution Date"
+    },
+    {
+      "pointer": "/visits/3/forms/5",
+      "visit": "End of Treatment (Week 12)",
+      "form": "Disease Activity Assessment",
+      "present": false,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "the visit could not be opened"
+      ]
+    },
+    {
+      "pointer": "/visits/3/forms/5/fields/0",
+      "visit": "End of Treatment (Week 12)",
+      "form": "Disease Activity Assessment",
+      "present": false,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "the visit could not be opened"
+      ],
+      "field": "Assessment Date"
+    },
+    {
+      "pointer": "/visits/3/forms/5/fields/1",
+      "visit": "End of Treatment (Week 12)",
+      "form": "Disease Activity Assessment",
+      "present": false,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "the visit could not be opened"
+      ],
+      "field": "PASI Total Score"
+    },
+    {
+      "pointer": "/visits/3/forms/5/fields/2",
+      "visit": "End of Treatment (Week 12)",
+      "form": "Disease Activity Assessment",
+      "present": false,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "the visit could not be opened"
+      ],
+      "field": "Body Surface Area Involved"
+    },
+    {
+      "pointer": "/visits/3/forms/5/fields/3",
+      "visit": "End of Treatment (Week 12)",
+      "form": "Disease Activity Assessment",
+      "present": false,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "the visit could not be opened"
+      ],
+      "field": "Physician Global Assessment"
+    },
+    {
+      "pointer": "/visits/3/forms/5/fields/4",
+      "visit": "End of Treatment (Week 12)",
+      "form": "Disease Activity Assessment",
+      "present": false,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "the visit could not be opened"
+      ],
+      "field": "Patient Global Assessment"
+    },
+    {
+      "pointer": "/visits/3/forms/5/fields/5",
+      "visit": "End of Treatment (Week 12)",
+      "form": "Disease Activity Assessment",
+      "present": false,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "the visit could not be opened"
+      ],
+      "field": "Itch Numeric Rating Scale"
+    },
+    {
+      "pointer": "/visits/3/forms/5/fields/6",
+      "visit": "End of Treatment (Week 12)",
+      "form": "Disease Activity Assessment",
+      "present": false,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "the visit could not be opened"
+      ],
+      "field": "Assessment Complete"
+    },
+    {
+      "pointer": "/visits/3/forms/6",
+      "visit": "End of Treatment (Week 12)",
+      "form": "End of Treatment",
+      "present": false,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "the visit could not be opened"
+      ]
+    },
+    {
+      "pointer": "/visits/3/forms/6/fields/0",
+      "visit": "End of Treatment (Week 12)",
+      "form": "End of Treatment",
+      "present": false,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "the visit could not be opened"
+      ],
+      "field": "End of Treatment Date"
+    },
+    {
+      "pointer": "/visits/3/forms/6/fields/1",
+      "visit": "End of Treatment (Week 12)",
+      "form": "End of Treatment",
+      "present": false,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "the visit could not be opened"
+      ],
+      "field": "Completed Treatment as Planned"
+    },
+    {
+      "pointer": "/visits/3/forms/6/fields/2",
+      "visit": "End of Treatment (Week 12)",
+      "form": "End of Treatment",
+      "present": false,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "the visit could not be opened"
+      ],
+      "field": "Primary Reason for Discontinuation"
+    },
+    {
+      "pointer": "/visits/3/forms/6/fields/3",
+      "visit": "End of Treatment (Week 12)",
+      "form": "End of Treatment",
+      "present": false,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "the visit could not be opened"
+      ],
+      "field": "Date of Last Dose"
+    },
+    {
+      "pointer": "/visits/3/forms/6/fields/4",
+      "visit": "End of Treatment (Week 12)",
+      "form": "End of Treatment",
+      "present": false,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "the visit could not be opened"
+      ],
+      "field": "Number of Doses Received"
+    },
+    {
+      "pointer": "/visits/3/forms/6/fields/5",
+      "visit": "End of Treatment (Week 12)",
+      "form": "End of Treatment",
+      "present": false,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "the visit could not be opened"
+      ],
+      "field": "Discontinuation Comments"
+    },
+    {
+      "pointer": "/visits/3/forms/6/fields/6",
+      "visit": "End of Treatment (Week 12)",
+      "form": "End of Treatment",
+      "present": false,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "the visit could not be opened"
+      ],
+      "field": "Subject Withdrew Consent"
+    }
+  ],
+  "log": [
+    {
+      "level": "info",
+      "message": "Building \"Demographics\" (starting from \"Screening — Source Documents\")."
+    },
+    {
+      "level": "info",
+      "message": "Element library discovered with 13 entries: Calculated Field, Check List, Checkbox, Date, Date/Time, Dropdown, Multi-line Textbox, Number (Decimal), Number (Whole), Radio Buttons, Single Line Textbox, Time, Yes/No Toggle"
+    },
+    {
+      "level": "info",
+      "message": "Opened the designer for \"Demographics\" via \"✎ Edit\" scoped to its row"
+    },
+    {
+      "level": "info",
+      "message": "Probing element library entry \"Check List\" to find out what it actually is…"
+    },
+    {
+      "level": "info",
+      "message": "  Check List: canvas rendered: checkbox \"ZZProbe4619: Probe One\", checkbox \"ZZProbe4619:\""
+    },
+    {
+      "level": "info",
+      "message": "  \"Check List\" behaves like multi_select (1.00, coverage 1.00) — offers a coded-value editor, as this type requires; offers no range inputs, correct for a non-numeric type"
+    },
+    {
+      "level": "info",
+      "message": "Probing element library entry \"Checkbox\" to find out what it actually is…"
+    },
+    {
+      "level": "info",
+      "message": "  Checkbox: canvas rendered: checkbox \"Checkbox\""
+    },
+    {
+      "level": "info",
+      "message": "  \"Checkbox\" behaves like checkbox (1.00, coverage 1.00) — offers no coded-value editor, correct for a type that holds no list; offers no range inputs, correct for a non-numeric type"
+    },
+    {
+      "level": "info",
+      "message": "Probing element library entry \"Date\" to find out what it actually is…"
+    },
+    {
+      "level": "info",
+      "message": "  Date: canvas rendered: textbox \"Date\""
+    },
+    {
+      "level": "info",
+      "message": "  \"Date\" behaves like date (1.00, coverage 1.00) — offers no coded-value editor, correct for a type that holds no list; offers no range inputs, correct for a non-numeric type"
+    },
+    {
+      "level": "info",
+      "message": "Probing element library entry \"Date/Time\" to find out what it actually is…"
+    },
+    {
+      "level": "info",
+      "message": "  Date/Time: canvas rendered: textbox \"Date/Time\""
+    },
+    {
+      "level": "info",
+      "message": "  \"Date/Time\" behaves like datetime (1.00, coverage 1.00) — offers no coded-value editor, correct for a type that holds no list; offers no range inputs, correct for a non-numeric type"
+    },
+    {
+      "level": "info",
+      "message": "Probing element library entry \"Dropdown\" to find out what it actually is…"
+    },
+    {
+      "level": "info",
+      "message": "  Dropdown: canvas rendered: combobox \"ZZProbe2491\""
+    },
+    {
+      "level": "info",
+      "message": "  \"Dropdown\" behaves like single_select (1.00, coverage 1.00) — offers a coded-value editor, as this type requires; offers no range inputs, correct for a non-numeric type"
+    },
+    {
+      "level": "info",
+      "message": "Probing element library entry \"Time\" to find out what it actually is…"
+    },
+    {
+      "level": "info",
+      "message": "  Time: canvas rendered: textbox \"Time\""
+    },
+    {
+      "level": "info",
+      "message": "  \"Time\" behaves like time (1.00, coverage 1.00) — offers no coded-value editor, correct for a type that holds no list; offers no range inputs, correct for a non-numeric type"
+    },
+    {
+      "level": "info",
+      "message": "Probing element library entry \"Calculated Field\" to find out what it actually is…"
+    },
+    {
+      "level": "info",
+      "message": "  Calculated Field: canvas rendered: textbox \"Calculated Field\""
+    },
+    {
+      "level": "info",
+      "message": "  \"Calculated Field\" behaves like calculated (1.00, coverage 1.00) — offers no coded-value editor, correct for a type that holds no list; offers no range inputs, correct for a non-numeric type"
+    },
+    {
+      "level": "info",
+      "message": "Probing element library entry \"Multi-line Textbox\" to find out what it actually is…"
+    },
+    {
+      "level": "info",
+      "message": "  Multi-line Textbox: canvas rendered: textbox \"Multi-line Textbox\""
+    },
+    {
+      "level": "info",
+      "message": "  \"Multi-line Textbox\" behaves like textarea (1.00, coverage 1.00) — offers no coded-value editor, correct for a type that holds no list; offers no range inputs, correct for a non-numeric type"
+    },
+    {
+      "level": "info",
+      "message": "Probing element library entry \"Number (Decimal)\" to find out what it actually is…"
+    },
+    {
+      "level": "info",
+      "message": "  Number (Decimal): canvas rendered: textbox \"Number (Decimal)\""
+    },
+    {
+      "level": "info",
+      "message": "  \"Number (Decimal)\" behaves like decimal (1.00, coverage 1.00) — offers no coded-value editor, correct for a type that holds no list; offers a min/max range, as numeric types do"
+    },
+    {
+      "level": "info",
+      "message": "Probing element library entry \"Number (Whole)\" to find out what it actually is…"
+    },
+    {
+      "level": "info",
+      "message": "  Number (Whole): canvas rendered: textbox \"Number (Whole)\""
+    },
+    {
+      "level": "info",
+      "message": "  \"Number (Whole)\" behaves like integer (1.00, coverage 1.00) — offers no coded-value editor, correct for a type that holds no list; offers a min/max range, as numeric types do"
+    },
+    {
+      "level": "info",
+      "message": "Probing element library entry \"Radio Buttons\" to find out what it actually is…"
+    },
+    {
+      "level": "info",
+      "message": "  Radio Buttons: canvas rendered: radio \"ZZProbe5164: Probe One\", radio \"ZZProbe5164:\""
+    },
+    {
+      "level": "info",
+      "message": "  \"Radio Buttons\" behaves like radio (1.00, coverage 1.00) — offers a coded-value editor, as this type requires; offers no range inputs, correct for a non-numeric type"
+    },
+    {
+      "level": "info",
+      "message": "Probing element library entry \"Single Line Textbox\" to find out what it actually is…"
+    },
+    {
+      "level": "info",
+      "message": "  Single Line Textbox: canvas rendered: textbox \"Single Line Textbox\""
+    },
+    {
+      "level": "info",
+      "message": "  \"Single Line Textbox\" behaves like text (1.00, coverage 1.00) — offers no coded-value editor, correct for a type that holds no list; offers no range inputs, correct for a non-numeric type"
+    },
+    {
+      "level": "info",
+      "message": "Probing element library entry \"Yes/No Toggle\" to find out what it actually is…"
+    },
+    {
+      "level": "info",
+      "message": "  Yes/No Toggle: canvas rendered: button \"Yes\", button \"No\""
+    },
+    {
+      "level": "info",
+      "message": "  \"Yes/No Toggle\" behaves like boolean (1.00, coverage 1.00) — offers no coded-value editor, correct for a type that holds no list; offers no range inputs, correct for a non-numeric type"
+    },
+    {
+      "level": "info",
+      "message": "text → \"Single Line Textbox\" (0.91) — offers no coded-value editor, correct for a type that holds no list; offers no range inputs, correct for a non-numeric type; offers no formula input, correct"
+    },
+    {
+      "level": "info",
+      "message": "date → \"Date\" (0.93) — offers no coded-value editor, correct for a type that holds no list; offers no range inputs, correct for a non-numeric type; offers no formula input, correct"
+    },
+    {
+      "level": "info",
+      "message": "radio → \"Radio Buttons\" (0.91) — offers a coded-value editor, as this type requires; offers no range inputs, correct for a non-numeric type; offers no formula input, correct"
+    },
+    {
+      "level": "info",
+      "message": "multi_select → \"Check List\" (0.93) — offers a coded-value editor, as this type requires; offers no range inputs, correct for a non-numeric type; offers no formula input, correct"
+    },
+    {
+      "level": "info",
+      "message": "single_select → \"Dropdown\" (0.93) — offers a coded-value editor, as this type requires; offers no range inputs, correct for a non-numeric type; offers no formula input, correct"
+    },
+    {
+      "level": "info",
+      "message": "decimal → \"Number (Decimal)\" (0.91) — offers no coded-value editor, correct for a type that holds no list; offers a min/max range, as numeric types do; offers no formula input, correct"
+    },
+    {
+      "level": "info",
+      "message": "calculated → \"Calculated Field\" (0.91) — offers no coded-value editor, correct for a type that holds no list; offers no range inputs, correct for a non-numeric type; offers a formula input, as a derived field needs"
+    },
+    {
+      "level": "info",
+      "message": "boolean → \"Yes/No Toggle\" (0.91) — offers no coded-value editor, correct for a type that holds no list; offers no range inputs, correct for a non-numeric type; offers no formula input, correct"
+    },
+    {
+      "level": "info",
+      "message": "time → \"Time\" (0.93) — offers no coded-value editor, correct for a type that holds no list; offers no range inputs, correct for a non-numeric type; offers no formula input, correct"
+    },
+    {
+      "level": "info",
+      "message": "checkbox → \"Checkbox\" (0.93) — offers no coded-value editor, correct for a type that holds no list; offers no range inputs, correct for a non-numeric type; offers no formula input, correct"
+    },
+    {
+      "level": "info",
+      "message": "integer → \"Number (Whole)\" (0.91) — offers no coded-value editor, correct for a type that holds no list; offers a min/max range, as numeric types do; offers no formula input, correct"
+    },
+    {
+      "level": "info",
+      "message": "textarea → \"Multi-line Textbox\" (0.91) — offers no coded-value editor, correct for a type that holds no list; offers no range inputs, correct for a non-numeric type; offers no formula input, correct"
+    },
+    {
+      "level": "info",
+      "message": "datetime → \"Date/Time\" (0.93) — offers no coded-value editor, correct for a type that holds no list; offers no range inputs, correct for a non-numeric type; offers no formula input, correct"
+    },
+    {
+      "level": "info",
+      "message": "Opened the designer for \"Demographics\" via \"✎ Edit\" scoped to its row"
+    },
+    {
+      "level": "info",
+      "message": "\"Save\" is this platform's real save — an edit survived a round trip."
+    },
+    {
+      "level": "info",
+      "message": "Opened the designer for \"Demographics\" via \"✎ Edit\" scoped to its row"
+    },
+    {
+      "level": "info",
+      "message": "Building \"Informed Consent\" (starting from \"Screening — Source Documents\")."
+    },
+    {
+      "level": "info",
+      "message": "Opened the designer for \"Informed Consent\" via \"✎ Edit\" scoped to its row"
+    },
+    {
+      "level": "info",
+      "message": "Opened the designer for \"Informed Consent\" via \"✎ Edit\" scoped to its row"
+    },
+    {
+      "level": "info",
+      "message": "Building \"Eligibility Criteria\" (starting from \"Screening — Source Documents\")."
+    },
+    {
+      "level": "info",
+      "message": "Opened the designer for \"Eligibility Criteria\" via \"✎ Edit\" scoped to its row"
+    },
+    {
+      "level": "info",
+      "message": "Opened the designer for \"Eligibility Criteria\" via \"✎ Edit\" scoped to its row"
+    },
+    {
+      "level": "info",
+      "message": "Building \"Medical History\" (starting from \"Screening — Source Documents\")."
+    },
+    {
+      "level": "info",
+      "message": "Opened the designer for \"Medical History\" via \"✎ Edit\" scoped to its row"
+    },
+    {
+      "level": "info",
+      "message": "Opened the designer for \"Medical History\" via \"✎ Edit\" scoped to its row"
+    },
+    {
+      "level": "info",
+      "message": "Building \"Prior and Concomitant Medications\" (starting from \"Screening — Source Documents\")."
+    },
+    {
+      "level": "info",
+      "message": "Opened the designer for \"Prior and Concomitant Medications\" via \"✎ Edit\" scoped to its row"
+    },
+    {
+      "level": "info",
+      "message": "Opened the designer for \"Prior and Concomitant Medications\" via \"✎ Edit\" scoped to its row"
+    },
+    {
+      "level": "info",
+      "message": "Building \"Vital Signs\" (starting from \"Screening — Source Documents\")."
+    },
+    {
+      "level": "info",
+      "message": "Opened the designer for \"Vital Signs\" via \"✎ Edit\" scoped to its row"
+    },
+    {
+      "level": "info",
+      "message": "Opened the designer for \"Vital Signs\" via \"✎ Edit\" scoped to its row"
+    },
+    {
+      "level": "info",
+      "message": "Building \"Local Laboratory - Hematology\" (starting from \"Screening — Source Documents\")."
+    },
+    {
+      "level": "info",
+      "message": "Opened the designer for \"Local Laboratory - Hematology\" via \"✎ Edit\" scoped to its row"
+    },
+    {
+      "level": "info",
+      "message": "Opened the designer for \"Local Laboratory - Hematology\" via \"✎ Edit\" scoped to its row"
+    },
+    {
+      "level": "warn",
+      "message": "Could not get back to the visit schedule; still on \"Screening — Source Documents\". Considered: \"Study Plan\" (0.88), \"← Visit Schedule\" (0.82), \"Patients\" (0.33)."
+    },
+    {
+      "level": "warn",
+      "message": "Could not get back to the visit schedule; still on \"Screening — Source Documents\". Considered: \"Study Plan\" (0.88), \"← Visit Schedule\" (0.82), \"Patients\" (0.33)."
+    },
+    {
+      "level": "error",
+      "message": "Could not open visit \"Baseline (Day 1)\"."
+    },
+    {
+      "level": "warn",
+      "message": "Could not get back to the visit schedule; still on \"Screening — Source Documents\". Considered: \"Study Plan\" (0.88), \"← Visit Schedule\" (0.82), \"Patients\" (0.33)."
+    },
+    {
+      "level": "warn",
+      "message": "Could not get back to the visit schedule; still on \"Screening — Source Documents\". Considered: \"Study Plan\" (0.88), \"← Visit Schedule\" (0.82), \"Patients\" (0.33)."
+    },
+    {
+      "level": "error",
+      "message": "Could not open visit \"Week 4\"."
+    },
+    {
+      "level": "warn",
+      "message": "Could not get back to the visit schedule; still on \"Screening — Source Documents\". Considered: \"Study Plan\" (0.88), \"← Visit Schedule\" (0.82), \"Patients\" (0.33)."
+    },
+    {
+      "level": "warn",
+      "message": "Could not get back to the visit schedule; still on \"Screening — Source Documents\". Considered: \"Study Plan\" (0.88), \"← Visit Schedule\" (0.82), \"Patients\" (0.33)."
+    },
+    {
+      "level": "error",
+      "message": "Could not open visit \"End of Treatment (Week 12)\"."
+    },
+    {
+      "level": "error",
+      "message": "Could not open visit \"Baseline (Day 1)\" to read it back; stopped on \"Screening — Source Documents\"."
+    },
+    {
+      "level": "error",
+      "message": "Could not open visit \"Week 4\" to read it back; stopped on \"Screening — Source Documents\"."
+    },
+    {
+      "level": "error",
+      "message": "Could not open visit \"End of Treatment (Week 12)\" to read it back; stopped on \"Screening — Source Documents\"."
+    },
+    {
+      "level": "warn",
+      "message": "Reconciliation: 47/195 fields present; missing: Visit Status/Visit Date, Visit Status/Visit Occurred, Visit Status/Visit Type, Visit Status/Study Day, Visit Status/Reason Visit Not Performed, Visit Status/Visit Window Deviation, Vital Signs/Systolic Blood Pressure, Vital Signs/Diastolic Blood Pressure…"
+    }
+  ],
+  "irStats": {
+    "visits": 4,
+    "formInstances": 28,
+    "distinctForms": 17,
+    "fields": 195,
+    "withOptions": 42,
+    "withRange": 59,
+    "withFormula": 7,
+    "skipRules": 13,
+    "repeatingForms": 5,
+    "typeHistogram": {
+      "text": 10,
+      "date": 20,
+      "radio": 10,
+      "multi_select": 6,
+      "single_select": 26,
+      "decimal": 23,
+      "calculated": 7,
+      "boolean": 19,
+      "time": 10,
+      "checkbox": 11,
+      "integer": 36,
+      "textarea": 11,
+      "datetime": 6
+    }
+  }
+}

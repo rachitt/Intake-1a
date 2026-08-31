@@ -129,6 +129,18 @@ export interface SnapshotRegion {
   /** Refs of the interactive nodes inside. */
   members: Ref[];
   box?: { x: number; y: number; w: number; h: number };
+  /**
+   * The visible text inside this region, as rendered lines.
+   *
+   * Necessary because not everything on a page is a control. A designer canvas
+   * lists the fields built so far, and some of them render as previews that
+   * carry no accessible name at all — a yes/no field draws two buttons labelled
+   * "Yes" and "No" and never mentions the field. Reading the region's text is
+   * the only way to confirm such a field is present, and a field that cannot be
+   * confirmed present is reported missing, which is the most costly error this
+   * agent can make.
+   */
+  texts: string[];
   /** Why the region was classified this way — surfaced in the audit log. */
   evidence: string[];
 }

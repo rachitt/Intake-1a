@@ -1,0 +1,3099 @@
+{
+  "platform": "esource-mock-a",
+  "specVersion": "esource-mock-a/1.0.0",
+  "study": {
+    "name": "ABC-101",
+    "visits": [
+      {
+        "name": "Screening",
+        "windowStart": "-28",
+        "windowEnd": "-1",
+        "forms": [
+          {
+            "name": "Demographics",
+            "repeating": false,
+            "status": "draft",
+            "fields": [
+              {
+                "label": "Subject Initials",
+                "type": "text",
+                "required": true,
+                "options": [],
+                "min": "",
+                "max": "",
+                "units": "",
+                "formula": "",
+                "skipLogic": null
+              },
+              {
+                "label": "Date of Birth",
+                "type": "date",
+                "required": true,
+                "options": [],
+                "min": "",
+                "max": "",
+                "units": "",
+                "formula": "",
+                "skipLogic": null
+              },
+              {
+                "label": "Sex at Birth",
+                "type": "radio",
+                "required": true,
+                "options": [
+                  {
+                    "code": "F",
+                    "label": "Female"
+                  },
+                  {
+                    "code": "M",
+                    "label": "Male"
+                  },
+                  {
+                    "code": "U",
+                    "label": "Undisclosed"
+                  }
+                ],
+                "min": "",
+                "max": "",
+                "units": "",
+                "formula": "",
+                "skipLogic": null
+              },
+              {
+                "label": "Race",
+                "type": "multi_select",
+                "required": false,
+                "options": [
+                  {
+                    "code": "WH",
+                    "label": "White"
+                  },
+                  {
+                    "code": "BL",
+                    "label": "Black or African American"
+                  },
+                  {
+                    "code": "AS",
+                    "label": "Asian"
+                  },
+                  {
+                    "code": "AI",
+                    "label": "American Indian or Alaska Native"
+                  },
+                  {
+                    "code": "OT",
+                    "label": "Other"
+                  }
+                ],
+                "min": "",
+                "max": "",
+                "units": "",
+                "formula": "",
+                "skipLogic": null
+              },
+              {
+                "label": "Ethnicity",
+                "type": "single_select",
+                "required": false,
+                "options": [
+                  {
+                    "code": "HL",
+                    "label": "Hispanic or Latino"
+                  },
+                  {
+                    "code": "NHL",
+                    "label": "Not Hispanic or Latino"
+                  },
+                  {
+                    "code": "NR",
+                    "label": "Not Reported"
+                  }
+                ],
+                "min": "",
+                "max": "",
+                "units": "",
+                "formula": "",
+                "skipLogic": null
+              },
+              {
+                "label": "Height",
+                "type": "decimal",
+                "required": true,
+                "options": [],
+                "min": "100",
+                "max": "250",
+                "units": "cm",
+                "formula": "",
+                "skipLogic": null
+              },
+              {
+                "label": "Weight",
+                "type": "decimal",
+                "required": true,
+                "options": [],
+                "min": "30",
+                "max": "300",
+                "units": "kg",
+                "formula": "",
+                "skipLogic": null
+              },
+              {
+                "label": "Body Mass Index",
+                "type": "calculated",
+                "required": false,
+                "options": [],
+                "min": "",
+                "max": "",
+                "units": "",
+                "formula": "Weight / (Height / 100) ^ 2",
+                "skipLogic": null
+              }
+            ]
+          },
+          {
+            "name": "Informed Consent",
+            "repeating": false,
+            "status": "draft",
+            "fields": [
+              {
+                "label": "Informed Consent Obtained",
+                "type": "boolean",
+                "required": true,
+                "options": [],
+                "min": "",
+                "max": "",
+                "units": "",
+                "formula": "",
+                "skipLogic": null
+              },
+              {
+                "label": "Date of Consent",
+                "type": "date",
+                "required": true,
+                "options": [],
+                "min": "",
+                "max": "",
+                "units": "",
+                "formula": "",
+                "skipLogic": null
+              },
+              {
+                "label": "Time of Consent",
+                "type": "time",
+                "required": false,
+                "options": [],
+                "min": "",
+                "max": "",
+                "units": "",
+                "formula": "",
+                "skipLogic": null
+              },
+              {
+                "label": "Consent Form Version",
+                "type": "text",
+                "required": true,
+                "options": [],
+                "min": "",
+                "max": "",
+                "units": "",
+                "formula": "",
+                "skipLogic": null
+              },
+              {
+                "label": "Consented By",
+                "type": "single_select",
+                "required": true,
+                "options": [
+                  {
+                    "code": "PI",
+                    "label": "Principal Investigator"
+                  },
+                  {
+                    "code": "SI",
+                    "label": "Sub-Investigator"
+                  },
+                  {
+                    "code": "SC",
+                    "label": "Study Coordinator"
+                  }
+                ],
+                "min": "",
+                "max": "",
+                "units": "",
+                "formula": "",
+                "skipLogic": null
+              },
+              {
+                "label": "Copy Provided to Subject",
+                "type": "checkbox",
+                "required": false,
+                "options": [],
+                "min": "",
+                "max": "",
+                "units": "",
+                "formula": "",
+                "skipLogic": null
+              }
+            ]
+          },
+          {
+            "name": "Eligibility Criteria",
+            "repeating": false,
+            "status": "draft",
+            "fields": [
+              {
+                "label": "Age 18 Years or Older at Consent",
+                "type": "boolean",
+                "required": true,
+                "options": [],
+                "min": "",
+                "max": "",
+                "units": "",
+                "formula": "",
+                "skipLogic": null
+              },
+              {
+                "label": "Confirmed Diagnosis of Plaque Psoriasis",
+                "type": "boolean",
+                "required": true,
+                "options": [],
+                "min": "",
+                "max": "",
+                "units": "",
+                "formula": "",
+                "skipLogic": null
+              },
+              {
+                "label": "Duration of Diagnosis",
+                "type": "integer",
+                "required": false,
+                "options": [],
+                "min": "0",
+                "max": "600",
+                "units": "months",
+                "formula": "",
+                "skipLogic": null
+              },
+              {
+                "label": "Written Informed Consent Provided",
+                "type": "boolean",
+                "required": true,
+                "options": [],
+                "min": "",
+                "max": "",
+                "units": "",
+                "formula": "",
+                "skipLogic": null
+              },
+              {
+                "label": "Any Exclusionary Condition Present",
+                "type": "boolean",
+                "required": true,
+                "options": [],
+                "min": "",
+                "max": "",
+                "units": "",
+                "formula": "",
+                "skipLogic": null
+              },
+              {
+                "label": "Exclusionary Conditions",
+                "type": "multi_select",
+                "required": false,
+                "options": [
+                  {
+                    "code": "PREG",
+                    "label": "Pregnant or Breastfeeding"
+                  },
+                  {
+                    "code": "MALIG",
+                    "label": "Active Malignancy"
+                  },
+                  {
+                    "code": "INF",
+                    "label": "Active Serious Infection"
+                  },
+                  {
+                    "code": "BIO",
+                    "label": "Prior Biologic Therapy Within 12 Weeks"
+                  },
+                  {
+                    "code": "OTH",
+                    "label": "Other"
+                  }
+                ],
+                "min": "",
+                "max": "",
+                "units": "",
+                "formula": "",
+                "skipLogic": {
+                  "whenFieldLabel": "Any Exclusionary Condition Present",
+                  "equalsValue": "Yes"
+                }
+              }
+            ]
+          },
+          {
+            "name": "Medical History",
+            "repeating": true,
+            "status": "draft",
+            "fields": [
+              {
+                "label": "Condition",
+                "type": "text",
+                "required": true,
+                "options": [],
+                "min": "",
+                "max": "",
+                "units": "",
+                "formula": "",
+                "skipLogic": null
+              },
+              {
+                "label": "Body System",
+                "type": "single_select",
+                "required": false,
+                "options": [
+                  {
+                    "code": "CARD",
+                    "label": "Cardiovascular"
+                  },
+                  {
+                    "code": "RESP",
+                    "label": "Respiratory"
+                  },
+                  {
+                    "code": "GI",
+                    "label": "Gastrointestinal"
+                  },
+                  {
+                    "code": "DERM",
+                    "label": "Dermatologic"
+                  },
+                  {
+                    "code": "NEURO",
+                    "label": "Neurological"
+                  },
+                  {
+                    "code": "OTH",
+                    "label": "Other"
+                  }
+                ],
+                "min": "",
+                "max": "",
+                "units": "",
+                "formula": "",
+                "skipLogic": null
+              },
+              {
+                "label": "Onset Date",
+                "type": "date",
+                "required": false,
+                "options": [],
+                "min": "",
+                "max": "",
+                "units": "",
+                "formula": "",
+                "skipLogic": null
+              },
+              {
+                "label": "Ongoing",
+                "type": "boolean",
+                "required": true,
+                "options": [],
+                "min": "",
+                "max": "",
+                "units": "",
+                "formula": "",
+                "skipLogic": null
+              },
+              {
+                "label": "Notes",
+                "type": "textarea",
+                "required": false,
+                "options": [],
+                "min": "",
+                "max": "",
+                "units": "",
+                "formula": "",
+                "skipLogic": null
+              }
+            ]
+          },
+          {
+            "name": "Prior and Concomitant Medications",
+            "repeating": true,
+            "status": "draft",
+            "fields": [
+              {
+                "label": "Medication Name",
+                "type": "text",
+                "required": true,
+                "options": [],
+                "min": "",
+                "max": "",
+                "units": "",
+                "formula": "",
+                "skipLogic": null
+              },
+              {
+                "label": "Indication",
+                "type": "text",
+                "required": false,
+                "options": [],
+                "min": "",
+                "max": "",
+                "units": "",
+                "formula": "",
+                "skipLogic": null
+              },
+              {
+                "label": "Dose",
+                "type": "decimal",
+                "required": false,
+                "options": [],
+                "min": "0",
+                "max": "10000",
+                "units": "mg",
+                "formula": "",
+                "skipLogic": null
+              },
+              {
+                "label": "Route",
+                "type": "single_select",
+                "required": false,
+                "options": [
+                  {
+                    "code": "PO",
+                    "label": "Oral"
+                  },
+                  {
+                    "code": "IV",
+                    "label": "Intravenous"
+                  },
+                  {
+                    "code": "SC",
+                    "label": "Subcutaneous"
+                  },
+                  {
+                    "code": "TOP",
+                    "label": "Topical"
+                  },
+                  {
+                    "code": "OTH",
+                    "label": "Other"
+                  }
+                ],
+                "min": "",
+                "max": "",
+                "units": "",
+                "formula": "",
+                "skipLogic": null
+              },
+              {
+                "label": "Frequency",
+                "type": "single_select",
+                "required": false,
+                "options": [
+                  {
+                    "code": "QD",
+                    "label": "Once Daily"
+                  },
+                  {
+                    "code": "BID",
+                    "label": "Twice Daily"
+                  },
+                  {
+                    "code": "TID",
+                    "label": "Three Times Daily"
+                  },
+                  {
+                    "code": "PRN",
+                    "label": "As Needed"
+                  }
+                ],
+                "min": "",
+                "max": "",
+                "units": "",
+                "formula": "",
+                "skipLogic": null
+              },
+              {
+                "label": "Start Date",
+                "type": "date",
+                "required": true,
+                "options": [],
+                "min": "",
+                "max": "",
+                "units": "",
+                "formula": "",
+                "skipLogic": null
+              },
+              {
+                "label": "Ongoing",
+                "type": "boolean",
+                "required": true,
+                "options": [],
+                "min": "",
+                "max": "",
+                "units": "",
+                "formula": "",
+                "skipLogic": null
+              }
+            ]
+          },
+          {
+            "name": "Vital Signs",
+            "repeating": false,
+            "status": "draft",
+            "fields": [
+              {
+                "label": "Systolic Blood Pressure",
+                "type": "integer",
+                "required": true,
+                "options": [],
+                "min": "60",
+                "max": "250",
+                "units": "mmHg",
+                "formula": "",
+                "skipLogic": null
+              },
+              {
+                "label": "Diastolic Blood Pressure",
+                "type": "integer",
+                "required": true,
+                "options": [],
+                "min": "30",
+                "max": "150",
+                "units": "mmHg",
+                "formula": "",
+                "skipLogic": null
+              },
+              {
+                "label": "Pulse Pressure",
+                "type": "calculated",
+                "required": false,
+                "options": [],
+                "min": "",
+                "max": "",
+                "units": "",
+                "formula": "Systolic Blood Pressure - Diastolic Blood Pressure",
+                "skipLogic": null
+              },
+              {
+                "label": "Heart Rate",
+                "type": "integer",
+                "required": true,
+                "options": [],
+                "min": "30",
+                "max": "220",
+                "units": "bpm",
+                "formula": "",
+                "skipLogic": null
+              },
+              {
+                "label": "Respiratory Rate",
+                "type": "integer",
+                "required": false,
+                "options": [],
+                "min": "6",
+                "max": "60",
+                "units": "breaths/min",
+                "formula": "",
+                "skipLogic": null
+              },
+              {
+                "label": "Body Temperature",
+                "type": "decimal",
+                "required": false,
+                "options": [],
+                "min": "34",
+                "max": "42",
+                "units": "C",
+                "formula": "",
+                "skipLogic": null
+              },
+              {
+                "label": "Position",
+                "type": "radio",
+                "required": false,
+                "options": [
+                  {
+                    "code": "SIT",
+                    "label": "Sitting"
+                  },
+                  {
+                    "code": "SUP",
+                    "label": "Supine"
+                  },
+                  {
+                    "code": "STA",
+                    "label": "Standing"
+                  }
+                ],
+                "min": "",
+                "max": "",
+                "units": "",
+                "formula": "",
+                "skipLogic": null
+              },
+              {
+                "label": "Time of Measurement",
+                "type": "time",
+                "required": true,
+                "options": [],
+                "min": "",
+                "max": "",
+                "units": "",
+                "formula": "",
+                "skipLogic": null
+              }
+            ]
+          },
+          {
+            "name": "Local Laboratory - Hematology",
+            "repeating": false,
+            "status": "draft",
+            "fields": [
+              {
+                "label": "Collection Date",
+                "type": "date",
+                "required": true,
+                "options": [],
+                "min": "",
+                "max": "",
+                "units": "",
+                "formula": "",
+                "skipLogic": null
+              },
+              {
+                "label": "Collection Time",
+                "type": "time",
+                "required": false,
+                "options": [],
+                "min": "",
+                "max": "",
+                "units": "",
+                "formula": "",
+                "skipLogic": null
+              },
+              {
+                "label": "Hemoglobin",
+                "type": "decimal",
+                "required": true,
+                "options": [],
+                "min": "3",
+                "max": "25",
+                "units": "g/dL",
+                "formula": "",
+                "skipLogic": null
+              },
+              {
+                "label": "Hematocrit",
+                "type": "decimal",
+                "required": false,
+                "options": [],
+                "min": "10",
+                "max": "70",
+                "units": "%",
+                "formula": "",
+                "skipLogic": null
+              },
+              {
+                "label": "White Blood Cell Count",
+                "type": "decimal",
+                "required": true,
+                "options": [],
+                "min": "0.5",
+                "max": "100",
+                "units": "10^9/L",
+                "formula": "",
+                "skipLogic": null
+              },
+              {
+                "label": "Platelet Count",
+                "type": "integer",
+                "required": true,
+                "options": [],
+                "min": "10",
+                "max": "1500",
+                "units": "10^9/L",
+                "formula": "",
+                "skipLogic": null
+              },
+              {
+                "label": "Sample Condition",
+                "type": "single_select",
+                "required": false,
+                "options": [
+                  {
+                    "code": "OK",
+                    "label": "Acceptable"
+                  },
+                  {
+                    "code": "HEM",
+                    "label": "Hemolyzed"
+                  },
+                  {
+                    "code": "CLOT",
+                    "label": "Clotted"
+                  },
+                  {
+                    "code": "INS",
+                    "label": "Insufficient Volume"
+                  }
+                ],
+                "min": "",
+                "max": "",
+                "units": "",
+                "formula": "",
+                "skipLogic": null
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "Baseline (Day 1)",
+        "windowStart": "0",
+        "windowEnd": "0",
+        "forms": [
+          {
+            "name": "Visit Status",
+            "repeating": false,
+            "status": "draft",
+            "fields": [
+              {
+                "label": "Visit Date",
+                "type": "date",
+                "required": true,
+                "options": [],
+                "min": "",
+                "max": "",
+                "units": "",
+                "formula": "",
+                "skipLogic": null
+              },
+              {
+                "label": "Visit Occurred",
+                "type": "boolean",
+                "required": true,
+                "options": [],
+                "min": "",
+                "max": "",
+                "units": "",
+                "formula": "",
+                "skipLogic": null
+              },
+              {
+                "label": "Visit Type",
+                "type": "single_select",
+                "required": false,
+                "options": [
+                  {
+                    "code": "SCH",
+                    "label": "Scheduled"
+                  },
+                  {
+                    "code": "UNS",
+                    "label": "Unscheduled"
+                  },
+                  {
+                    "code": "TEL",
+                    "label": "Telephone Contact"
+                  }
+                ],
+                "min": "",
+                "max": "",
+                "units": "",
+                "formula": "",
+                "skipLogic": null
+              },
+              {
+                "label": "Study Day",
+                "type": "integer",
+                "required": false,
+                "options": [],
+                "min": "-999",
+                "max": "999",
+                "units": "days",
+                "formula": "",
+                "skipLogic": null
+              },
+              {
+                "label": "Reason Visit Not Performed",
+                "type": "textarea",
+                "required": false,
+                "options": [],
+                "min": "",
+                "max": "",
+                "units": "",
+                "formula": "",
+                "skipLogic": {
+                  "whenFieldLabel": "Visit Occurred",
+                  "equalsValue": "No"
+                }
+              },
+              {
+                "label": "Visit Window Deviation",
+                "type": "checkbox",
+                "required": false,
+                "options": [],
+                "min": "",
+                "max": "",
+                "units": "",
+                "formula": "",
+                "skipLogic": null
+              }
+            ]
+          },
+          {
+            "name": "Vital Signs",
+            "repeating": false,
+            "status": "draft",
+            "fields": [
+              {
+                "label": "Systolic Blood Pressure",
+                "type": "integer",
+                "required": true,
+                "options": [],
+                "min": "60",
+                "max": "250",
+                "units": "mmHg",
+                "formula": "",
+                "skipLogic": null
+              },
+              {
+                "label": "Diastolic Blood Pressure",
+                "type": "integer",
+                "required": true,
+                "options": [],
+                "min": "30",
+                "max": "150",
+                "units": "mmHg",
+                "formula": "",
+                "skipLogic": null
+              },
+              {
+                "label": "Pulse Pressure",
+                "type": "calculated",
+                "required": false,
+                "options": [],
+                "min": "",
+                "max": "",
+                "units": "",
+                "formula": "Systolic Blood Pressure - Diastolic Blood Pressure",
+                "skipLogic": null
+              },
+              {
+                "label": "Heart Rate",
+                "type": "integer",
+                "required": true,
+                "options": [],
+                "min": "30",
+                "max": "220",
+                "units": "bpm",
+                "formula": "",
+                "skipLogic": null
+              },
+              {
+                "label": "Respiratory Rate",
+                "type": "integer",
+                "required": false,
+                "options": [],
+                "min": "6",
+                "max": "60",
+                "units": "breaths/min",
+                "formula": "",
+                "skipLogic": null
+              },
+              {
+                "label": "Body Temperature",
+                "type": "decimal",
+                "required": false,
+                "options": [],
+                "min": "34",
+                "max": "42",
+                "units": "C",
+                "formula": "",
+                "skipLogic": null
+              },
+              {
+                "label": "Position",
+                "type": "radio",
+                "required": false,
+                "options": [
+                  {
+                    "code": "SIT",
+                    "label": "Sitting"
+                  },
+                  {
+                    "code": "SUP",
+                    "label": "Supine"
+                  },
+                  {
+                    "code": "STA",
+                    "label": "Standing"
+                  }
+                ],
+                "min": "",
+                "max": "",
+                "units": "",
+                "formula": "",
+                "skipLogic": null
+              },
+              {
+                "label": "Time of Measurement",
+                "type": "time",
+                "required": true,
+                "options": [],
+                "min": "",
+                "max": "",
+                "units": "",
+                "formula": "",
+                "skipLogic": null
+              }
+            ]
+          },
+          {
+            "name": "Physical Examination",
+            "repeating": false,
+            "status": "draft",
+            "fields": [
+              {
+                "label": "Examination Performed",
+                "type": "boolean",
+                "required": true,
+                "options": [],
+                "min": "",
+                "max": "",
+                "units": "",
+                "formula": "",
+                "skipLogic": null
+              },
+              {
+                "label": "Examination Date and Time",
+                "type": "datetime",
+                "required": false,
+                "options": [],
+                "min": "",
+                "max": "",
+                "units": "",
+                "formula": "",
+                "skipLogic": {
+                  "whenFieldLabel": "Examination Performed",
+                  "equalsValue": "Yes"
+                }
+              },
+              {
+                "label": "Body Systems Examined",
+                "type": "multi_select",
+                "required": false,
+                "options": [
+                  {
+                    "code": "HEENT",
+                    "label": "Head, Eyes, Ears, Nose, Throat"
+                  },
+                  {
+                    "code": "CARD",
+                    "label": "Cardiovascular"
+                  },
+                  {
+                    "code": "RESP",
+                    "label": "Respiratory"
+                  },
+                  {
+                    "code": "ABD",
+                    "label": "Abdomen"
+                  },
+                  {
+                    "code": "SKIN",
+                    "label": "Skin"
+                  },
+                  {
+                    "code": "NEURO",
+                    "label": "Neurological"
+                  }
+                ],
+                "min": "",
+                "max": "",
+                "units": "",
+                "formula": "",
+                "skipLogic": null
+              },
+              {
+                "label": "General Appearance",
+                "type": "single_select",
+                "required": true,
+                "options": [
+                  {
+                    "code": "NORM",
+                    "label": "Normal"
+                  },
+                  {
+                    "code": "ABN",
+                    "label": "Abnormal"
+                  },
+                  {
+                    "code": "NE",
+                    "label": "Not Examined"
+                  }
+                ],
+                "min": "",
+                "max": "",
+                "units": "",
+                "formula": "",
+                "skipLogic": null
+              },
+              {
+                "label": "Abnormal Findings",
+                "type": "textarea",
+                "required": false,
+                "options": [],
+                "min": "",
+                "max": "",
+                "units": "",
+                "formula": "",
+                "skipLogic": {
+                  "whenFieldLabel": "General Appearance",
+                  "equalsValue": "ABN"
+                }
+              },
+              {
+                "label": "Subject Fasting",
+                "type": "checkbox",
+                "required": false,
+                "options": [],
+                "min": "",
+                "max": "",
+                "units": "",
+                "formula": "",
+                "skipLogic": null
+              }
+            ]
+          },
+          {
+            "name": "12-Lead ECG",
+            "repeating": false,
+            "status": "draft",
+            "fields": [
+              {
+                "label": "ECG Date and Time",
+                "type": "datetime",
+                "required": true,
+                "options": [],
+                "min": "",
+                "max": "",
+                "units": "",
+                "formula": "",
+                "skipLogic": null
+              },
+              {
+                "label": "Ventricular Rate",
+                "type": "integer",
+                "required": true,
+                "options": [],
+                "min": "20",
+                "max": "250",
+                "units": "bpm",
+                "formula": "",
+                "skipLogic": null
+              },
+              {
+                "label": "PR Interval",
+                "type": "integer",
+                "required": false,
+                "options": [],
+                "min": "60",
+                "max": "400",
+                "units": "ms",
+                "formula": "",
+                "skipLogic": null
+              },
+              {
+                "label": "QRS Duration",
+                "type": "integer",
+                "required": false,
+                "options": [],
+                "min": "40",
+                "max": "250",
+                "units": "ms",
+                "formula": "",
+                "skipLogic": null
+              },
+              {
+                "label": "QT Interval",
+                "type": "integer",
+                "required": false,
+                "options": [],
+                "min": "200",
+                "max": "700",
+                "units": "ms",
+                "formula": "",
+                "skipLogic": null
+              },
+              {
+                "label": "QTcF Interval",
+                "type": "calculated",
+                "required": false,
+                "options": [],
+                "min": "",
+                "max": "",
+                "units": "",
+                "formula": "QT Interval / (60 / Ventricular Rate) ^ (1/3)",
+                "skipLogic": null
+              },
+              {
+                "label": "Overall Interpretation",
+                "type": "radio",
+                "required": true,
+                "options": [
+                  {
+                    "code": "NORM",
+                    "label": "Normal"
+                  },
+                  {
+                    "code": "ABNCS",
+                    "label": "Abnormal, Clinically Significant"
+                  },
+                  {
+                    "code": "ABNNCS",
+                    "label": "Abnormal, Not Clinically Significant"
+                  }
+                ],
+                "min": "",
+                "max": "",
+                "units": "",
+                "formula": "",
+                "skipLogic": null
+              },
+              {
+                "label": "Interpretation Comment",
+                "type": "textarea",
+                "required": false,
+                "options": [],
+                "min": "",
+                "max": "",
+                "units": "",
+                "formula": "",
+                "skipLogic": null
+              }
+            ]
+          },
+          {
+            "name": "Randomization",
+            "repeating": false,
+            "status": "draft",
+            "fields": [
+              {
+                "label": "Randomization Date",
+                "type": "date",
+                "required": true,
+                "options": [],
+                "min": "",
+                "max": "",
+                "units": "",
+                "formula": "",
+                "skipLogic": null
+              },
+              {
+                "label": "Randomization Time",
+                "type": "time",
+                "required": false,
+                "options": [],
+                "min": "",
+                "max": "",
+                "units": "",
+                "formula": "",
+                "skipLogic": null
+              },
+              {
+                "label": "Randomization Number",
+                "type": "text",
+                "required": true,
+                "options": [],
+                "min": "",
+                "max": "",
+                "units": "",
+                "formula": "",
+                "skipLogic": null
+              },
+              {
+                "label": "Treatment Arm Assigned",
+                "type": "single_select",
+                "required": true,
+                "options": [
+                  {
+                    "code": "LD",
+                    "label": "ABC-1001 150 mg"
+                  },
+                  {
+                    "code": "HD",
+                    "label": "ABC-1001 300 mg"
+                  },
+                  {
+                    "code": "PBO",
+                    "label": "Placebo"
+                  }
+                ],
+                "min": "",
+                "max": "",
+                "units": "",
+                "formula": "",
+                "skipLogic": null
+              },
+              {
+                "label": "Prior Biologic Use",
+                "type": "boolean",
+                "required": true,
+                "options": [],
+                "min": "",
+                "max": "",
+                "units": "",
+                "formula": "",
+                "skipLogic": null
+              },
+              {
+                "label": "Randomization Confirmed in IRT",
+                "type": "checkbox",
+                "required": false,
+                "options": [],
+                "min": "",
+                "max": "",
+                "units": "",
+                "formula": "",
+                "skipLogic": null
+              }
+            ]
+          },
+          {
+            "name": "Study Drug Administration",
+            "repeating": false,
+            "status": "draft",
+            "fields": [
+              {
+                "label": "Study Drug Administered",
+                "type": "boolean",
+                "required": true,
+                "options": [],
+                "min": "",
+                "max": "",
+                "units": "",
+                "formula": "",
+                "skipLogic": null
+              },
+              {
+                "label": "Administration Date",
+                "type": "date",
+                "required": true,
+                "options": [],
+                "min": "",
+                "max": "",
+                "units": "",
+                "formula": "",
+                "skipLogic": null
+              },
+              {
+                "label": "Administration Time",
+                "type": "time",
+                "required": false,
+                "options": [],
+                "min": "",
+                "max": "",
+                "units": "",
+                "formula": "",
+                "skipLogic": null
+              },
+              {
+                "label": "Dose Administered",
+                "type": "decimal",
+                "required": false,
+                "options": [],
+                "min": "0",
+                "max": "1000",
+                "units": "mg",
+                "formula": "",
+                "skipLogic": null
+              },
+              {
+                "label": "Route of Administration",
+                "type": "single_select",
+                "required": false,
+                "options": [
+                  {
+                    "code": "SC",
+                    "label": "Subcutaneous"
+                  },
+                  {
+                    "code": "IV",
+                    "label": "Intravenous"
+                  },
+                  {
+                    "code": "PO",
+                    "label": "Oral"
+                  }
+                ],
+                "min": "",
+                "max": "",
+                "units": "",
+                "formula": "",
+                "skipLogic": null
+              },
+              {
+                "label": "Injection Site",
+                "type": "single_select",
+                "required": false,
+                "options": [
+                  {
+                    "code": "ABD",
+                    "label": "Abdomen"
+                  },
+                  {
+                    "code": "THIGH",
+                    "label": "Thigh"
+                  },
+                  {
+                    "code": "ARM",
+                    "label": "Upper Arm"
+                  },
+                  {
+                    "code": "OTH",
+                    "label": "Other"
+                  }
+                ],
+                "min": "",
+                "max": "",
+                "units": "",
+                "formula": "",
+                "skipLogic": null
+              },
+              {
+                "label": "Reason Not Administered",
+                "type": "textarea",
+                "required": false,
+                "options": [],
+                "min": "",
+                "max": "",
+                "units": "",
+                "formula": "",
+                "skipLogic": null
+              }
+            ]
+          },
+          {
+            "name": "Disease Activity Assessment",
+            "repeating": false,
+            "status": "draft",
+            "fields": [
+              {
+                "label": "Assessment Date",
+                "type": "date",
+                "required": true,
+                "options": [],
+                "min": "",
+                "max": "",
+                "units": "",
+                "formula": "",
+                "skipLogic": null
+              },
+              {
+                "label": "PASI Total Score",
+                "type": "decimal",
+                "required": true,
+                "options": [],
+                "min": "0",
+                "max": "72",
+                "units": "",
+                "formula": "",
+                "skipLogic": null
+              },
+              {
+                "label": "Body Surface Area Involved",
+                "type": "decimal",
+                "required": false,
+                "options": [],
+                "min": "0",
+                "max": "100",
+                "units": "%",
+                "formula": "",
+                "skipLogic": null
+              },
+              {
+                "label": "Physician Global Assessment",
+                "type": "single_select",
+                "required": true,
+                "options": [
+                  {
+                    "code": "0",
+                    "label": "Clear"
+                  },
+                  {
+                    "code": "1",
+                    "label": "Almost Clear"
+                  },
+                  {
+                    "code": "2",
+                    "label": "Mild"
+                  },
+                  {
+                    "code": "3",
+                    "label": "Moderate"
+                  },
+                  {
+                    "code": "4",
+                    "label": "Severe"
+                  }
+                ],
+                "min": "",
+                "max": "",
+                "units": "",
+                "formula": "",
+                "skipLogic": null
+              },
+              {
+                "label": "Patient Global Assessment",
+                "type": "integer",
+                "required": false,
+                "options": [],
+                "min": "0",
+                "max": "10",
+                "units": "",
+                "formula": "",
+                "skipLogic": null
+              },
+              {
+                "label": "Itch Numeric Rating Scale",
+                "type": "integer",
+                "required": false,
+                "options": [],
+                "min": "0",
+                "max": "10",
+                "units": "",
+                "formula": "",
+                "skipLogic": null
+              },
+              {
+                "label": "Assessment Complete",
+                "type": "checkbox",
+                "required": false,
+                "options": [],
+                "min": "",
+                "max": "",
+                "units": "",
+                "formula": "",
+                "skipLogic": null
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "Week 4",
+        "windowStart": "25",
+        "windowEnd": "31",
+        "forms": [
+          {
+            "name": "Visit Status",
+            "repeating": false,
+            "status": "draft",
+            "fields": [
+              {
+                "label": "Visit Date",
+                "type": "date",
+                "required": true,
+                "options": [],
+                "min": "",
+                "max": "",
+                "units": "",
+                "formula": "",
+                "skipLogic": null
+              },
+              {
+                "label": "Visit Occurred",
+                "type": "boolean",
+                "required": true,
+                "options": [],
+                "min": "",
+                "max": "",
+                "units": "",
+                "formula": "",
+                "skipLogic": null
+              },
+              {
+                "label": "Visit Type",
+                "type": "single_select",
+                "required": false,
+                "options": [
+                  {
+                    "code": "SCH",
+                    "label": "Scheduled"
+                  },
+                  {
+                    "code": "UNS",
+                    "label": "Unscheduled"
+                  },
+                  {
+                    "code": "TEL",
+                    "label": "Telephone Contact"
+                  }
+                ],
+                "min": "",
+                "max": "",
+                "units": "",
+                "formula": "",
+                "skipLogic": null
+              },
+              {
+                "label": "Study Day",
+                "type": "integer",
+                "required": false,
+                "options": [],
+                "min": "-999",
+                "max": "999",
+                "units": "days",
+                "formula": "",
+                "skipLogic": null
+              },
+              {
+                "label": "Reason Visit Not Performed",
+                "type": "textarea",
+                "required": false,
+                "options": [],
+                "min": "",
+                "max": "",
+                "units": "",
+                "formula": "",
+                "skipLogic": {
+                  "whenFieldLabel": "Visit Occurred",
+                  "equalsValue": "No"
+                }
+              },
+              {
+                "label": "Visit Window Deviation",
+                "type": "checkbox",
+                "required": false,
+                "options": [],
+                "min": "",
+                "max": "",
+                "units": "",
+                "formula": "",
+                "skipLogic": null
+              }
+            ]
+          },
+          {
+            "name": "Vital Signs",
+            "repeating": false,
+            "status": "draft",
+            "fields": [
+              {
+                "label": "Systolic Blood Pressure",
+                "type": "integer",
+                "required": true,
+                "options": [],
+                "min": "60",
+                "max": "250",
+                "units": "mmHg",
+                "formula": "",
+                "skipLogic": null
+              },
+              {
+                "label": "Diastolic Blood Pressure",
+                "type": "integer",
+                "required": true,
+                "options": [],
+                "min": "30",
+                "max": "150",
+                "units": "mmHg",
+                "formula": "",
+                "skipLogic": null
+              },
+              {
+                "label": "Pulse Pressure",
+                "type": "calculated",
+                "required": false,
+                "options": [],
+                "min": "",
+                "max": "",
+                "units": "",
+                "formula": "Systolic Blood Pressure - Diastolic Blood Pressure",
+                "skipLogic": null
+              },
+              {
+                "label": "Heart Rate",
+                "type": "integer",
+                "required": true,
+                "options": [],
+                "min": "30",
+                "max": "220",
+                "units": "bpm",
+                "formula": "",
+                "skipLogic": null
+              },
+              {
+                "label": "Respiratory Rate",
+                "type": "integer",
+                "required": false,
+                "options": [],
+                "min": "6",
+                "max": "60",
+                "units": "breaths/min",
+                "formula": "",
+                "skipLogic": null
+              },
+              {
+                "label": "Body Temperature",
+                "type": "decimal",
+                "required": false,
+                "options": [],
+                "min": "34",
+                "max": "42",
+                "units": "C",
+                "formula": "",
+                "skipLogic": null
+              },
+              {
+                "label": "Position",
+                "type": "radio",
+                "required": false,
+                "options": [
+                  {
+                    "code": "SIT",
+                    "label": "Sitting"
+                  },
+                  {
+                    "code": "SUP",
+                    "label": "Supine"
+                  },
+                  {
+                    "code": "STA",
+                    "label": "Standing"
+                  }
+                ],
+                "min": "",
+                "max": "",
+                "units": "",
+                "formula": "",
+                "skipLogic": null
+              },
+              {
+                "label": "Time of Measurement",
+                "type": "time",
+                "required": true,
+                "options": [],
+                "min": "",
+                "max": "",
+                "units": "",
+                "formula": "",
+                "skipLogic": null
+              }
+            ]
+          },
+          {
+            "name": "Study Drug Administration",
+            "repeating": false,
+            "status": "draft",
+            "fields": [
+              {
+                "label": "Study Drug Administered",
+                "type": "boolean",
+                "required": true,
+                "options": [],
+                "min": "",
+                "max": "",
+                "units": "",
+                "formula": "",
+                "skipLogic": null
+              },
+              {
+                "label": "Administration Date",
+                "type": "date",
+                "required": true,
+                "options": [],
+                "min": "",
+                "max": "",
+                "units": "",
+                "formula": "",
+                "skipLogic": null
+              },
+              {
+                "label": "Administration Time",
+                "type": "time",
+                "required": false,
+                "options": [],
+                "min": "",
+                "max": "",
+                "units": "",
+                "formula": "",
+                "skipLogic": null
+              },
+              {
+                "label": "Dose Administered",
+                "type": "decimal",
+                "required": false,
+                "options": [],
+                "min": "0",
+                "max": "1000",
+                "units": "mg",
+                "formula": "",
+                "skipLogic": null
+              },
+              {
+                "label": "Route of Administration",
+                "type": "single_select",
+                "required": false,
+                "options": [
+                  {
+                    "code": "SC",
+                    "label": "Subcutaneous"
+                  },
+                  {
+                    "code": "IV",
+                    "label": "Intravenous"
+                  },
+                  {
+                    "code": "PO",
+                    "label": "Oral"
+                  }
+                ],
+                "min": "",
+                "max": "",
+                "units": "",
+                "formula": "",
+                "skipLogic": null
+              },
+              {
+                "label": "Injection Site",
+                "type": "single_select",
+                "required": false,
+                "options": [
+                  {
+                    "code": "ABD",
+                    "label": "Abdomen"
+                  },
+                  {
+                    "code": "THIGH",
+                    "label": "Thigh"
+                  },
+                  {
+                    "code": "ARM",
+                    "label": "Upper Arm"
+                  },
+                  {
+                    "code": "OTH",
+                    "label": "Other"
+                  }
+                ],
+                "min": "",
+                "max": "",
+                "units": "",
+                "formula": "",
+                "skipLogic": null
+              },
+              {
+                "label": "Reason Not Administered",
+                "type": "textarea",
+                "required": false,
+                "options": [],
+                "min": "",
+                "max": "",
+                "units": "",
+                "formula": "",
+                "skipLogic": null
+              }
+            ]
+          },
+          {
+            "name": "Disease Activity Assessment",
+            "repeating": false,
+            "status": "draft",
+            "fields": [
+              {
+                "label": "Assessment Date",
+                "type": "date",
+                "required": true,
+                "options": [],
+                "min": "",
+                "max": "",
+                "units": "",
+                "formula": "",
+                "skipLogic": null
+              },
+              {
+                "label": "PASI Total Score",
+                "type": "decimal",
+                "required": true,
+                "options": [],
+                "min": "0",
+                "max": "72",
+                "units": "",
+                "formula": "",
+                "skipLogic": null
+              },
+              {
+                "label": "Body Surface Area Involved",
+                "type": "decimal",
+                "required": false,
+                "options": [],
+                "min": "0",
+                "max": "100",
+                "units": "%",
+                "formula": "",
+                "skipLogic": null
+              },
+              {
+                "label": "Physician Global Assessment",
+                "type": "single_select",
+                "required": true,
+                "options": [
+                  {
+                    "code": "0",
+                    "label": "Clear"
+                  },
+                  {
+                    "code": "1",
+                    "label": "Almost Clear"
+                  },
+                  {
+                    "code": "2",
+                    "label": "Mild"
+                  },
+                  {
+                    "code": "3",
+                    "label": "Moderate"
+                  },
+                  {
+                    "code": "4",
+                    "label": "Severe"
+                  }
+                ],
+                "min": "",
+                "max": "",
+                "units": "",
+                "formula": "",
+                "skipLogic": null
+              },
+              {
+                "label": "Patient Global Assessment",
+                "type": "integer",
+                "required": false,
+                "options": [],
+                "min": "0",
+                "max": "10",
+                "units": "",
+                "formula": "",
+                "skipLogic": null
+              },
+              {
+                "label": "Itch Numeric Rating Scale",
+                "type": "integer",
+                "required": false,
+                "options": [],
+                "min": "0",
+                "max": "10",
+                "units": "",
+                "formula": "",
+                "skipLogic": null
+              },
+              {
+                "label": "Assessment Complete",
+                "type": "checkbox",
+                "required": false,
+                "options": [],
+                "min": "",
+                "max": "",
+                "units": "",
+                "formula": "",
+                "skipLogic": null
+              }
+            ]
+          },
+          {
+            "name": "Adverse Events",
+            "repeating": true,
+            "status": "draft",
+            "fields": [
+              {
+                "label": "Adverse Event Term",
+                "type": "text",
+                "required": true,
+                "options": [],
+                "min": "",
+                "max": "",
+                "units": "",
+                "formula": "",
+                "skipLogic": null
+              },
+              {
+                "label": "Onset Date and Time",
+                "type": "datetime",
+                "required": true,
+                "options": [],
+                "min": "",
+                "max": "",
+                "units": "",
+                "formula": "",
+                "skipLogic": null
+              },
+              {
+                "label": "Severity",
+                "type": "radio",
+                "required": true,
+                "options": [
+                  {
+                    "code": "1",
+                    "label": "Mild"
+                  },
+                  {
+                    "code": "2",
+                    "label": "Moderate"
+                  },
+                  {
+                    "code": "3",
+                    "label": "Severe"
+                  }
+                ],
+                "min": "",
+                "max": "",
+                "units": "",
+                "formula": "",
+                "skipLogic": null
+              },
+              {
+                "label": "Serious",
+                "type": "boolean",
+                "required": true,
+                "options": [],
+                "min": "",
+                "max": "",
+                "units": "",
+                "formula": "",
+                "skipLogic": null
+              },
+              {
+                "label": "Relationship to Study Drug",
+                "type": "single_select",
+                "required": true,
+                "options": [
+                  {
+                    "code": "NR",
+                    "label": "Not Related"
+                  },
+                  {
+                    "code": "PR",
+                    "label": "Possibly Related"
+                  },
+                  {
+                    "code": "DR",
+                    "label": "Definitely Related"
+                  }
+                ],
+                "min": "",
+                "max": "",
+                "units": "",
+                "formula": "",
+                "skipLogic": null
+              },
+              {
+                "label": "Action Taken with Study Drug",
+                "type": "multi_select",
+                "required": false,
+                "options": [
+                  {
+                    "code": "NONE",
+                    "label": "None"
+                  },
+                  {
+                    "code": "RED",
+                    "label": "Dose Reduced"
+                  },
+                  {
+                    "code": "INT",
+                    "label": "Drug Interrupted"
+                  },
+                  {
+                    "code": "WD",
+                    "label": "Drug Withdrawn"
+                  }
+                ],
+                "min": "",
+                "max": "",
+                "units": "",
+                "formula": "",
+                "skipLogic": null
+              },
+              {
+                "label": "Outcome",
+                "type": "single_select",
+                "required": true,
+                "options": [
+                  {
+                    "code": "REC",
+                    "label": "Recovered"
+                  },
+                  {
+                    "code": "RECS",
+                    "label": "Recovered with Sequelae"
+                  },
+                  {
+                    "code": "ONG",
+                    "label": "Ongoing"
+                  },
+                  {
+                    "code": "FATAL",
+                    "label": "Fatal"
+                  },
+                  {
+                    "code": "UNK",
+                    "label": "Unknown"
+                  }
+                ],
+                "min": "",
+                "max": "",
+                "units": "",
+                "formula": "",
+                "skipLogic": null
+              },
+              {
+                "label": "Resolution Date",
+                "type": "date",
+                "required": false,
+                "options": [],
+                "min": "",
+                "max": "",
+                "units": "",
+                "formula": "",
+                "skipLogic": null
+              }
+            ]
+          },
+          {
+            "name": "Concomitant Medications",
+            "repeating": true,
+            "status": "draft",
+            "fields": [
+              {
+                "label": "Medication Name",
+                "type": "text",
+                "required": true,
+                "options": [],
+                "min": "",
+                "max": "",
+                "units": "",
+                "formula": "",
+                "skipLogic": null
+              },
+              {
+                "label": "Indication",
+                "type": "text",
+                "required": false,
+                "options": [],
+                "min": "",
+                "max": "",
+                "units": "",
+                "formula": "",
+                "skipLogic": null
+              },
+              {
+                "label": "Dose",
+                "type": "decimal",
+                "required": false,
+                "options": [],
+                "min": "0",
+                "max": "10000",
+                "units": "mg",
+                "formula": "",
+                "skipLogic": null
+              },
+              {
+                "label": "Route",
+                "type": "single_select",
+                "required": false,
+                "options": [
+                  {
+                    "code": "PO",
+                    "label": "Oral"
+                  },
+                  {
+                    "code": "IV",
+                    "label": "Intravenous"
+                  },
+                  {
+                    "code": "SC",
+                    "label": "Subcutaneous"
+                  },
+                  {
+                    "code": "TOP",
+                    "label": "Topical"
+                  },
+                  {
+                    "code": "OTH",
+                    "label": "Other"
+                  }
+                ],
+                "min": "",
+                "max": "",
+                "units": "",
+                "formula": "",
+                "skipLogic": null
+              },
+              {
+                "label": "Frequency",
+                "type": "single_select",
+                "required": false,
+                "options": [
+                  {
+                    "code": "QD",
+                    "label": "Once Daily"
+                  },
+                  {
+                    "code": "BID",
+                    "label": "Twice Daily"
+                  },
+                  {
+                    "code": "TID",
+                    "label": "Three Times Daily"
+                  },
+                  {
+                    "code": "PRN",
+                    "label": "As Needed"
+                  }
+                ],
+                "min": "",
+                "max": "",
+                "units": "",
+                "formula": "",
+                "skipLogic": null
+              },
+              {
+                "label": "Start Date",
+                "type": "date",
+                "required": true,
+                "options": [],
+                "min": "",
+                "max": "",
+                "units": "",
+                "formula": "",
+                "skipLogic": null
+              },
+              {
+                "label": "Ongoing",
+                "type": "boolean",
+                "required": true,
+                "options": [],
+                "min": "",
+                "max": "",
+                "units": "",
+                "formula": "",
+                "skipLogic": null
+              }
+            ]
+          },
+          {
+            "name": "Local Laboratory - Chemistry",
+            "repeating": false,
+            "status": "draft",
+            "fields": [
+              {
+                "label": "Collection Date",
+                "type": "date",
+                "required": true,
+                "options": [],
+                "min": "",
+                "max": "",
+                "units": "",
+                "formula": "",
+                "skipLogic": null
+              },
+              {
+                "label": "Collection Time",
+                "type": "time",
+                "required": false,
+                "options": [],
+                "min": "",
+                "max": "",
+                "units": "",
+                "formula": "",
+                "skipLogic": null
+              },
+              {
+                "label": "Alanine Aminotransferase",
+                "type": "decimal",
+                "required": true,
+                "options": [],
+                "min": "0",
+                "max": "2000",
+                "units": "U/L",
+                "formula": "",
+                "skipLogic": null
+              },
+              {
+                "label": "Aspartate Aminotransferase",
+                "type": "decimal",
+                "required": true,
+                "options": [],
+                "min": "0",
+                "max": "2000",
+                "units": "U/L",
+                "formula": "",
+                "skipLogic": null
+              },
+              {
+                "label": "Total Bilirubin",
+                "type": "decimal",
+                "required": false,
+                "options": [],
+                "min": "0",
+                "max": "30",
+                "units": "mg/dL",
+                "formula": "",
+                "skipLogic": null
+              },
+              {
+                "label": "Creatinine",
+                "type": "decimal",
+                "required": false,
+                "options": [],
+                "min": "0",
+                "max": "20",
+                "units": "mg/dL",
+                "formula": "",
+                "skipLogic": null
+              },
+              {
+                "label": "Fasting Status",
+                "type": "radio",
+                "required": false,
+                "options": [
+                  {
+                    "code": "FAST",
+                    "label": "Fasting"
+                  },
+                  {
+                    "code": "NONFAST",
+                    "label": "Non-Fasting"
+                  },
+                  {
+                    "code": "UNK",
+                    "label": "Unknown"
+                  }
+                ],
+                "min": "",
+                "max": "",
+                "units": "",
+                "formula": "",
+                "skipLogic": null
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "End of Treatment (Week 12)",
+        "windowStart": "81",
+        "windowEnd": "87",
+        "forms": [
+          {
+            "name": "Visit Status",
+            "repeating": false,
+            "status": "draft",
+            "fields": [
+              {
+                "label": "Visit Date",
+                "type": "date",
+                "required": true,
+                "options": [],
+                "min": "",
+                "max": "",
+                "units": "",
+                "formula": "",
+                "skipLogic": null
+              },
+              {
+                "label": "Visit Occurred",
+                "type": "boolean",
+                "required": true,
+                "options": [],
+                "min": "",
+                "max": "",
+                "units": "",
+                "formula": "",
+                "skipLogic": null
+              },
+              {
+                "label": "Visit Type",
+                "type": "single_select",
+                "required": false,
+                "options": [
+                  {
+                    "code": "SCH",
+                    "label": "Scheduled"
+                  },
+                  {
+                    "code": "UNS",
+                    "label": "Unscheduled"
+                  },
+                  {
+                    "code": "TEL",
+                    "label": "Telephone Contact"
+                  }
+                ],
+                "min": "",
+                "max": "",
+                "units": "",
+                "formula": "",
+                "skipLogic": null
+              },
+              {
+                "label": "Study Day",
+                "type": "integer",
+                "required": false,
+                "options": [],
+                "min": "-999",
+                "max": "999",
+                "units": "days",
+                "formula": "",
+                "skipLogic": null
+              },
+              {
+                "label": "Reason Visit Not Performed",
+                "type": "textarea",
+                "required": false,
+                "options": [],
+                "min": "",
+                "max": "",
+                "units": "",
+                "formula": "",
+                "skipLogic": {
+                  "whenFieldLabel": "Visit Occurred",
+                  "equalsValue": "No"
+                }
+              },
+              {
+                "label": "Visit Window Deviation",
+                "type": "checkbox",
+                "required": false,
+                "options": [],
+                "min": "",
+                "max": "",
+                "units": "",
+                "formula": "",
+                "skipLogic": null
+              }
+            ]
+          },
+          {
+            "name": "Vital Signs",
+            "repeating": false,
+            "status": "draft",
+            "fields": [
+              {
+                "label": "Systolic Blood Pressure",
+                "type": "integer",
+                "required": true,
+                "options": [],
+                "min": "60",
+                "max": "250",
+                "units": "mmHg",
+                "formula": "",
+                "skipLogic": null
+              },
+              {
+                "label": "Diastolic Blood Pressure",
+                "type": "integer",
+                "required": true,
+                "options": [],
+                "min": "30",
+                "max": "150",
+                "units": "mmHg",
+                "formula": "",
+                "skipLogic": null
+              },
+              {
+                "label": "Pulse Pressure",
+                "type": "calculated",
+                "required": false,
+                "options": [],
+                "min": "",
+                "max": "",
+                "units": "",
+                "formula": "Systolic Blood Pressure - Diastolic Blood Pressure",
+                "skipLogic": null
+              },
+              {
+                "label": "Heart Rate",
+                "type": "integer",
+                "required": true,
+                "options": [],
+                "min": "30",
+                "max": "220",
+                "units": "bpm",
+                "formula": "",
+                "skipLogic": null
+              },
+              {
+                "label": "Respiratory Rate",
+                "type": "integer",
+                "required": false,
+                "options": [],
+                "min": "6",
+                "max": "60",
+                "units": "breaths/min",
+                "formula": "",
+                "skipLogic": null
+              },
+              {
+                "label": "Body Temperature",
+                "type": "decimal",
+                "required": false,
+                "options": [],
+                "min": "34",
+                "max": "42",
+                "units": "C",
+                "formula": "",
+                "skipLogic": null
+              },
+              {
+                "label": "Position",
+                "type": "radio",
+                "required": false,
+                "options": [
+                  {
+                    "code": "SIT",
+                    "label": "Sitting"
+                  },
+                  {
+                    "code": "SUP",
+                    "label": "Supine"
+                  },
+                  {
+                    "code": "STA",
+                    "label": "Standing"
+                  }
+                ],
+                "min": "",
+                "max": "",
+                "units": "",
+                "formula": "",
+                "skipLogic": null
+              },
+              {
+                "label": "Time of Measurement",
+                "type": "time",
+                "required": true,
+                "options": [],
+                "min": "",
+                "max": "",
+                "units": "",
+                "formula": "",
+                "skipLogic": null
+              }
+            ]
+          },
+          {
+            "name": "Physical Examination",
+            "repeating": false,
+            "status": "draft",
+            "fields": [
+              {
+                "label": "Examination Performed",
+                "type": "boolean",
+                "required": true,
+                "options": [],
+                "min": "",
+                "max": "",
+                "units": "",
+                "formula": "",
+                "skipLogic": null
+              },
+              {
+                "label": "Examination Date and Time",
+                "type": "datetime",
+                "required": false,
+                "options": [],
+                "min": "",
+                "max": "",
+                "units": "",
+                "formula": "",
+                "skipLogic": {
+                  "whenFieldLabel": "Examination Performed",
+                  "equalsValue": "Yes"
+                }
+              },
+              {
+                "label": "Body Systems Examined",
+                "type": "multi_select",
+                "required": false,
+                "options": [
+                  {
+                    "code": "HEENT",
+                    "label": "Head, Eyes, Ears, Nose, Throat"
+                  },
+                  {
+                    "code": "CARD",
+                    "label": "Cardiovascular"
+                  },
+                  {
+                    "code": "RESP",
+                    "label": "Respiratory"
+                  },
+                  {
+                    "code": "ABD",
+                    "label": "Abdomen"
+                  },
+                  {
+                    "code": "SKIN",
+                    "label": "Skin"
+                  },
+                  {
+                    "code": "NEURO",
+                    "label": "Neurological"
+                  }
+                ],
+                "min": "",
+                "max": "",
+                "units": "",
+                "formula": "",
+                "skipLogic": null
+              },
+              {
+                "label": "General Appearance",
+                "type": "single_select",
+                "required": true,
+                "options": [
+                  {
+                    "code": "NORM",
+                    "label": "Normal"
+                  },
+                  {
+                    "code": "ABN",
+                    "label": "Abnormal"
+                  },
+                  {
+                    "code": "NE",
+                    "label": "Not Examined"
+                  }
+                ],
+                "min": "",
+                "max": "",
+                "units": "",
+                "formula": "",
+                "skipLogic": null
+              },
+              {
+                "label": "Abnormal Findings",
+                "type": "textarea",
+                "required": false,
+                "options": [],
+                "min": "",
+                "max": "",
+                "units": "",
+                "formula": "",
+                "skipLogic": {
+                  "whenFieldLabel": "General Appearance",
+                  "equalsValue": "ABN"
+                }
+              },
+              {
+                "label": "Subject Fasting",
+                "type": "checkbox",
+                "required": false,
+                "options": [],
+                "min": "",
+                "max": "",
+                "units": "",
+                "formula": "",
+                "skipLogic": null
+              }
+            ]
+          },
+          {
+            "name": "12-Lead ECG",
+            "repeating": false,
+            "status": "draft",
+            "fields": [
+              {
+                "label": "ECG Date and Time",
+                "type": "datetime",
+                "required": true,
+                "options": [],
+                "min": "",
+                "max": "",
+                "units": "",
+                "formula": "",
+                "skipLogic": null
+              },
+              {
+                "label": "Ventricular Rate",
+                "type": "integer",
+                "required": true,
+                "options": [],
+                "min": "20",
+                "max": "250",
+                "units": "bpm",
+                "formula": "",
+                "skipLogic": null
+              },
+              {
+                "label": "PR Interval",
+                "type": "integer",
+                "required": false,
+                "options": [],
+                "min": "60",
+                "max": "400",
+                "units": "ms",
+                "formula": "",
+                "skipLogic": null
+              },
+              {
+                "label": "QRS Duration",
+                "type": "integer",
+                "required": false,
+                "options": [],
+                "min": "40",
+                "max": "250",
+                "units": "ms",
+                "formula": "",
+                "skipLogic": null
+              },
+              {
+                "label": "QT Interval",
+                "type": "integer",
+                "required": false,
+                "options": [],
+                "min": "200",
+                "max": "700",
+                "units": "ms",
+                "formula": "",
+                "skipLogic": null
+              },
+              {
+                "label": "QTcF Interval",
+                "type": "calculated",
+                "required": false,
+                "options": [],
+                "min": "",
+                "max": "",
+                "units": "",
+                "formula": "QT Interval / (60 / Ventricular Rate) ^ (1/3)",
+                "skipLogic": null
+              },
+              {
+                "label": "Overall Interpretation",
+                "type": "radio",
+                "required": true,
+                "options": [
+                  {
+                    "code": "NORM",
+                    "label": "Normal"
+                  },
+                  {
+                    "code": "ABNCS",
+                    "label": "Abnormal, Clinically Significant"
+                  },
+                  {
+                    "code": "ABNNCS",
+                    "label": "Abnormal, Not Clinically Significant"
+                  }
+                ],
+                "min": "",
+                "max": "",
+                "units": "",
+                "formula": "",
+                "skipLogic": null
+              },
+              {
+                "label": "Interpretation Comment",
+                "type": "textarea",
+                "required": false,
+                "options": [],
+                "min": "",
+                "max": "",
+                "units": "",
+                "formula": "",
+                "skipLogic": null
+              }
+            ]
+          },
+          {
+            "name": "Adverse Events",
+            "repeating": true,
+            "status": "draft",
+            "fields": [
+              {
+                "label": "Adverse Event Term",
+                "type": "text",
+                "required": true,
+                "options": [],
+                "min": "",
+                "max": "",
+                "units": "",
+                "formula": "",
+                "skipLogic": null
+              },
+              {
+                "label": "Onset Date and Time",
+                "type": "datetime",
+                "required": true,
+                "options": [],
+                "min": "",
+                "max": "",
+                "units": "",
+                "formula": "",
+                "skipLogic": null
+              },
+              {
+                "label": "Severity",
+                "type": "radio",
+                "required": true,
+                "options": [
+                  {
+                    "code": "1",
+                    "label": "Mild"
+                  },
+                  {
+                    "code": "2",
+                    "label": "Moderate"
+                  },
+                  {
+                    "code": "3",
+                    "label": "Severe"
+                  }
+                ],
+                "min": "",
+                "max": "",
+                "units": "",
+                "formula": "",
+                "skipLogic": null
+              },
+              {
+                "label": "Serious",
+                "type": "boolean",
+                "required": true,
+                "options": [],
+                "min": "",
+                "max": "",
+                "units": "",
+                "formula": "",
+                "skipLogic": null
+              },
+              {
+                "label": "Relationship to Study Drug",
+                "type": "single_select",
+                "required": true,
+                "options": [
+                  {
+                    "code": "NR",
+                    "label": "Not Related"
+                  },
+                  {
+                    "code": "PR",
+                    "label": "Possibly Related"
+                  },
+                  {
+                    "code": "DR",
+                    "label": "Definitely Related"
+                  }
+                ],
+                "min": "",
+                "max": "",
+                "units": "",
+                "formula": "",
+                "skipLogic": null
+              },
+              {
+                "label": "Action Taken with Study Drug",
+                "type": "multi_select",
+                "required": false,
+                "options": [
+                  {
+                    "code": "NONE",
+                    "label": "None"
+                  },
+                  {
+                    "code": "RED",
+                    "label": "Dose Reduced"
+                  },
+                  {
+                    "code": "INT",
+                    "label": "Drug Interrupted"
+                  },
+                  {
+                    "code": "WD",
+                    "label": "Drug Withdrawn"
+                  }
+                ],
+                "min": "",
+                "max": "",
+                "units": "",
+                "formula": "",
+                "skipLogic": null
+              },
+              {
+                "label": "Outcome",
+                "type": "single_select",
+                "required": true,
+                "options": [
+                  {
+                    "code": "REC",
+                    "label": "Recovered"
+                  },
+                  {
+                    "code": "RECS",
+                    "label": "Recovered with Sequelae"
+                  },
+                  {
+                    "code": "ONG",
+                    "label": "Ongoing"
+                  },
+                  {
+                    "code": "FATAL",
+                    "label": "Fatal"
+                  },
+                  {
+                    "code": "UNK",
+                    "label": "Unknown"
+                  }
+                ],
+                "min": "",
+                "max": "",
+                "units": "",
+                "formula": "",
+                "skipLogic": null
+              },
+              {
+                "label": "Resolution Date",
+                "type": "date",
+                "required": false,
+                "options": [],
+                "min": "",
+                "max": "",
+                "units": "",
+                "formula": "",
+                "skipLogic": null
+              }
+            ]
+          },
+          {
+            "name": "Disease Activity Assessment",
+            "repeating": false,
+            "status": "draft",
+            "fields": [
+              {
+                "label": "Assessment Date",
+                "type": "date",
+                "required": true,
+                "options": [],
+                "min": "",
+                "max": "",
+                "units": "",
+                "formula": "",
+                "skipLogic": null
+              },
+              {
+                "label": "PASI Total Score",
+                "type": "decimal",
+                "required": true,
+                "options": [],
+                "min": "0",
+                "max": "72",
+                "units": "",
+                "formula": "",
+                "skipLogic": null
+              },
+              {
+                "label": "Body Surface Area Involved",
+                "type": "decimal",
+                "required": false,
+                "options": [],
+                "min": "0",
+                "max": "100",
+                "units": "%",
+                "formula": "",
+                "skipLogic": null
+              },
+              {
+                "label": "Physician Global Assessment",
+                "type": "single_select",
+                "required": true,
+                "options": [
+                  {
+                    "code": "0",
+                    "label": "Clear"
+                  },
+                  {
+                    "code": "1",
+                    "label": "Almost Clear"
+                  },
+                  {
+                    "code": "2",
+                    "label": "Mild"
+                  },
+                  {
+                    "code": "3",
+                    "label": "Moderate"
+                  },
+                  {
+                    "code": "4",
+                    "label": "Severe"
+                  }
+                ],
+                "min": "",
+                "max": "",
+                "units": "",
+                "formula": "",
+                "skipLogic": null
+              },
+              {
+                "label": "Patient Global Assessment",
+                "type": "integer",
+                "required": false,
+                "options": [],
+                "min": "0",
+                "max": "10",
+                "units": "",
+                "formula": "",
+                "skipLogic": null
+              },
+              {
+                "label": "Itch Numeric Rating Scale",
+                "type": "integer",
+                "required": false,
+                "options": [],
+                "min": "0",
+                "max": "10",
+                "units": "",
+                "formula": "",
+                "skipLogic": null
+              },
+              {
+                "label": "Assessment Complete",
+                "type": "checkbox",
+                "required": false,
+                "options": [],
+                "min": "",
+                "max": "",
+                "units": "",
+                "formula": "",
+                "skipLogic": null
+              }
+            ]
+          },
+          {
+            "name": "End of Treatment",
+            "repeating": false,
+            "status": "draft",
+            "fields": [
+              {
+                "label": "End of Treatment Date",
+                "type": "date",
+                "required": true,
+                "options": [],
+                "min": "",
+                "max": "",
+                "units": "",
+                "formula": "",
+                "skipLogic": null
+              },
+              {
+                "label": "Completed Treatment as Planned",
+                "type": "boolean",
+                "required": true,
+                "options": [],
+                "min": "",
+                "max": "",
+                "units": "",
+                "formula": "",
+                "skipLogic": null
+              },
+              {
+                "label": "Primary Reason for Discontinuation",
+                "type": "single_select",
+                "required": false,
+                "options": [
+                  {
+                    "code": "AE",
+                    "label": "Adverse Event"
+                  },
+                  {
+                    "code": "LACK",
+                    "label": "Lack of Efficacy"
+                  },
+                  {
+                    "code": "WD",
+                    "label": "Withdrawal by Subject"
+                  },
+                  {
+                    "code": "LTFU",
+                    "label": "Lost to Follow-Up"
+                  },
+                  {
+                    "code": "PD",
+                    "label": "Protocol Deviation"
+                  },
+                  {
+                    "code": "OTH",
+                    "label": "Other"
+                  }
+                ],
+                "min": "",
+                "max": "",
+                "units": "",
+                "formula": "",
+                "skipLogic": {
+                  "whenFieldLabel": "Completed Treatment as Planned",
+                  "equalsValue": "No"
+                }
+              },
+              {
+                "label": "Date of Last Dose",
+                "type": "date",
+                "required": false,
+                "options": [],
+                "min": "",
+                "max": "",
+                "units": "",
+                "formula": "",
+                "skipLogic": null
+              },
+              {
+                "label": "Number of Doses Received",
+                "type": "integer",
+                "required": false,
+                "options": [],
+                "min": "0",
+                "max": "100",
+                "units": "",
+                "formula": "",
+                "skipLogic": null
+              },
+              {
+                "label": "Discontinuation Comments",
+                "type": "textarea",
+                "required": false,
+                "options": [],
+                "min": "",
+                "max": "",
+                "units": "",
+                "formula": "",
+                "skipLogic": null
+              },
+              {
+                "label": "Subject Withdrew Consent",
+                "type": "checkbox",
+                "required": false,
+                "options": [],
+                "min": "",
+                "max": "",
+                "units": "",
+                "formula": "",
+                "skipLogic": null
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

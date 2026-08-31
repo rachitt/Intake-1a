@@ -248,6 +248,22 @@ export class Designer {
   }
 
   /**
+   * Is a field with this label present on the canvas at all?
+   *
+   * Broader than `fieldOnCanvas` on purpose. Some field types render previews
+   * that carry no accessible name — a yes/no field draws two buttons reading
+   * "Yes" and "No" — so the only trace of the field is the label printed beside
+   * them. Reporting such a field missing would be the worst kind of error here:
+   * recall matters more than precision, and a form that quietly lost a field is
+   * not noticed until data collection has already started.
+   */
+  fieldPresentOnCanvas(snapshot: Snapshot, label: string): boolean {
+    if (this.fieldOnCanvas(snapshot, label)) return true;
+    const canvas = this.canvasRegionIds(snapshot);
+    return snapshot.regions.some((r) => canvas.has(r.id) && r.texts.some((t) => t === label || t.startsWith(`${label} `)));
+  }
+
+  /**
    * Select a field on the canvas so the property editor shows it.
    *
    * Clicking the preview control works even though the preview itself is inert,
@@ -324,6 +340,54 @@ export class Designer {
     return readBack.checked === desired
       ? { ok: true, detail: `"${result.node.name}" is ${desired ? 'on' : 'off'}.` }
       : { ok: false, detail: `"${result.node.name}" did not change to ${desired ? 'on' : 'off'}.` };
+  }
+
+  /**
+   * Choose an option, trying each plausible control until one demonstrably
+   * takes the value.
+   *
+   * The escalation rule this embodies is worth stating: a human should be asked
+   * about decisions that are IRREVERSIBLE or UNVERIFIABLE, not about decisions
+   * that are cheap to test. Which of two controls sets a field's conditional
+   * display is a near-tie the agent cannot settle by reading names — but it can
+   * settle it by setting one and reading it back, and if the guess was wrong
+   * nothing is lost but a click.
+   *
+   * Choosing a field's TYPE gets the opposite treatment, because that one is
+   * destructive: setting it wrong discards coded values and ranges silently.
+   * Reversibility, not confidence, decides which questions reach the reviewer,
+   * and that is what keeps the queue short enough to be worth clearing.
+   */
+  async chooseOptionVerified(
+    intent: Intent,
+    wanted: string,
+  ): Promise<{ ok: boolean; detail: string; tried: { name: string; score: number }[] }> {
+    const snapshot = await this.page.capture();
+    const candidates = this.grounder
+      .rank(snapshot, { ...intent, ignoreMemory: true })
+      .filter((c) => c.score >= 0.5)
+      .slice(0, 3);
+
+    const tried: { name: string; score: number }[] = [];
+    for (const candidate of candidates) {
+      tried.push({ name: candidate.node.name, score: candidate.score });
+      await this.page.chooseOption(candidate.node.ref, wanted);
+
+      const readBack = await this.page.read(candidate.node.ref);
+      const value = (readBack?.value ?? '').toLowerCase();
+      if (value && value.includes(wanted.toLowerCase())) {
+        this.grounder.remember(intent.id, candidate.node, candidate.score, 'probe', `verified by reading "${readBack?.value}" back`);
+        return { ok: true, detail: `"${candidate.node.name}" now reads "${readBack?.value}"`, tried };
+      }
+    }
+
+    return {
+      ok: false,
+      detail: tried.length
+        ? `Tried ${tried.map((t) => `"${t.name}"`).join(', ')}; none of them accepted "${wanted}".`
+        : `Nothing on this screen looks like it could satisfy "${intent.goal}".`,
+      tried,
+    };
   }
 
   async chooseOption(intent: Intent, value: string): Promise<{ ok: boolean; detail: string }> {

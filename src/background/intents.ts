@@ -406,12 +406,19 @@ export const INTENTS = {
     regionKinds: ['editor'],
   }),
 
+  /**
+   * The three conditional-display controls sit together and are worded from the
+   * same handful of words, so each has to name the other two as hazards. A rule
+   * editor that reads "Visibility / When Element / Equals Value" offers three
+   * near-identical targets, and picking the wrong one writes the expected
+   * ANSWER into the control that decides whether the rule exists at all.
+   */
   visibilityWhenField: (): Intent => ({
     id: 'visibility.whenField',
     goal: 'Choose the field whose answer controls whether this field is shown.',
     roles: ['combobox', 'listbox'],
     lexicon: ['when', 'controlling field', 'depends on', 'condition field', 'source field', 'parent field', 'field', 'if'],
-    avoid: ['value', 'equals', 'type', 'label'],
+    avoid: ['value', 'equals', 'type', 'label', 'visibility', 'display mode', 'shown'],
     regionKinds: ['editor'],
   }),
 
@@ -420,7 +427,7 @@ export const INTENTS = {
     goal: 'Enter the answer the controlling field must hold for this field to be shown.',
     roles: ['textbox', 'combobox'],
     lexicon: ['equals', 'value', 'is', 'matches', 'answer', 'expected value', 'condition value'],
-    avoid: ['field', 'when', 'label', 'code list'],
+    avoid: ['field', 'when', 'label', 'code list', 'visibility', 'display mode', 'shown', 'element'],
     regionKinds: ['editor'],
   }),
 } as const;

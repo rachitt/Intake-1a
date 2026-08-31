@@ -332,15 +332,27 @@ export function readRef(ref: Ref): { ok: boolean; role: string; name: string; va
           : null;
 
   let options: string[] = [];
+  let value = input.value ?? normaliseText(node.textContent);
+
   if (node.tagName.toLowerCase() === 'select') {
-    options = Array.from((node as HTMLSelectElement).options).map((o) => normaliseText(o.textContent) || o.value);
+    const select = node as HTMLSelectElement;
+    options = Array.from(select.options).map((o) => normaliseText(o.textContent) || o.value);
+    // The TEXT of the chosen option, not its value attribute. A designer that
+    // stores an internal id in the value ("el12") while displaying a field's
+    // label would otherwise make every read-back look like a failure, and the
+    // agent would escalate changes that in fact worked perfectly.
+    value = select.multiple
+      ? Array.from(select.selectedOptions).map((o) => normaliseText(o.textContent) || o.value).join(', ')
+      : select.selectedOptions[0]
+        ? normaliseText(select.selectedOptions[0].textContent) || select.selectedOptions[0].value
+        : '';
   }
 
   return {
     ok: true,
     role,
     name: accessibleName(node).name,
-    value: input.value ?? normaliseText(node.textContent),
+    value,
     checked,
     options,
   };
