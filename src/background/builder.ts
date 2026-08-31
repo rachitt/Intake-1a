@@ -31,7 +31,7 @@ import { Navigator } from './navigate';
 import { SIGNATURES } from '../shared/types';
 import { formFingerprint, irPointer, type CanonicalType, type IrField, type IrForm, type IrStudy, type IrVisit } from '../shared/ir';
 import type { Designer } from './designer';
-import type { Grounder } from './grounder';
+import type { Grounded, Grounder, Intent } from './grounder';
 import type { PageLike } from './page';
 import type { Store } from './store';
 import type { TypeMapper } from './typemap';
@@ -208,11 +208,11 @@ export class Builder {
     }
 
     this.mark(pointer, 'running');
-    const open = await this.grounder.ground(snapshot, INTENTS.visitCreate());
-    if (!open.ok) {
-      await this.escalateGrounding(pointer, 'create a visit', open.reason, open.candidates);
-      this.mark(pointer, 'escalated');
-      return false;
+    const open = await this.groundOrAsk(snapshot, INTENTS.visitCreate(), pointer, 'create a visit');
+    if (!open) {
+      // The reviewer named no control. They may still have made the visit by
+      // hand, so the page is re-read rather than the run being abandoned.
+      return this.settleByReadBack(pointer, `visit "${visit.name}"`, (later) => Boolean(this.findByName(later, visit.name)));
     }
 
     const opened = await this.page.click(open.ref);
@@ -236,15 +236,15 @@ export class Builder {
     await this.designer.setText({ ...INTENTS.visitWindowStart(), preferNames: appeared }, String(visit.window_start_day));
     await this.designer.setText({ ...INTENTS.visitWindowEnd(), preferNames: appeared }, String(visit.window_end_day));
 
-    const confirm = await this.grounder.ground(await this.page.capture(), {
-      ...INTENTS.visitConfirm(),
-      preferNames: appeared,
-      excludeRefs: [open.ref],
-    });
-    if (!confirm.ok) {
-      await this.escalateGrounding(pointer, 'save the new visit', confirm.reason, confirm.candidates);
-      this.mark(pointer, 'escalated');
-      return false;
+    const beforeConfirm = await this.page.capture();
+    const confirm = await this.groundOrAsk(
+      beforeConfirm,
+      { ...INTENTS.visitConfirm(), preferNames: appeared, excludeRefs: [open.ref] },
+      pointer,
+      'save the new visit',
+    );
+    if (!confirm) {
+      return this.settleByReadBack(pointer, `visit "${visit.name}"`, (later) => Boolean(this.findByName(later, visit.name)));
     }
     const observation = await this.page.click(confirm.ref);
 
@@ -339,10 +339,9 @@ export class Builder {
       return true;
     }
 
-    const open = await this.grounder.ground(snapshot, INTENTS.formCreate());
-    if (!open.ok) {
-      await this.escalateGrounding(pointer, 'create a source document', open.reason, open.candidates);
-      return false;
+    const open = await this.groundOrAsk(snapshot, INTENTS.formCreate(), pointer, 'create a source document');
+    if (!open) {
+      return this.settleByReadBack(pointer, `source document "${form.name}"`, (later) => this.formAlreadyListed(later, form.name));
     }
     const opened = await this.page.click(open.ref);
     const appeared = opened.diff.addedNodes.map((n) => n.name).filter(Boolean);
@@ -353,7 +352,7 @@ export class Builder {
     if (form.repeating) {
       const repeating = await this.designer.setToggle({ ...INTENTS.formRepeating(), preferNames: appeared }, true);
       if (!repeating.ok) {
-        await this.gate.raise({
+        const resolution = await this.gate.raise({
           id: `repeating:${pointer}`,
           kind: 'repeating_unsupported',
           question: `How does this platform mark "${form.name}" as a repeating log?`,
@@ -366,19 +365,32 @@ export class Builder {
           allowsManual: true,
           createdAt: Date.now(),
         });
+
+        // If the reviewer set it themselves, the control is now discoverable —
+        // try once more so the profile learns it and the next repeating
+        // document does not ask again.
+        if (resolution.choice === 'manual') {
+          const second = await this.designer.setToggle({ ...INTENTS.formRepeating(), preferNames: appeared }, true);
+          this.audit(pointer, `re-check the repeating flag on "${form.name}" after a reviewer set it`, {
+            observed: second.detail,
+            verification: second.ok ? 'pass' : 'fail',
+            level: second.ok ? 'info' : 'warn',
+          });
+          if (second.ok) this.profile.repeatingControl = this.profile.controls[INTENTS.formRepeating().id];
+        }
       } else {
         this.profile.repeatingControl = this.profile.controls[INTENTS.formRepeating().id];
       }
     }
 
-    const confirm = await this.grounder.ground(await this.page.capture(), {
-      ...INTENTS.formConfirm(),
-      preferNames: appeared,
-      excludeRefs: [open.ref],
-    });
-    if (!confirm.ok) {
-      await this.escalateGrounding(pointer, 'save the new source document', confirm.reason, confirm.candidates);
-      return false;
+    const confirm = await this.groundOrAsk(
+      await this.page.capture(),
+      { ...INTENTS.formConfirm(), preferNames: appeared, excludeRefs: [open.ref] },
+      pointer,
+      'save the new source document',
+    );
+    if (!confirm) {
+      return this.settleByReadBack(pointer, `source document "${form.name}"`, (later) => this.formAlreadyListed(later, form.name));
     }
     const observation = await this.page.click(confirm.ref);
 
@@ -549,7 +561,7 @@ export class Builder {
    * silently lost its first half looks exactly like one that worked. Whichever
    * path is taken, the result is counted afterwards.
    */
-  private async enterOptions(field: IrField, pointer: string): Promise<void> {
+  private async enterOptions(field: IrField, pointer: string, attempt = 0): Promise<void> {
     const options = field.options ?? [];
     let entered = 0;
     const failures: string[] = [];
@@ -561,8 +573,8 @@ export class Builder {
     }
 
     if (entered !== options.length) {
-      await this.gate.raise({
-        id: `values:${pointer}`,
+      const resolution = await this.gate.raise({
+        id: `values:${pointer}:${attempt}`,
         kind: 'coded_values',
         question: `The coded value list for "${field.label}" did not go in cleanly. How should it be handled?`,
         reason:
@@ -579,6 +591,15 @@ export class Builder {
         allowsManual: true,
         createdAt: Date.now(),
       });
+
+      // Bulk value entry usually replaces rather than appends, so a second run
+      // through the list is a real repair and not a duplicate — but only once,
+      // because a list that fails twice is failing for a reason retrying will
+      // not fix.
+      if (attempt === 0 && resolution.choice === 'option' && resolution.optionId === 'retry') {
+        this.log(`Entering the coded value list for "${field.label}" again, as asked.`);
+        await this.enterOptions(field, pointer, attempt + 1);
+      }
     }
   }
 
@@ -611,6 +632,12 @@ export class Builder {
   // ── skip logic (second pass) ────────────────────────────────────────────────
 
   /**
+   * A reviewer's answer about conditional display, kept per cause for the run.
+   * See `escalateSkipLogic` for why this is not asked once per rule.
+   */
+  private skipLogicDecisions = new Map<string, EscalationResolution>();
+
+  /**
    * Apply conditional display rules, after every field in the form exists.
    *
    * This is a separate pass for one reason: a rule names its controlling field
@@ -632,7 +659,7 @@ export class Builder {
       const selected = await this.designer.selectFieldOnCanvas(field.label);
       if (!selected) {
         this.log(`Cannot apply a display rule to "${field.label}" — it could not be selected on the canvas.`, 'warn');
-        await this.escalateSkipLogic(pointer, field, rule.when_field_label, 'the field could not be selected on the canvas');
+        await this.escalateSkipLogic(pointer, field, rule.when_field_label, 'not-selectable', 'the field could not be selected on the canvas');
         continue;
       }
 
@@ -648,6 +675,7 @@ export class Builder {
             pointer,
             field,
             rule.when_field_label,
+            'no-control',
             `No conditional-display control could be used. ${mode.detail} A toggle was tried too: ${toggled.detail}`,
           );
           continue;
@@ -656,7 +684,7 @@ export class Builder {
 
       const whenResult = await this.designer.chooseOptionVerified(INTENTS.visibilityWhenField(), rule.when_field_label);
       if (!whenResult.ok) {
-        await this.escalateSkipLogic(pointer, field, rule.when_field_label, whenResult.detail);
+        await this.escalateSkipLogic(pointer, field, rule.when_field_label, 'no-when-field', whenResult.detail);
         continue;
       }
 
@@ -668,6 +696,7 @@ export class Builder {
             pointer,
             field,
             rule.when_field_label,
+            'no-value',
             `The expected value could not be entered. ${valueResult.detail} ${chosen.detail}`,
           );
           continue;
@@ -680,20 +709,60 @@ export class Builder {
     }
   }
 
-  private async escalateSkipLogic(pointer: string, field: IrField, controller: string, detail: string): Promise<void> {
-    await this.gate.raise({
-      id: `skip:${pointer}`,
+  /**
+   * Ask about a display rule that could not be applied — once per CAUSE.
+   *
+   * Conditional display fails the same way for every rule in a study: either
+   * this designer exposes the affordance or it does not. Asking per rule turns
+   * one platform-level question into thirteen identically worded ones, and a
+   * reviewer clearing them watches the queue refill with the question they just
+   * answered, which reads as the gate being broken. So the first answer is kept
+   * and applied to every later rule that fails the same way, with each affected
+   * pointer written to the audit log so nothing becomes invisible.
+   */
+  private async escalateSkipLogic(
+    pointer: string,
+    field: IrField,
+    controller: string,
+    cause: string,
+    detail: string,
+  ): Promise<void> {
+    const already = this.skipLogicDecisions.get(cause);
+    if (already) {
+      this.audit(pointer, `show "${field.label}" only when "${controller}" matches`, {
+        humanDecision: `${already.choice === 'manual' ? 'handled by hand' : 'skipped'} — a reviewer's earlier answer for the same cause, applied here too`,
+        observed: detail,
+        verification: 'fail',
+        level: 'warn',
+      });
+      this.mark(pointer, already.choice === 'manual' ? 'built' : 'skipped', 'display rule left to a reviewer');
+      return;
+    }
+
+    const outstanding = this.skipLogicRulesRemaining(cause);
+    const resolution = await this.gate.raise({
+      id: `skip:${cause}`,
       kind: 'skip_logic',
-      question: `How should "${field.label}" be made conditional on "${controller}"?`,
+      question: `How should conditional display be set up on this platform? First case: "${field.label}", shown only when "${controller}" matches.`,
       reason: detail,
       consequence:
         'Without the rule the field is always visible. That is not a data-loss failure, but it does not match the protocol, and the protocol is the contract with the regulator.',
-      affectedCount: 1,
+      affectedCount: outstanding,
       affected: [pointer],
       options: [],
       allowsManual: true,
       createdAt: Date.now(),
     });
+
+    this.skipLogicDecisions.set(cause, resolution);
+    this.mark(pointer, resolution.choice === 'manual' ? 'built' : 'skipped', 'display rule left to a reviewer');
+  }
+
+  /** How many display rules in the whole study one answer could settle. */
+  private skipLogicRulesRemaining(_cause: string): number {
+    let n = 0;
+    for (const visit of this.ir.visits) for (const form of visit.forms) for (const f of form.fields) if (f.skip_logic) n++;
+    return n;
   }
 
   // ── committing ──────────────────────────────────────────────────────────────
@@ -729,10 +798,16 @@ export class Builder {
       // without a Save — it is a platform the agent has not finished looking
       // at. Getting this wrong is silent and total: the form builds perfectly
       // and is discarded on the way out.
-      const { result: candidate, through } = await this.discloser.ground(intent);
-      if (!candidate.ok) {
-        await this.escalateGrounding(pointer, 'save the form', candidate.reason, candidate.candidates);
-        return false;
+      const { result: grounded, through } = await this.discloser.ground(intent);
+      let candidate: Grounded;
+      if (grounded.ok) {
+        candidate = grounded;
+      } else {
+        // Ask, and use what comes back — a reviewer who names this platform's
+        // save is teaching the profile, not just unblocking one form.
+        const named = await this.groundOrAsk(await this.page.capture(), intent, pointer, 'save the form');
+        if (!named) return false;
+        candidate = named;
       }
       if (through) {
         this.audit(pointer, `open "${through.name}" to reach this platform's save`, {
@@ -804,7 +879,7 @@ export class Builder {
       if (vi >= 0) await this.buildFields(form, vi, fi, pointer);
     }
 
-    await this.gate.raise({
+    const resolution = await this.gate.raise({
       id: `commit:${pointer}`,
       kind: 'commit_unverified',
       question: `Which control actually saves work in this form designer?`,
@@ -819,6 +894,52 @@ export class Builder {
       allowsManual: true,
       createdAt: Date.now(),
     });
+
+    // A reviewer who names the save control overrules the round-trip evidence,
+    // but the claim is still tested rather than believed: the work has to
+    // survive leaving the designer and coming back, exactly as before.
+    if (resolution.choice === 'option' && resolution.optionId) {
+      const snapshot = await this.page.capture();
+      const node = snapshot.nodes.find((n) => n.name === resolution.optionId);
+      if (node) {
+        await this.page.click(node.ref);
+        const witness = form.fields[0]?.label;
+        const survived = witness ? await this.roundTrip(form, witness) : false;
+        this.audit(pointer, `save "${form.name}" using the control a reviewer named`, {
+          chose: { role: node.role, name: node.name },
+          rationale: 'named at the human gate',
+          verification: survived ? 'pass' : 'fail',
+          level: survived ? 'info' : 'error',
+        });
+        if (survived) {
+          this.commitProven = true;
+          this.profile.commit = {
+            role: node.role,
+            name: node.name,
+            confidence: 1,
+            source: 'human',
+            rationale: 'named by a reviewer at the human gate',
+            learnedAt: Date.now(),
+            provenBy: `an edit to "${form.name}" survived leaving the designer and coming back`,
+          };
+          this.grounder.remember(INTENTS.commitWork().id, node, 1, 'human', 'named by a reviewer and proven by a round trip');
+          return true;
+        }
+      }
+    }
+
+    // "I'll do it by hand" means the reviewer saved it themselves. That is not
+    // taken on trust either — the same round trip decides.
+    if (resolution.choice === 'manual') {
+      const witness = form.fields[0]?.label;
+      const survived = witness ? await this.roundTrip(form, witness) : false;
+      this.audit(pointer, `check whether a reviewer's manual save of "${form.name}" persisted`, {
+        verification: survived ? 'pass' : 'fail',
+        level: survived ? 'info' : 'error',
+      });
+      return survived;
+    }
+
     return false;
   }
 
@@ -858,7 +979,14 @@ export class Builder {
    * replaced value list, an unnamed field, a commit that did not commit — is
    * invisible at the moment it happens and visible here.
    */
-  private async verifyForm(visit: IrVisit, form: IrForm, vi: number, fi: number, pointer: string): Promise<boolean> {
+  private async verifyForm(
+    visit: IrVisit,
+    form: IrForm,
+    vi: number,
+    fi: number,
+    pointer: string,
+    attempt = 0,
+  ): Promise<boolean> {
     // Read-back has to start from outside the designer, so that what is read is
     // the SAVED form rather than the working copy still open on screen. A check
     // performed against the copy you just edited proves nothing.
@@ -871,7 +999,7 @@ export class Builder {
     }
 
     const snapshot = await this.page.capture();
-    let missing = 0;
+    const missingIndexes: number[] = [];
     for (let xi = 0; xi < form.fields.length; xi++) {
       const field = form.fields[xi]!;
       const fieldPointer = irPointer.field(vi, fi, xi);
@@ -880,7 +1008,7 @@ export class Builder {
         this.mark(fieldPointer, 'verified');
         this.store.state.counters.verified++;
       } else {
-        missing++;
+        missingIndexes.push(xi);
         this.mark(fieldPointer, 'failed', 'not found when read back');
         this.audit(fieldPointer, `verify "${field.label}"`, {
           level: 'error',
@@ -889,11 +1017,12 @@ export class Builder {
         });
       }
     }
+    const missing = missingIndexes.length;
 
     if (missing) {
       this.log(`${missing} field(s) are missing from "${form.name}" after saving.`, 'error');
-      await this.gate.raise({
-        id: `missing:${pointer}`,
+      const resolution = await this.gate.raise({
+        id: `missing:${pointer}:${attempt}`,
         kind: 'missing_after_readback',
         question: `${missing} field(s) are missing from "${form.name}" after saving. How should this be handled?`,
         reason: 'They were built, but reading the saved form back does not show them.',
@@ -908,6 +1037,32 @@ export class Builder {
         allowsManual: true,
         createdAt: Date.now(),
       });
+
+      // One retry, not a loop. If building them a second time does not make
+      // them survive a save, the cause is not the attempt — it is the platform
+      // or the form — and asking a person to watch it fail again wastes the
+      // one thing the gate is spending, which is their attention.
+      if (attempt === 0 && (resolution.choice === 'option' && resolution.optionId === 'rebuild')) {
+        this.log(`Building the ${missing} missing field(s) of "${form.name}" again, as asked.`);
+        for (const xi of missingIndexes) {
+          if (this.store.aborted) break;
+          const field = form.fields[xi]!;
+          const fieldPointer = irPointer.field(vi, fi, xi);
+          this.mark(fieldPointer, 'running');
+          const built = await this.buildField(field, fieldPointer);
+          this.mark(fieldPointer, built ? 'built' : 'failed');
+        }
+        await this.commit(pointer, form);
+        this.store.state.counters.repaired += missing;
+        return this.verifyForm(visit, form, vi, fi, pointer, attempt + 1);
+      }
+
+      // "I'll do it by hand" is checked, not believed: read the form back once
+      // more and let what is on screen decide.
+      if (attempt === 0 && resolution.choice === 'manual') {
+        return this.verifyForm(visit, form, vi, fi, pointer, attempt + 1);
+      }
+
       return false;
     }
 
@@ -915,23 +1070,59 @@ export class Builder {
     return true;
   }
 
-  // ── escalation helper ───────────────────────────────────────────────────────
+  // ── escalation helpers ──────────────────────────────────────────────────────
 
-  private async escalateGrounding(
+  /**
+   * Ground an intent; if that fails, ask a person — and then USE the answer.
+   *
+   * A reviewer naming a control is the strongest evidence about this platform
+   * the agent will ever get, so it is written into the profile exactly like a
+   * grounding the agent worked out for itself. That is also what stops the
+   * same question being asked once per visit: answered on the first screen, it
+   * is remembered for the rest of the run.
+   *
+   * A null return means no control was named — the reviewer either did it by
+   * hand or skipped. Neither is taken on trust: the caller re-reads the page
+   * and decides from what is actually there, which is the same standard every
+   * other step in this file is held to.
+   */
+  /**
+   * Answers a reviewer gave that named no control, kept per intent for the run.
+   * A named control needs no memo here — the grounder itself remembers it.
+   */
+  private declinedGroundings = new Map<string, EscalationResolution>();
+
+  private async groundOrAsk(
+    snapshot: Snapshot,
+    intent: Intent,
     pointer: string,
     what: string,
-    reason: string,
-    candidates: { node: SnapshotNode; score: number }[],
-  ): Promise<void> {
-    await this.gate.raise({
-      id: `ground:${pointer}:${what}`,
+  ): Promise<Grounded | null> {
+    const found = await this.grounder.ground(snapshot, intent);
+    if (found.ok) return found;
+
+    // Asked and answered. A reviewer who declined to name this control once is
+    // not helped by being asked again on the next visit in the same words — and
+    // when they DID name one, the grounder remembers it, so this never runs.
+    const already = this.declinedGroundings.get(intent.id);
+    if (already) {
+      this.audit(pointer, `${what}: a reviewer's earlier answer for this control applies here too`, {
+        humanDecision: already.choice === 'manual' ? 'handled by hand' : 'skipped',
+        observed: found.reason,
+        level: 'warn',
+      });
+      return null;
+    }
+
+    const resolution = await this.gate.raise({
+      id: `ground:${intent.id}`,
       kind: 'grounding_failed',
       question: `Which control on this screen is used to ${what}?`,
-      reason,
+      reason: found.reason,
       consequence: 'The build cannot continue past this point without it.',
       affectedCount: 1,
       affected: [pointer],
-      options: candidates.map((c) => ({
+      options: found.candidates.map((c) => ({
         id: `${c.node.ref}`,
         label: `${c.node.name || '(unnamed)'} — ${c.node.role}`,
         confidence: c.score,
@@ -941,5 +1132,58 @@ export class Builder {
       allowsManual: true,
       createdAt: Date.now(),
     });
+
+    const adopted = this.adoptChosenControl(resolution, snapshot, intent, pointer, what);
+    if (!adopted) this.declinedGroundings.set(intent.id, resolution);
+    return adopted;
+  }
+
+  /**
+   * Decide an escalated step by looking, not by taking the answer on trust.
+   *
+   * "I'll do it by hand" and "Skip" arrive here the same way, and they are told
+   * apart the only way that is safe on a platform the agent does not know: read
+   * the page back and see whether the thing is there. A reviewer who really did
+   * create it by hand passes; a note saying so without the work does not.
+   */
+  private async settleByReadBack(
+    pointer: string,
+    what: string,
+    exists: (snapshot: Snapshot) => boolean,
+  ): Promise<boolean> {
+    const there = exists(await this.page.capture());
+    this.audit(pointer, `read ${what} back after a reviewer handled it at the gate`, {
+      observed: there ? 'it is there' : 'it is still not there',
+      verification: there ? 'pass' : 'fail',
+      level: there ? 'info' : 'warn',
+    });
+    this.mark(pointer, there ? 'built' : 'escalated', there ? 'done by hand' : 'left for a person');
+    return there;
+  }
+
+  /** Turn a reviewer's pick into a grounding, and remember it. */
+  private adoptChosenControl(
+    resolution: EscalationResolution,
+    snapshot: Snapshot,
+    intent: Intent,
+    pointer: string,
+    what: string,
+  ): Grounded | null {
+    if (resolution.choice !== 'option' || !resolution.optionId) return null;
+
+    const ref = Number(resolution.optionId);
+    const node = snapshot.nodes.find((n) => n.ref === ref);
+    if (!node) {
+      this.log(`The control a reviewer chose to ${what} is no longer on screen; re-reading instead.`, 'warn');
+      return null;
+    }
+
+    this.grounder.remember(intent.id, node, 1, 'human', `a reviewer identified this as the way to ${what}`);
+    this.audit(pointer, `a reviewer identified the control used to ${what}`, {
+      chose: { role: node.role, name: node.name },
+      rationale: 'named at the human gate, and remembered for the rest of the run',
+      confidence: 1,
+    });
+    return { ref: node.ref, node, confidence: 1, rationale: `named by a reviewer`, source: 'human', alternatives: [] };
   }
 }
