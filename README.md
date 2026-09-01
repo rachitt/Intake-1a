@@ -91,7 +91,7 @@ modes](#failure-modes)), and press **Run** with the platform's tab focused.
 ### Running it headlessly
 
 ```bash
-npm run verify              # typecheck + the portability lint
+npm run verify              # typecheck + the portability lint + 84 unit tests
 npm run verify:extension    # loads the built extension in a real Chrome (13 checks)
 npm run e2e -- --ir intake-takehome-2/data/abc-101-study.ir.json
 npm run diff -- <state-dump.json> intake-takehome-2/data/abc-101-study.ir.json
@@ -577,7 +577,7 @@ no-model result**.
 | `npm run watch` | Rebuild on change |
 | `npm run typecheck` | `tsc --noEmit` |
 | `npm run lint:portability` | Fail on any platform-specific string in source |
-| `npm run verify` | typecheck + portability lint |
+| `npm run verify` | typecheck + portability lint + unit tests |
 | `npm run verify:extension` | Load the built extension in Chrome and check it comes up |
 | `npm run e2e` | Drive a full build against a running platform |
 | `npm run diff` | Diff a built study against the specification |

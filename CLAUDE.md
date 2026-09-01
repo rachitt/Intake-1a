@@ -42,7 +42,7 @@ wants, not a label to match. That is allowed; product-specific wording is not.
 | `npm run watch` | Rebuild on change |
 | `npm run typecheck` | `tsc --noEmit` |
 | `npm run lint:portability` | Fail on any platform-specific string in source |
-| `npm run verify` | typecheck + portability lint |
+| `npm run verify` | typecheck + portability lint + unit tests |
 | `npm run diff` | Diff a built study against the IR, for by-hand verification |
 
 ## Git conventions
