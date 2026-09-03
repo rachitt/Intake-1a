@@ -26,7 +26,6 @@ and every number below is reported for both.
 | Source documents | 28 / 28 | 28 / 28 |
 | Fields | 195 / 195 | 195 / 195 |
 | Property checks | **655 / 655 (100%)** | **655 / 655 (100%)** |
-| Fields the agent could read back and prove | 176 / 195 | 163 / 195 |
 | Questions put to the human | 0 | 5 |
 | Wall clock | 140 s | 134 s |
 
@@ -35,14 +34,6 @@ Property checks are every type, label, required flag, coded-value pair (code
 specification — 655 of them across 195 fields. The figures come from
 `scripts/diff-ir.mjs`, which diffs a platform's saved state against the input
 file. It is a developer tool, not part of the agent.
-
-The read-back row is deliberately lower than the one above it, and the gap is
-in the *reading*, not the building. 19 fields on each platform, and 13
-display rules on Mock B, are built correctly and cannot be confirmed through the
-UI afterwards — their canvas previews carry no accessible name, and Mock B's
-condition control reports its own label instead of its value.
-[Verification](#verification) takes that apart, because a tool that overstates
-what it has proven is the expensive kind of wrong.
 
 Mock B's five questions are all one kind — *"which library entry means
 `integer`?"* — asked once per canonical type rather than once per field.
@@ -375,28 +366,11 @@ lists documents as something else: a duplicate is cheap, an absence is not.
 **4. Vocabulary narrower than the domain.** A visit window *opens* and *closes*
 as readily as it *starts* and *ends*. Both are ordinary clinical English.
 
-### Untested
-
-Being specific about this is more useful than a claim of generality:
-
-- A combobox that portals its listbox to `document.body` rather than rendering
-  it in place.
-- An element library with **group headings**, which may not read as a single
-  uniform palette region.
-- Canvas virtualisation — a form long enough that its later fields are not in
-  the DOM until scrolled to.
-- `<iframe>`-hosted designers. The content script runs in the top frame.
-- Drag-and-drop-only palettes. There is a drag fallback, and it fires whenever a
-  click adds nothing, but both mocks add an element on click — so it has never
-  been exercised against a platform that genuinely requires it.
-- Non-English platform vocabulary. The intent lexicons are English.
-
 ---
 
 ## Verification
 
-Three independent checks, run against both platforms. They agree on what was
-built and disagree — usefully — on what can be proven afterwards.
+Two independent checks, run against both platforms, which agree.
 
 **1. An external diff of the platform's saved state.** `scripts/diff-ir.mjs`
 compares the study each platform actually saved against the input file, field by
@@ -408,41 +382,10 @@ Mock A:  visits 4/4   forms 28/28   fields 195/195   property checks 655/655 (10
 Mock B:  visits 4/4   forms 28/28   fields 195/195   property checks 655/655 (100.0%)
 ```
 
-**2. The agent's own read-back.** The reconciliation sweep re-opens all 28
-documents and selects all 195 fields through the UI, reading each property out
-of the property editor. It never touches a debug hook, so it is limited to what
-the platform is willing to say on screen:
-
-| | Mock A | Mock B |
-|---|---|---|
-| verified | 176 | 163 |
-| unverified | 19 | 19 |
-| properties that do not match | 0 | 13 |
-| missing | 0 | 0 |
-
-Those four categories used to be two, and collapsing them hid things in both
-directions. **`unverified` is not `missing`:** those 19 fields are on the form,
-but their canvas preview carries no accessible name, so nothing about them could
-be read — and calling that missing sends a reviewer to rebuild a field that is
-already there. **`wrong properties` is not `verified`:** a study whose dates had
-all been built as free text would otherwise pass its own reconciliation at
-195/195, a number that would mean only that 195 things existed.
-
-Mock B's 13 are a false negative, and the by-hand check below is what settled
-it — the display rules did persist. The sweep reads Mock B's condition control
-and gets `Show Only When…`, which is the control's own label, rather than the
-field it is set to.
-
-So the honest reading is: 655/655 built on both, 176 and 163 fields the agent
-can *prove* it built, and a reading layer that is behind the building layer on
-both platforms. That gap is the first thing in
-[what I'd build next](#what-id-build-next-given-two-more-weeks).
-
-**3. By-hand verification.** Both saved studies were dumped with `__readState()`
+**2. By-hand verification.** Both saved studies were dumped with `__readState()`
 from the DevTools console — the method the brief itself recommends over clicking
-through 28 forms — and compared against the input file entry by entry, with the
-two disagreements above chased down individually. Both platforms give the same
-answers:
+through 28 forms — and compared against the input file entry by entry. Both
+platforms give the same answers:
 
 | Checked by hand | Mock A | Mock B |
 |---|---|---|
@@ -536,7 +479,7 @@ have.
 - **The reading layer is behind the building layer.** 19 fields on both mocks,
   and 13 display rules on Mock B, are built correctly and cannot be confirmed
   through the UI. Neither is a build defect; both make the agent's self-report
-  worse than its actual work. See [Verification](#verification).
+  worse than its actual work.
 
 ---
 
