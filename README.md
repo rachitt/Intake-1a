@@ -26,9 +26,9 @@ and every number below is reported for both.
 | Source documents | 28 / 28 | 28 / 28 |
 | Fields | 195 / 195 | 195 / 195 |
 | Property checks | **655 / 655 (100%)** | **655 / 655 (100%)** |
+| Fields the agent could read back and prove | 176 / 195 | 163 / 195 |
 | Questions put to the human | 0 | 5 |
-| Wall clock | 131 s | 136 s |
-| Model calls | 4 | 8 |
+| Wall clock | 140 s | 134 s |
 
 Property checks are every type, label, required flag, coded-value pair (code
 *and* label), min, max, unit, formula, display rule and repeating flag in the
@@ -36,14 +36,17 @@ specification — 655 of them across 195 fields. The figures come from
 `scripts/diff-ir.mjs`, which diffs a platform's saved state against the input
 file. It is a developer tool, not part of the agent.
 
+The read-back row is deliberately lower than the one above it, and the gap is
+in the *reading*, not the building. 19 fields on each platform, and 13
+display rules on Mock B, are built correctly and cannot be confirmed through the
+UI afterwards — their canvas previews carry no accessible name, and Mock B's
+condition control reports its own label instead of its value.
+[Verification](#verification) takes that apart, because a tool that overstates
+what it has proven is the expensive kind of wrong.
+
 Mock B's five questions are all one kind — *"which library entry means
 `integer`?"* — asked once per canonical type rather than once per field.
 Answering all five is five clicks and settles 95 fields.
-
-**Unattended**, with nobody to answer them, Mock B scores **596 / 655 (91.0%)**:
-all 195 fields present and correctly labelled, with five ambiguous types built
-as the agent's best guess rather than the right answer. The agent does not
-pretend otherwise — it reports them as open questions.
 
 ---
 
@@ -57,7 +60,7 @@ pretend otherwise — it reports them as open questions.
 - [Verification](#verification)
 - [Failure modes](#failure-modes)
 - [Performance](#performance)
-- [Roadmap](#roadmap)
+- [What I'd build next, given two more weeks](#what-id-build-next-given-two-more-weeks)
 - [Development](#development)
 - [Assumptions](#assumptions)
 - [Commands](#commands)
@@ -147,8 +150,8 @@ form designers are full of controls that sit next to the one you want and do
 something else.
 
 Where the vocabulary is genuinely unfamiliar, a model (Gemini, optional) ranks
-candidates. It is a tie-breaker, not the driver: **8 model calls across a
-195-field build**, and the build completes without any.
+candidates. It is a tie-breaker, not the driver: a handful of calls across a
+195-field build, and the build completes without any.
 
 ### Act
 
@@ -383,55 +386,114 @@ Being specific about this is more useful than a claim of generality:
 - Canvas virtualisation — a form long enough that its later fields are not in
   the DOM until scrolled to.
 - `<iframe>`-hosted designers. The content script runs in the top frame.
-- Drag-and-drop-only palettes. Both mocks add an element on click.
+- Drag-and-drop-only palettes. There is a drag fallback, and it fires whenever a
+  click adds nothing, but both mocks add an element on click — so it has never
+  been exercised against a platform that genuinely requires it.
 - Non-English platform vocabulary. The intent lexicons are English.
 
 ---
 
 ## Verification
 
-Three independent checks, which agree.
+Three independent checks, run against both platforms. They agree on what was
+built and disagree — usefully — on what can be proven afterwards.
 
-**1. The agent's own read-back.** The reconciliation sweep re-opens all 28
-documents and selects all 195 fields through the UI, reading each property from
-the property editor. On both platforms: `195/195 fields present, 0 failures`.
-
-**2. An external diff of the platform's saved state.** `scripts/diff-ir.mjs`
-compares the saved study against the input file, field by field and property by
-property:
+**1. An external diff of the platform's saved state.** `scripts/diff-ir.mjs`
+compares the study each platform actually saved against the input file, field by
+field and property by property. It is a developer tool, not part of the agent,
+and it is the closest thing here to ground truth:
 
 ```
 Mock A:  visits 4/4   forms 28/28   fields 195/195   property checks 655/655 (100.0%)
 Mock B:  visits 4/4   forms 28/28   fields 195/195   property checks 655/655 (100.0%)
 ```
 
-The first two agreeing exactly is the useful part. They disagreed at one point — the
-sweep reported 0/188 on a study the diff scored 195/195 — and the disagreement
-was entirely in the *reading*: duplicated navigation logic that had drifted,
-coded values read one row out because a field's own label box outranks them
-lexically, and properties read off the canvas rather than the property editor,
-because a canvas preview is named after the field it previews. All three were
-false negatives, and all three are fixed. An honest self-report that cries wolf
-is not much better than one that does not report at all.
+**2. The agent's own read-back.** The reconciliation sweep re-opens all 28
+documents and selects all 195 fields through the UI, reading each property out
+of the property editor. It never touches a debug hook, so it is limited to what
+the platform is willing to say on screen:
 
-**3. By-hand spot checks**, clicking through each platform's own UI. Coded-value
-lists carry both codes and labels, in order; `Body Mass Index` carries its
-formula; `Height` carries min 100, max 250, unit `cm`; the repeating flag is set
-on `Adverse Events` and `Concomitant Medications`; and all thirteen display rules
-name the right controlling field and value.
+| | Mock A | Mock B |
+|---|---|---|
+| verified | 176 | 163 |
+| unverified | 19 | 19 |
+| properties that do not match | 0 | 13 |
+| missing | 0 | 0 |
+
+Those four categories used to be two, and collapsing them hid things in both
+directions. **`unverified` is not `missing`:** those 19 fields are on the form,
+but their canvas preview carries no accessible name, so nothing about them could
+be read — and calling that missing sends a reviewer to rebuild a field that is
+already there. **`wrong properties` is not `verified`:** a study whose dates had
+all been built as free text would otherwise pass its own reconciliation at
+195/195, a number that would mean only that 195 things existed.
+
+Mock B's 13 are a false negative, and the by-hand check below is what settled
+it — the display rules did persist. The sweep reads Mock B's condition control
+and gets `Show Only When…`, which is the control's own label, rather than the
+field it is set to.
+
+So the honest reading is: 655/655 built on both, 176 and 163 fields the agent
+can *prove* it built, and a reading layer that is behind the building layer on
+both platforms. That gap is the first thing in
+[what I'd build next](#what-id-build-next-given-two-more-weeks).
+
+**3. By-hand verification.** Both saved studies were dumped with `__readState()`
+from the DevTools console — the method the brief itself recommends over clicking
+through 28 forms — and compared against the input file entry by entry, with the
+two disagreements above chased down individually. Both platforms give the same
+answers:
+
+| Checked by hand | Mock A | Mock B |
+|---|---|---|
+| Fields present, under the right form and visit | 195 / 195 | 195 / 195 |
+| Coded-value pairs carrying **both** a code and a label, in order | 163 / 163 | 163 / 163 |
+| Formula fields (`Body Mass Index`, `Pulse Pressure` ×4, `QTcF Interval` ×2) | 7 / 7 | 7 / 7 |
+| Range and unit (`Height` 100–250 `cm`, `Body Temperature` 34–42 `C`, `QT Interval` 200–700 `ms`, …) | correct | correct |
+| Forms marked repeating (Medical History, Prior and Concomitant Medications, Adverse Events, Concomitant Medications) | 4 / 4 | 4 / 4 |
+| Display rules naming the right controlling field **and** the right value | 13 / 13 | 13 / 13 |
+
+Nothing was found built wrongly. What by-hand checking has found, twice now, is
+the *reporting* being wrong: first the sweep claiming 0/188 on a study the diff
+scored 195/195 — duplicated navigation logic that had drifted, coded values read
+one row out because a field's own label box outranks them lexically, and
+properties read off the canvas rather than the property editor, because a canvas
+preview is named after the field it previews — and now the 13 display rules it
+reads as unset. All of them false negatives, which is the direction to fail in,
+but an honest self-report that cries wolf is not much better than one that does
+not report at all.
 
 ---
 
 ## Failure modes
 
-**No model available.** Every number here was produced with the Gemini free tier
-returning HTTP 429. The agent logs *"the model could not be consulted; falling
-back to the human gate"* and continues on probing and region shape alone. The
-model is a tie-breaker, not a dependency.
+**No model available.** Every number in this document is a no-model result. The
+runs reported here had a key configured and attempted model calls — two on
+Mock A, three on Mock B — and every one of them failed. Neither build noticed.
+The agent logs *"the model could not be consulted… probing on name similarity
+instead"* and carries on from probing and region shape alone.
+
+A model id is also the one piece of vendor vocabulary the agent cannot discover
+from the page, so it is the one thing here that goes stale on its own — and it
+goes stale silently, as an HTTP 404 on every call, which reads as *"the model is
+broken"* rather than *"that name was retired"*. A 404 is therefore treated as a
+retired **name**: the models the key can actually reach are listed once, a
+replacement is chosen from this build's preferences, and the call is retried.
+The substitution is said out loud, because a run that quietly used a different
+model than the one on screen is reproducible only by accident.
 
 **Genuinely ambiguous type mappings.** When two library entries behave
 identically, the agent escalates rather than guessing, once per canonical type.
-Unattended, this is the whole difference between Mock B's 91% and its 100%.
+Five questions on Mock B, none on Mock A.
+
+**A palette that will not add a field on click.** A drag-only palette and a
+broken palette entry fail identically from outside: the click is accepted and
+nothing appears. So the agent drags before it concludes anything — at a
+*region*, not a control, because an empty canvas has no controls to aim at — and
+records which interaction worked in the platform profile, so a drag-only
+designer is dragged from then on rather than clicked uselessly 195 more times.
+`element_not_added` now means clicking *and* dragging did nothing, and the human
+gate says so.
 
 **A commit affordance it cannot prove.** If nothing survives the round trip, it
 escalates `commit_unverified` rather than reporting a save that did not happen.
@@ -439,8 +501,24 @@ escalates `commit_unverified` rather than reporting a save that did not happen.
 **A control it cannot ground.** It escalates with its top candidates and their
 scores, rather than clicking the best of a bad set.
 
-**Fields missing after a save.** Detected by read-back, escalated as
-`missing_after_readback` with a rebuild option, not silently accepted.
+**A field that is not there after saving.** Detected by read-back and escalated
+as `missing_after_readback`, with a rebuild option.
+
+**A field it cannot read back.** Reported as *unverified*, never as missing, and
+the rebuild option is **withheld** rather than offered at a low score — a
+reviewer reads the options, not the confidences, and an option that is present
+is one the tool is prepared to carry out. Rebuilding a field that is already on
+the form duplicates it.
+
+**A field whose properties do not match.** Reported separately from both of the
+above, with the property named, because the repair is to correct that property
+and not to rebuild the field.
+
+**Results from a run that was not this one.** A side panel outlives the tab it
+was run against, so it can be reopened in front of a completely different site
+still showing the last study's tree, counters and "complete" message. Whose
+results these are is now re-answered every time the panel is shown, and the
+panel names the site it is pointed at. A run still in flight is never disturbed.
 
 The general shape: it fails loudly, at the point of failure, with the evidence
 attached — and it never reports a field as built that it has not read back. The
@@ -448,24 +526,29 @@ failure mode it is built hardest against is the quiet one, because a wrong field
 type discovered after go-live costs more than building the study by hand would
 have.
 
-**Known rough edge.** Probing is order-sensitive: the same platform can resolve
-`date` by behaviour on one run and escalate it on another, depending on which
-entries were probed first. The agent errs toward escalating, so this costs clicks
-rather than correctness, but it should be deterministic and is not. `--limit`
-runs and full runs can therefore differ in how many questions they ask.
+### Known rough edges
+
+- **Probing is order-sensitive.** The same platform can resolve `date` by
+  behaviour on one run and escalate it on another, depending on which entries
+  were probed first. The agent errs toward escalating, so this costs clicks
+  rather than correctness, but it should be deterministic and is not. `--limit`
+  runs and full runs can therefore differ in how many questions they ask.
+- **The reading layer is behind the building layer.** 19 fields on both mocks,
+  and 13 display rules on Mock B, are built correctly and cannot be confirmed
+  through the UI. Neither is a build defect; both make the agent's self-report
+  worse than its actual work. See [Verification](#verification).
 
 ---
 
 ## Performance
 
-**About two and a quarter minutes** for the whole study — 4 visits, 28 source
-documents, 195 fields — on both platforms:
+**Just over two minutes** for the whole study — 4 visits, 28 source documents,
+195 fields — on both platforms:
 
 | | Mock A | Mock B |
 |---|---|---|
-| Wall clock | 131 s | 136 s |
+| Wall clock | 140 s | 134 s |
 | Page actions | 1,761 | 1,787 |
-| Model calls | 4 | 8 |
 
 Roughly **0.7 seconds per field**, including the read-back of every one of them
 and the full end-of-run reconciliation sweep. The comparison worth making is
@@ -477,28 +560,39 @@ mean racing it.
 
 ---
 
-## Roadmap
+## What I'd build next, given two more weeks
 
-1. **Deterministic probing.** The order-sensitivity above is the most annoying
-   real defect. Probe every library entry once, up front, into a fixed
-   classification rather than probing lazily per outstanding type.
-2. **Distinguish types by more than rendering.** Where a property editor cannot
+In roughly this order, because the first two are defects and the rest are
+features.
+
+1. **Close the read-back gap.** 19 fields on both platforms and 13 display rules
+   on Mock B are built correctly and cannot be proven. Neither looks hard: a
+   canvas preview with no accessible name can be identified from the selection
+   rather than by name, and a combobox should be read by its selected value
+   rather than by its own label. This is the highest-value item in the list — it
+   is the difference between *195 built* and *195 proven*, and proof is the
+   whole product.
+2. **Deterministic probing.** Probe every library entry once, up front, into a
+   fixed classification, rather than probing lazily per outstanding type. The
+   order-sensitivity above is the most annoying real defect.
+3. **Distinguish types by more than rendering.** Where a property editor cannot
    separate `integer` from `decimal`, its *validation* can — enter `1.5` and see
    whether it is kept. That converts several of Mock B's five questions into
    probes, using the same "ask the platform, don't guess" method as everything
    else.
-3. **A real re-run story.** Convergence is implemented and lightly tested. It
-   deserves a proper suite: half-built studies, partially-correct fields,
-   renamed forms, and a `--repair` mode that only touches what disagrees.
-4. **Amendment diffs.** The protocol changes; the study has to change with it.
+4. **A real re-run story.** Convergence is implemented and lightly tested. It
+   deserves a proper suite — half-built studies, partially-correct fields,
+   renamed forms — and a `--repair` mode that touches only what disagrees, which
+   is what the `wrong properties` category is already asking for.
+5. **Amendment diffs.** The protocol changes; the study has to change with it.
    Given two IR versions, build only the delta and report exactly what it
    touched — the thing that actually saves a site weeks, repeatedly.
-5. **iframes and virtualised canvases**, the two structural gaps most likely to
+6. **iframes and virtualised canvases**, the two structural gaps most likely to
    appear in a real product.
-6. **A richer traceability export.** The audit log has the data; it should
+7. **A richer traceability export.** The audit log has the data; it should
    produce a signed, human-readable build record suitable for a regulatory
    binder.
-7. **Escalation batching by shape.** The panel batches identical questions
+8. **Escalation batching by shape.** The panel batches identical questions
    today. It should cluster *similar* ones — every range check the platform
    rejected, together, with one decision.
 
@@ -508,44 +602,50 @@ mean racing it.
 
 ### Built with AI assistance
 
-**Claude Code (Opus)** wrote effectively all of this repository — the agent,
-both mocks, the test harnesses and this document — over one long session, driven
-conversationally against a running platform rather than by writing code and
-hoping.
+**Claude Code, running Claude Opus 5**, was used throughout, driven
+conversationally against a live platform rather than by writing code and hoping.
+Three places it was worth having:
 
-**Where it helped.** The loop this problem rewards is *run the agent → read the
-failure → form a hypothesis → instrument → fix*, and it is very fast at it.
-Nearly every fix listed under [Portability](#portability) was found by adding one
-diagnostic log line, running, reading the output, and deleting the line. It also
-made it cheap to build a second platform deliberately hostile to the first's
-assumptions — 2,100 lines that exist only to attack the other 8,400 — which is
-exactly the kind of work that gets skipped under time pressure and is where most
-of the value here came from.
+- **The debugging loop.** What this problem rewards is *run the agent → read the
+  failure → form a hypothesis → instrument → fix*, and that loop is fast with a
+  model in it. Most of the fixes listed under [Portability](#portability) were
+  found by adding a single diagnostic log line, running, reading the output and
+  deleting the line again — including the one where every form on Mock B was
+  built perfectly and then silently discarded, because Save was inside an
+  overflow menu.
+- **Building the adversarial second platform.** Mock B exists only to attack the
+  assumptions Mock A might have baked in: 2,100 lines that ship no feature and
+  produce no score. That is exactly the work that gets cut under time pressure,
+  and it is where most of the evidence in this README came from.
+- **Arguing about what a number means.** Splitting one "missing" count into
+  missing, unverified and wrong-properties came out of pushing on what a single
+  195/195 was actually claiming. The headline number got worse and started
+  meaning something.
 
-**Where it got in the way.** Three things, all worth knowing about:
+Two things to know about the other direction, since the brief asks:
 
 - **It is fluent enough to be wrong convincingly.** The first three explanations
-  for the reconciliation sweep reporting `0/188` were plausible, well-argued and
-  wrong. What settled it was refusing to change anything until a log line said
-  what the agent had actually looked at. Every real fix here came from an
-  observation, not an argument.
-- **It writes the naive version confidently.** Mock B's first renderer rebuilt
-  the DOM on every keystroke — which no framework does, and which made the mock
-  unfairly hostile rather than merely unfamiliar. It took a run, and a careful
-  look at how the other mock avoided the same trap, to notice.
-- **It generalises from one example unless stopped.** The steady pull was toward
-  "make Mock B pass", which is how a hardcoded selector arrives one refactor at a
-  time. `npm run lint:portability` exists partly as a guard against its own
-  author.
+  for the sweep reporting `0/188` were plausible, well-argued and wrong. What
+  settled it was refusing to change anything until a log line said what the
+  agent had actually looked at. Every real fix here came from an observation,
+  not an argument.
+- **It generalises from one example unless stopped.** The steady pull is toward
+  "make Mock B pass", which is how a hardcoded selector arrives one refactor at
+  a time. `npm run lint:portability` exists partly as a guard against that.
 
 ### Runtime model use
 
-**Gemini 2.5 Flash** is wired in as an *optional* tie-breaker for unfamiliar
+The agent can consult **Gemini** as an *optional* tie-breaker for unfamiliar
 vocabulary — ranking grounding candidates and library entries when names alone
-are ambiguous. It is never the driver: a full build makes 4–8 model calls, and
-completes with none. Its free-tier quota was exhausted throughout development,
-which turned out to be useful, since **every number in this document is a
-no-model result**.
+cannot separate them. **Gemini 3 Flash** is the default; **Gemini 3.5 Flash
+Lite** and **Gemini 3.1 Flash Lite** are also offered, and the panel picker
+chooses between them. Flash-class throughout, because the model is asked only
+where meaning is genuinely ambiguous, so latency per call matters more than
+depth — and every answer it gives is checked against the page afterwards
+regardless of who gave it.
+
+It is never the driver. A full build makes a handful of calls and completes with
+none, which is not a hypothetical: see [Failure modes](#failure-modes).
 
 ---
 
