@@ -1,0 +1,1058 @@
+{
+  "ok": true,
+  "elapsedMs": 5117,
+  "actions": 21,
+  "llmCalls": 1,
+  "counters": {
+    "visitsBuilt": 1,
+    "visitsTotal": 1,
+    "formsBuilt": 0,
+    "formsTotal": 7,
+    "fieldsBuilt": 0,
+    "fieldsTotal": 47,
+    "verified": 0,
+    "escalated": 0,
+    "repaired": 0,
+    "failed": 2,
+    "llmCalls": 1
+  },
+  "typeMap": [],
+  "libraryEntries": [],
+  "rejectedCommits": [],
+  "questions": [],
+  "coverage": [
+    {
+      "pointer": "/visits/0",
+      "visit": "Screening",
+      "form": "",
+      "present": false,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "the visit could not be found or opened"
+      ]
+    },
+    {
+      "pointer": "/visits/0/forms/0",
+      "visit": "Screening",
+      "form": "Demographics",
+      "present": false,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "the visit could not be opened"
+      ]
+    },
+    {
+      "pointer": "/visits/0/forms/0/fields/0",
+      "visit": "Screening",
+      "form": "Demographics",
+      "present": false,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "the visit could not be opened"
+      ],
+      "field": "Subject Initials"
+    },
+    {
+      "pointer": "/visits/0/forms/0/fields/1",
+      "visit": "Screening",
+      "form": "Demographics",
+      "present": false,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "the visit could not be opened"
+      ],
+      "field": "Date of Birth"
+    },
+    {
+      "pointer": "/visits/0/forms/0/fields/2",
+      "visit": "Screening",
+      "form": "Demographics",
+      "present": false,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "the visit could not be opened"
+      ],
+      "field": "Sex at Birth"
+    },
+    {
+      "pointer": "/visits/0/forms/0/fields/3",
+      "visit": "Screening",
+      "form": "Demographics",
+      "present": false,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "the visit could not be opened"
+      ],
+      "field": "Race"
+    },
+    {
+      "pointer": "/visits/0/forms/0/fields/4",
+      "visit": "Screening",
+      "form": "Demographics",
+      "present": false,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "the visit could not be opened"
+      ],
+      "field": "Ethnicity"
+    },
+    {
+      "pointer": "/visits/0/forms/0/fields/5",
+      "visit": "Screening",
+      "form": "Demographics",
+      "present": false,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "the visit could not be opened"
+      ],
+      "field": "Height"
+    },
+    {
+      "pointer": "/visits/0/forms/0/fields/6",
+      "visit": "Screening",
+      "form": "Demographics",
+      "present": false,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "the visit could not be opened"
+      ],
+      "field": "Weight"
+    },
+    {
+      "pointer": "/visits/0/forms/0/fields/7",
+      "visit": "Screening",
+      "form": "Demographics",
+      "present": false,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "the visit could not be opened"
+      ],
+      "field": "Body Mass Index"
+    },
+    {
+      "pointer": "/visits/0/forms/1",
+      "visit": "Screening",
+      "form": "Informed Consent",
+      "present": false,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "the visit could not be opened"
+      ]
+    },
+    {
+      "pointer": "/visits/0/forms/1/fields/0",
+      "visit": "Screening",
+      "form": "Informed Consent",
+      "present": false,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "the visit could not be opened"
+      ],
+      "field": "Informed Consent Obtained"
+    },
+    {
+      "pointer": "/visits/0/forms/1/fields/1",
+      "visit": "Screening",
+      "form": "Informed Consent",
+      "present": false,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "the visit could not be opened"
+      ],
+      "field": "Date of Consent"
+    },
+    {
+      "pointer": "/visits/0/forms/1/fields/2",
+      "visit": "Screening",
+      "form": "Informed Consent",
+      "present": false,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "the visit could not be opened"
+      ],
+      "field": "Time of Consent"
+    },
+    {
+      "pointer": "/visits/0/forms/1/fields/3",
+      "visit": "Screening",
+      "form": "Informed Consent",
+      "present": false,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "the visit could not be opened"
+      ],
+      "field": "Consent Form Version"
+    },
+    {
+      "pointer": "/visits/0/forms/1/fields/4",
+      "visit": "Screening",
+      "form": "Informed Consent",
+      "present": false,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "the visit could not be opened"
+      ],
+      "field": "Consented By"
+    },
+    {
+      "pointer": "/visits/0/forms/1/fields/5",
+      "visit": "Screening",
+      "form": "Informed Consent",
+      "present": false,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "the visit could not be opened"
+      ],
+      "field": "Copy Provided to Subject"
+    },
+    {
+      "pointer": "/visits/0/forms/2",
+      "visit": "Screening",
+      "form": "Eligibility Criteria",
+      "present": false,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "the visit could not be opened"
+      ]
+    },
+    {
+      "pointer": "/visits/0/forms/2/fields/0",
+      "visit": "Screening",
+      "form": "Eligibility Criteria",
+      "present": false,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "the visit could not be opened"
+      ],
+      "field": "Age 18 Years or Older at Consent"
+    },
+    {
+      "pointer": "/visits/0/forms/2/fields/1",
+      "visit": "Screening",
+      "form": "Eligibility Criteria",
+      "present": false,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "the visit could not be opened"
+      ],
+      "field": "Confirmed Diagnosis of Plaque Psoriasis"
+    },
+    {
+      "pointer": "/visits/0/forms/2/fields/2",
+      "visit": "Screening",
+      "form": "Eligibility Criteria",
+      "present": false,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "the visit could not be opened"
+      ],
+      "field": "Duration of Diagnosis"
+    },
+    {
+      "pointer": "/visits/0/forms/2/fields/3",
+      "visit": "Screening",
+      "form": "Eligibility Criteria",
+      "present": false,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "the visit could not be opened"
+      ],
+      "field": "Written Informed Consent Provided"
+    },
+    {
+      "pointer": "/visits/0/forms/2/fields/4",
+      "visit": "Screening",
+      "form": "Eligibility Criteria",
+      "present": false,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "the visit could not be opened"
+      ],
+      "field": "Any Exclusionary Condition Present"
+    },
+    {
+      "pointer": "/visits/0/forms/2/fields/5",
+      "visit": "Screening",
+      "form": "Eligibility Criteria",
+      "present": false,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "the visit could not be opened"
+      ],
+      "field": "Exclusionary Conditions"
+    },
+    {
+      "pointer": "/visits/0/forms/3",
+      "visit": "Screening",
+      "form": "Medical History",
+      "present": false,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "the visit could not be opened"
+      ]
+    },
+    {
+      "pointer": "/visits/0/forms/3/fields/0",
+      "visit": "Screening",
+      "form": "Medical History",
+      "present": false,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "the visit could not be opened"
+      ],
+      "field": "Condition"
+    },
+    {
+      "pointer": "/visits/0/forms/3/fields/1",
+      "visit": "Screening",
+      "form": "Medical History",
+      "present": false,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "the visit could not be opened"
+      ],
+      "field": "Body System"
+    },
+    {
+      "pointer": "/visits/0/forms/3/fields/2",
+      "visit": "Screening",
+      "form": "Medical History",
+      "present": false,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "the visit could not be opened"
+      ],
+      "field": "Onset Date"
+    },
+    {
+      "pointer": "/visits/0/forms/3/fields/3",
+      "visit": "Screening",
+      "form": "Medical History",
+      "present": false,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "the visit could not be opened"
+      ],
+      "field": "Ongoing"
+    },
+    {
+      "pointer": "/visits/0/forms/3/fields/4",
+      "visit": "Screening",
+      "form": "Medical History",
+      "present": false,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "the visit could not be opened"
+      ],
+      "field": "Notes"
+    },
+    {
+      "pointer": "/visits/0/forms/4",
+      "visit": "Screening",
+      "form": "Prior and Concomitant Medications",
+      "present": false,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "the visit could not be opened"
+      ]
+    },
+    {
+      "pointer": "/visits/0/forms/4/fields/0",
+      "visit": "Screening",
+      "form": "Prior and Concomitant Medications",
+      "present": false,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "the visit could not be opened"
+      ],
+      "field": "Medication Name"
+    },
+    {
+      "pointer": "/visits/0/forms/4/fields/1",
+      "visit": "Screening",
+      "form": "Prior and Concomitant Medications",
+      "present": false,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "the visit could not be opened"
+      ],
+      "field": "Indication"
+    },
+    {
+      "pointer": "/visits/0/forms/4/fields/2",
+      "visit": "Screening",
+      "form": "Prior and Concomitant Medications",
+      "present": false,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "the visit could not be opened"
+      ],
+      "field": "Dose"
+    },
+    {
+      "pointer": "/visits/0/forms/4/fields/3",
+      "visit": "Screening",
+      "form": "Prior and Concomitant Medications",
+      "present": false,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "the visit could not be opened"
+      ],
+      "field": "Route"
+    },
+    {
+      "pointer": "/visits/0/forms/4/fields/4",
+      "visit": "Screening",
+      "form": "Prior and Concomitant Medications",
+      "present": false,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "the visit could not be opened"
+      ],
+      "field": "Frequency"
+    },
+    {
+      "pointer": "/visits/0/forms/4/fields/5",
+      "visit": "Screening",
+      "form": "Prior and Concomitant Medications",
+      "present": false,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "the visit could not be opened"
+      ],
+      "field": "Start Date"
+    },
+    {
+      "pointer": "/visits/0/forms/4/fields/6",
+      "visit": "Screening",
+      "form": "Prior and Concomitant Medications",
+      "present": false,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "the visit could not be opened"
+      ],
+      "field": "Ongoing"
+    },
+    {
+      "pointer": "/visits/0/forms/5",
+      "visit": "Screening",
+      "form": "Vital Signs",
+      "present": false,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "the visit could not be opened"
+      ]
+    },
+    {
+      "pointer": "/visits/0/forms/5/fields/0",
+      "visit": "Screening",
+      "form": "Vital Signs",
+      "present": false,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "the visit could not be opened"
+      ],
+      "field": "Systolic Blood Pressure"
+    },
+    {
+      "pointer": "/visits/0/forms/5/fields/1",
+      "visit": "Screening",
+      "form": "Vital Signs",
+      "present": false,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "the visit could not be opened"
+      ],
+      "field": "Diastolic Blood Pressure"
+    },
+    {
+      "pointer": "/visits/0/forms/5/fields/2",
+      "visit": "Screening",
+      "form": "Vital Signs",
+      "present": false,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "the visit could not be opened"
+      ],
+      "field": "Pulse Pressure"
+    },
+    {
+      "pointer": "/visits/0/forms/5/fields/3",
+      "visit": "Screening",
+      "form": "Vital Signs",
+      "present": false,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "the visit could not be opened"
+      ],
+      "field": "Heart Rate"
+    },
+    {
+      "pointer": "/visits/0/forms/5/fields/4",
+      "visit": "Screening",
+      "form": "Vital Signs",
+      "present": false,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "the visit could not be opened"
+      ],
+      "field": "Respiratory Rate"
+    },
+    {
+      "pointer": "/visits/0/forms/5/fields/5",
+      "visit": "Screening",
+      "form": "Vital Signs",
+      "present": false,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "the visit could not be opened"
+      ],
+      "field": "Body Temperature"
+    },
+    {
+      "pointer": "/visits/0/forms/5/fields/6",
+      "visit": "Screening",
+      "form": "Vital Signs",
+      "present": false,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "the visit could not be opened"
+      ],
+      "field": "Position"
+    },
+    {
+      "pointer": "/visits/0/forms/5/fields/7",
+      "visit": "Screening",
+      "form": "Vital Signs",
+      "present": false,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "the visit could not be opened"
+      ],
+      "field": "Time of Measurement"
+    },
+    {
+      "pointer": "/visits/0/forms/6",
+      "visit": "Screening",
+      "form": "Local Laboratory - Hematology",
+      "present": false,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "the visit could not be opened"
+      ]
+    },
+    {
+      "pointer": "/visits/0/forms/6/fields/0",
+      "visit": "Screening",
+      "form": "Local Laboratory - Hematology",
+      "present": false,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "the visit could not be opened"
+      ],
+      "field": "Collection Date"
+    },
+    {
+      "pointer": "/visits/0/forms/6/fields/1",
+      "visit": "Screening",
+      "form": "Local Laboratory - Hematology",
+      "present": false,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "the visit could not be opened"
+      ],
+      "field": "Collection Time"
+    },
+    {
+      "pointer": "/visits/0/forms/6/fields/2",
+      "visit": "Screening",
+      "form": "Local Laboratory - Hematology",
+      "present": false,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "the visit could not be opened"
+      ],
+      "field": "Hemoglobin"
+    },
+    {
+      "pointer": "/visits/0/forms/6/fields/3",
+      "visit": "Screening",
+      "form": "Local Laboratory - Hematology",
+      "present": false,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "the visit could not be opened"
+      ],
+      "field": "Hematocrit"
+    },
+    {
+      "pointer": "/visits/0/forms/6/fields/4",
+      "visit": "Screening",
+      "form": "Local Laboratory - Hematology",
+      "present": false,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "the visit could not be opened"
+      ],
+      "field": "White Blood Cell Count"
+    },
+    {
+      "pointer": "/visits/0/forms/6/fields/5",
+      "visit": "Screening",
+      "form": "Local Laboratory - Hematology",
+      "present": false,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "the visit could not be opened"
+      ],
+      "field": "Platelet Count"
+    },
+    {
+      "pointer": "/visits/0/forms/6/fields/6",
+      "visit": "Screening",
+      "form": "Local Laboratory - Hematology",
+      "present": false,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "the visit could not be opened"
+      ],
+      "field": "Sample Condition"
+    }
+  ],
+  "log": [
+    {
+      "level": "warn",
+      "message": "Could not get back to the visit schedule."
+    },
+    {
+      "level": "warn",
+      "message": "Could not get back to the visit schedule."
+    },
+    {
+      "level": "error",
+      "message": "Visit \"Screening\" did not appear after saving."
+    },
+    {
+      "level": "error",
+      "message": "Visit \"Screening\" did not appear after saving."
+    },
+    {
+      "level": "error",
+      "message": "Could not open visit \"Screening\"."
+    },
+    {
+      "level": "warn",
+      "message": "Reconciliation: 0/47 fields present; missing: Demographics/Subject Initials, Demographics/Date of Birth, Demographics/Sex at Birth, Demographics/Race, Demographics/Ethnicity, Demographics/Height, Demographics/Weight, Demographics/Body Mass Index…"
+    }
+  ],
+  "irStats": {
+    "visits": 1,
+    "formInstances": 7,
+    "distinctForms": 7,
+    "fields": 47,
+    "withOptions": 10,
+    "withRange": 13,
+    "withFormula": 2,
+    "skipRules": 1,
+    "repeatingForms": 2,
+    "typeHistogram": {
+      "text": 5,
+      "date": 5,
+      "radio": 2,
+      "multi_select": 2,
+      "single_select": 6,
+      "decimal": 7,
+      "calculated": 2,
+      "boolean": 7,
+      "time": 3,
+      "checkbox": 1,
+      "integer": 6,
+      "textarea": 1
+    }
+  }
+}

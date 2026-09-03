@@ -1,0 +1,272 @@
+/*
+ * The human gate.
+ *
+ * Visual priority follows decision priority: an open question outranks
+ * progress, and within a question the CONSEQUENCE outranks the mechanics,
+ * because a reviewer deciding between two near-identical widget names needs to
+ * know what it costs to get it wrong more than they need to know how the agent
+ * got stuck.
+ */
+
+:root {
+  color-scheme: light dark;
+
+  --bg: #ffffff;
+  --surface: #f7f8fa;
+  --surface-2: #eef0f4;
+  --line: #dfe3ea;
+  --ink: #14181f;
+  --ink-2: #545c6b;
+  --ink-3: #838b99;
+
+  --accent: #1f5f5b;
+  --accent-ink: #ffffff;
+  --warn: #8a5a00;
+  --warn-bg: #fff6e0;
+  --bad: #a32020;
+  --bad-bg: #fdeceb;
+  --good: #1f6b3a;
+  --good-bg: #e8f5ec;
+
+  --radius: 8px;
+  --pad: 12px;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #14171c;
+    --surface: #1b1f26;
+    --surface-2: #232830;
+    --line: #313845;
+    --ink: #e9edf3;
+    --ink-2: #a6b0be;
+    --ink-3: #78828f;
+
+    --accent: #4fbfae;
+    --accent-ink: #0d1116;
+    --warn: #e8b14a;
+    --warn-bg: #33280f;
+    --bad: #f08279;
+    --bad-bg: #38191a;
+    --good: #6fce93;
+    --good-bg: #12291b;
+  }
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  padding: 0 var(--pad) 40px;
+  background: var(--bg);
+  color: var(--ink);
+  font: 13px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+
+h2 {
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--ink-2);
+  margin: 0;
+}
+
+/* ── top bar ───────────────────────────────────────────────────────────────── */
+
+.bar {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 10px 0;
+  background: var(--bg);
+  border-bottom: 1px solid var(--line);
+}
+
+.bar-title { display: flex; align-items: center; gap: 8px; font-size: 14px; }
+.bar-actions { display: flex; gap: 6px; }
+
+.dot {
+  width: 9px; height: 9px; border-radius: 50%;
+  background: var(--ink-3);
+  flex: none;
+}
+.dot[data-phase="building"], .dot[data-phase="reconnaissance"], .dot[data-phase="verifying"] {
+  background: var(--accent);
+  animation: pulse 1.4s ease-in-out infinite;
+}
+.dot[data-phase="blocked"] { background: var(--warn); }
+.dot[data-phase="stopping"] { background: var(--ink-3); animation: pulse 1.4s ease-in-out infinite; }
+.dot[data-phase="done"] { background: var(--good); }
+.dot[data-phase="failed"] { background: var(--bad); }
+
+@keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.35; } }
+
+.status { margin: 10px 0; color: var(--ink-2); }
+/* The site the run would act on, said quietly but always. */
+.target { margin: -6px 0 10px; color: var(--ink-3); font-size: 12px; word-break: break-all; }
+
+/* ── buttons ───────────────────────────────────────────────────────────────── */
+
+button {
+  font: inherit;
+  border-radius: 6px;
+  border: 1px solid var(--line);
+  padding: 6px 12px;
+  cursor: pointer;
+  background: var(--surface);
+  color: var(--ink);
+}
+button:hover { background: var(--surface-2); }
+button:disabled { opacity: 0.5; cursor: not-allowed; }
+
+button.primary { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); font-weight: 600; }
+button.primary:hover { filter: brightness(1.08); }
+button.ghost { background: transparent; }
+button.small { padding: 4px 8px; font-size: 12px; }
+
+/* ── sections ──────────────────────────────────────────────────────────────── */
+
+section { margin: 18px 0; }
+
+.section-head {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 8px; margin-bottom: 8px;
+}
+
+.hint { color: var(--ink-3); font-size: 12px; margin: 4px 0 10px; }
+/* What a reconciliation bucket means, and what to do about it. */
+.bucket-what { color: var(--ink-3); font-size: 12px; margin: 2px 0 6px; }
+
+.field { display: block; margin-bottom: 10px; }
+.field > span { display: block; font-size: 12px; color: var(--ink-2); margin-bottom: 4px; }
+.field input, .field select {
+  width: 100%;
+  font: inherit;
+  padding: 6px 8px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--surface);
+  color: var(--ink);
+}
+
+.pill {
+  font-size: 11px; font-weight: 700;
+  padding: 2px 8px; border-radius: 999px;
+  background: var(--warn-bg); color: var(--warn);
+}
+
+/* ── counters ──────────────────────────────────────────────────────────────── */
+
+.counters { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
+.counter {
+  background: var(--surface); border: 1px solid var(--line);
+  border-radius: var(--radius); padding: 8px 6px; text-align: center;
+}
+.counter b { display: block; font-size: 16px; }
+.counter span { font-size: 10px; text-transform: uppercase; letter-spacing: 0.04em; color: var(--ink-3); }
+
+/* ── the review queue ──────────────────────────────────────────────────────── */
+
+.card {
+  border: 1px solid var(--line);
+  border-left: 3px solid var(--warn);
+  border-radius: var(--radius);
+  background: var(--surface);
+  padding: var(--pad);
+  margin-bottom: 10px;
+}
+.card.resolved { border-left-color: var(--good); opacity: 0.62; }
+
+.card h3 { margin: 0 0 6px; font-size: 13.5px; line-height: 1.35; }
+.card .why { color: var(--ink-2); margin: 0 0 8px; font-size: 12px; }
+
+.stake {
+  background: var(--warn-bg); color: var(--warn);
+  border-radius: 6px; padding: 7px 9px; font-size: 12px; margin: 0 0 10px;
+}
+
+.affects { font-size: 11px; color: var(--ink-3); margin-bottom: 8px; }
+
+.option {
+  display: block; width: 100%; text-align: left;
+  border: 1px solid var(--line); border-radius: 6px;
+  background: var(--bg); padding: 8px 10px; margin-bottom: 6px;
+  cursor: pointer;
+}
+.option:hover { border-color: var(--accent); }
+.option[aria-pressed="true"] { border-color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); }
+
+.option-head { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; }
+.option-name { font-weight: 600; }
+.option-score { font-size: 11px; color: var(--ink-3); font-variant-numeric: tabular-nums; }
+
+.meter { height: 3px; border-radius: 2px; background: var(--surface-2); margin: 6px 0; overflow: hidden; }
+.meter > i { display: block; height: 100%; background: var(--accent); }
+
+.evidence { margin: 4px 0 0; padding: 0; list-style: none; font-size: 11.5px; }
+.evidence li { display: flex; gap: 6px; color: var(--ink-2); }
+.evidence li.no { color: var(--bad); }
+.evidence li::before { content: "✓"; color: var(--good); flex: none; }
+.evidence li.no::before { content: "✗"; color: var(--bad); }
+
+.card-actions { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+
+.recommended { font-size: 10px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--good); font-weight: 700; }
+
+/* ── type map ──────────────────────────────────────────────────────────────── */
+
+.map-row {
+  display: flex; align-items: center; gap: 8px;
+  padding: 5px 0; border-bottom: 1px solid var(--line); font-size: 12px;
+}
+.map-row:last-child { border-bottom: 0; }
+.map-row code {
+  font: 11.5px ui-monospace, Menlo, Consolas, monospace;
+  background: var(--surface-2); padding: 1px 5px; border-radius: 4px;
+}
+.map-row .arrow { color: var(--ink-3); }
+.map-row .src { margin-left: auto; font-size: 10px; text-transform: uppercase; color: var(--ink-3); }
+
+/* ── progress tree ─────────────────────────────────────────────────────────── */
+
+.tree { font-size: 12px; }
+.node { display: flex; align-items: center; gap: 6px; padding: 2px 0; }
+.node .label { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.node .detail { color: var(--ink-3); font-size: 11px; }
+.node.depth-1 { padding-left: 14px; }
+.node.depth-2 { padding-left: 28px; color: var(--ink-2); }
+
+.chip {
+  flex: none; font-size: 10px; padding: 1px 6px; border-radius: 999px;
+  background: var(--surface-2); color: var(--ink-3);
+}
+.chip.running { background: var(--surface-2); color: var(--accent); }
+.chip.built { background: var(--surface-2); color: var(--ink-2); }
+.chip.verified { background: var(--good-bg); color: var(--good); }
+.chip.escalated { background: var(--warn-bg); color: var(--warn); }
+.chip.failed { background: var(--bad-bg); color: var(--bad); }
+.chip.skipped { background: var(--surface-2); color: var(--ink-3); }
+
+/* ── verification ──────────────────────────────────────────────────────────── */
+
+.summary, .problems {
+  border-radius: var(--radius); padding: 9px 10px; font-size: 12px; margin-bottom: 10px;
+}
+.summary { background: var(--surface); border: 1px solid var(--line); }
+.problems { background: var(--bad-bg); color: var(--bad); }
+.problems.warn { background: var(--warn-bg); color: var(--warn); }
+.problems ul { margin: 4px 0 0; padding-left: 16px; }
+
+.cov-bad { color: var(--bad); }
+.cov-good { color: var(--good); }
+/* Unverified is neither good nor bad: it is unknown, and reads as a caution. */
+.cov-warn { color: var(--warn); }
+
+.foot {
+  display: flex; gap: 6px; flex-wrap: wrap;
+  padding-top: 12px; border-top: 1px solid var(--line);
+}

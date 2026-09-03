@@ -1,0 +1,135 @@
+/**
+ * What just happened.
+ *
+ * The assignment is explicit that a click doing what its label implied is an
+ * assumption, not an observation: form designers are full of adjacent controls
+ * that look identical and do different things, including some that look like
+ * they save and don't. So every action here is followed by a fresh capture and
+ * a diff, and the diff — not the click — is the evidence.
+ *
+ * The diff is also the sensor behind two things that cannot be done any other
+ * way on an unknown platform:
+ *
+ *   - telling a LIVE control from an INERT one that merely looks live: writing
+ *     into a real editor input ripples through the page, while writing into a
+ *     decoy changes exactly one node and nothing else;
+ *   - reading an app's own report of an outcome out of its live regions,
+ *     whatever words it happens to use.
+ */
+
+import type { Snapshot, SnapshotDiff, SnapshotNode } from './snapshot';
+
+/**
+ * Identity of a control for the purposes of comparing two snapshots.
+ *
+ * The occurrence index is essential rather than decorative. A coded-value
+ * editor renders one identically-named "Code" and "Label" input per row, so
+ * without it a second row is indistinguishable from the first, adding a row
+ * registers as no change at all, and the agent writes both values into row one.
+ * Occurrences are counted in document order, so the row that just appeared is
+ * the highest-numbered one.
+ *
+ * The region is deliberately NOT part of the key. Region ids are assigned per
+ * snapshot, and adding a row can change how the page partitions, which would
+ * renumber every region and make every control look new — with the result that
+ * the agent writes the second value into the first row and leaves the second
+ * one empty.
+ */
+function keyOf(node: SnapshotNode, occurrence: number): string {
+  return `${node.role} ${node.name} #${occurrence}`;
+}
+
+function indexByKey(nodes: SnapshotNode[]): Map<string, SnapshotNode> {
+  const seen = new Map<string, number>();
+  const index = new Map<string, SnapshotNode>();
+  for (const node of nodes) {
+    const base = `${node.role} ${node.name}`;
+    const occurrence = (seen.get(base) ?? 0) + 1;
+    seen.set(base, occurrence);
+    index.set(keyOf(node, occurrence), node);
+  }
+  return index;
+}
+
+function stateString(node: SnapshotNode): string {
+  const s = node.state;
+  return [
+    node.value ?? '',
+    node.options?.join('') ?? '',
+    s.checked ? 'checked' : '',
+    s.expanded ? 'expanded' : '',
+    s.selected ? 'selected' : '',
+    s.disabled ? 'disabled' : '',
+    s.required ? 'required' : '',
+    s.readOnly ? 'readonly' : '',
+  ].join('|');
+}
+
+export function diffSnapshots(before: Snapshot, after: Snapshot): SnapshotDiff {
+  const beforeByKey = indexByKey(before.nodes);
+  const afterByKey = indexByKey(after.nodes);
+
+  const addedNodes: SnapshotNode[] = [];
+  const changed: SnapshotDiff['changed'] = [];
+
+  for (const [key, node] of afterByKey) {
+    const prior = beforeByKey.get(key);
+    if (!prior) {
+      addedNodes.push(node);
+      continue;
+    }
+    const b = stateString(prior);
+    const a = stateString(node);
+    if (b !== a) changed.push({ name: node.name, role: node.role, before: b, after: a });
+  }
+
+  const removedNames: string[] = [];
+  for (const [key, node] of beforeByKey) {
+    if (!afterByKey.has(key)) removedNames.push(node.name || `(unnamed ${node.role})`);
+  }
+
+  const priorLive = new Set(before.liveText);
+  const newLiveText = after.liveText.filter((t) => !priorLive.has(t));
+
+  return {
+    addedNodes,
+    removedNames,
+    changed,
+    newLiveText,
+    screenChanged: before.screenTitle !== after.screenTitle || before.url !== after.url,
+    modalChanged: before.modalOpen !== after.modalOpen,
+    magnitude: addedNodes.length + removedNames.length + changed.length + (newLiveText.length ? 1 : 0),
+  };
+}
+
+/**
+ * Did an action ripple beyond the control it touched?
+ *
+ * This is the discriminator for the inert-preview problem. A live editor input
+ * propagates: a canvas label re-renders, a dirty marker appears, a panel
+ * reshapes, something else in the page moves. A decoy swallows the keystrokes
+ * and the rest of the page never learns about it.
+ *
+ * `touchedName` is excluded from the count so the control's own echo does not
+ * vote for itself.
+ */
+export function rippledBeyond(diff: SnapshotDiff, touchedName: string): boolean {
+  const elsewhere =
+    diff.changed.filter((c) => c.name !== touchedName).length +
+    diff.addedNodes.length +
+    diff.removedNames.length +
+    diff.newLiveText.length;
+  return elsewhere > 0 || diff.screenChanged || diff.modalChanged;
+}
+
+/** A short human-readable account of a diff, for the audit log and the panel. */
+export function describeDiff(diff: SnapshotDiff): string {
+  const parts: string[] = [];
+  if (diff.screenChanged) parts.push('the screen changed');
+  if (diff.modalChanged) parts.push('a dialog opened or closed');
+  if (diff.addedNodes.length) parts.push(`${diff.addedNodes.length} control(s) appeared`);
+  if (diff.removedNames.length) parts.push(`${diff.removedNames.length} control(s) disappeared`);
+  if (diff.changed.length) parts.push(`${diff.changed.length} control(s) changed value or state`);
+  if (diff.newLiveText.length) parts.push(`the app said: "${diff.newLiveText.join('; ')}"`);
+  return parts.length ? parts.join(', ') : 'nothing observable changed';
+}

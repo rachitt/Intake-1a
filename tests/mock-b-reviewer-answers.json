@@ -1,0 +1,7 @@
+{
+  "type:integer": "Number",
+  "type:decimal": "Number (Precise)",
+  "type:date": "Calendar Date",
+  "type:time": "Clock Time",
+  "type:datetime": "Calendar Date + Clock Time"
+}

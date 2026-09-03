@@ -1,0 +1,4 @@
+# One line ending everywhere. Without this the working tree ends up with a mix,
+# which breaks exact-match tooling and makes diffs noisy on a Windows checkout.
+* text=auto eol=lf
+*.png binary

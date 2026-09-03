@@ -1,0 +1,1972 @@
+{
+  "ok": true,
+  "elapsedMs": 127219,
+  "actions": 127,
+  "llmCalls": 73,
+  "counters": {
+    "visitsBuilt": 1,
+    "visitsTotal": 1,
+    "formsBuilt": 7,
+    "formsTotal": 7,
+    "fieldsBuilt": 0,
+    "fieldsTotal": 47,
+    "verified": 0,
+    "escalated": 0,
+    "repaired": 0,
+    "failed": 47,
+    "llmCalls": 73
+  },
+  "typeMap": [
+    {
+      "canonical": "radio",
+      "libraryName": "Radio Buttons",
+      "confidence": 0.98,
+      "source": "probed"
+    },
+    {
+      "canonical": "multi_select",
+      "libraryName": "Check List",
+      "confidence": 0.99,
+      "source": "probed"
+    },
+    {
+      "canonical": "single_select",
+      "libraryName": "Dropdown",
+      "confidence": 0.99,
+      "source": "probed"
+    },
+    {
+      "canonical": "decimal",
+      "libraryName": "Number (Decimal)",
+      "confidence": 0.98,
+      "source": "probed"
+    },
+    {
+      "canonical": "boolean",
+      "libraryName": "← Screening",
+      "confidence": 0.85,
+      "source": "probed"
+    },
+    {
+      "canonical": "checkbox",
+      "libraryName": "← Screening",
+      "confidence": 0.85,
+      "source": "probed"
+    },
+    {
+      "canonical": "integer",
+      "libraryName": "Number (Whole)",
+      "confidence": 0.98,
+      "source": "probed"
+    },
+    {
+      "canonical": "text",
+      "libraryName": "Checkbox",
+      "confidence": 1,
+      "source": "human"
+    },
+    {
+      "canonical": "date",
+      "libraryName": "Checkbox",
+      "confidence": 1,
+      "source": "human"
+    },
+    {
+      "canonical": "calculated",
+      "libraryName": "Checkbox",
+      "confidence": 1,
+      "source": "human"
+    },
+    {
+      "canonical": "time",
+      "libraryName": "Checkbox",
+      "confidence": 1,
+      "source": "human"
+    },
+    {
+      "canonical": "textarea",
+      "libraryName": "Checkbox",
+      "confidence": 1,
+      "source": "human"
+    }
+  ],
+  "libraryEntries": [
+    "Patients",
+    "Calendar",
+    "Study Plan",
+    "Reports",
+    "← Visit Schedule",
+    "+ New Source Document"
+  ],
+  "rejectedCommits": [
+    {
+      "name": "Save",
+      "why": "work did not survive leaving and re-entering the designer (it said: \"Saved.\")"
+    },
+    {
+      "name": "Save",
+      "why": "work did not survive leaving and re-entering the designer (it said: \"Saved.\")"
+    },
+    {
+      "name": "Save",
+      "why": "work did not survive leaving and re-entering the designer (it said: \"Saved.\")"
+    },
+    {
+      "name": "Save",
+      "why": "work did not survive leaving and re-entering the designer (it said: \"Saved.\")"
+    },
+    {
+      "name": "Save",
+      "why": "work did not survive leaving and re-entering the designer (it said: \"Saved.\")"
+    },
+    {
+      "name": "Save",
+      "why": "work did not survive leaving and re-entering the designer (it said: \"Saved.\")"
+    }
+  ],
+  "questions": [
+    {
+      "id": "type:text",
+      "kind": "type_mapping",
+      "question": "Which field type in this platform's palette means \"text\"?",
+      "reason": "Free text, one line. \"Checkbox\" (1.00) and \"Date\" (1.00) behave too much alike to choose between them safely.",
+      "affectedCount": 5,
+      "options": [
+        {
+          "label": "Checkbox",
+          "confidence": 1,
+          "agreements": [
+            "offers no coded-value editor, correct for a type that holds no list",
+            "offers no range inputs, correct for a non-numeric type",
+            "offers no formula input, correct",
+            "is not a two-state control, as expected"
+          ],
+          "conflicts": []
+        },
+        {
+          "label": "Date",
+          "confidence": 1,
+          "agreements": [
+            "offers no coded-value editor, correct for a type that holds no list",
+            "offers no range inputs, correct for a non-numeric type",
+            "offers no formula input, correct",
+            "is not a two-state control, as expected"
+          ],
+          "conflicts": []
+        },
+        {
+          "label": "Multi-line Textbox",
+          "confidence": 1,
+          "agreements": [
+            "offers no coded-value editor, correct for a type that holds no list",
+            "offers no range inputs, correct for a non-numeric type",
+            "offers no formula input, correct",
+            "is not a two-state control, as expected"
+          ],
+          "conflicts": []
+        },
+        {
+          "label": "Single Line Textbox",
+          "confidence": 1,
+          "agreements": [
+            "offers no coded-value editor, correct for a type that holds no list",
+            "offers no range inputs, correct for a non-numeric type",
+            "offers no formula input, correct",
+            "is not a two-state control, as expected"
+          ],
+          "conflicts": []
+        },
+        {
+          "label": "Time",
+          "confidence": 1,
+          "agreements": [
+            "offers no coded-value editor, correct for a type that holds no list",
+            "offers no range inputs, correct for a non-numeric type",
+            "offers no formula input, correct",
+            "is not a two-state control, as expected"
+          ],
+          "conflicts": []
+        },
+        {
+          "label": "Yes/No Toggle",
+          "confidence": 1,
+          "agreements": [
+            "offers no coded-value editor, correct for a type that holds no list",
+            "offers no range inputs, correct for a non-numeric type",
+            "offers no formula input, correct",
+            "is not a two-state control, as expected"
+          ],
+          "conflicts": []
+        }
+      ],
+      "answered": "chose \"Checkbox\""
+    },
+    {
+      "id": "type:date",
+      "kind": "type_mapping",
+      "question": "Which field type in this platform's palette means \"date\"?",
+      "reason": "Calendar date, no time of day. \"Checkbox\" (1.00) and \"Date\" (1.00) behave too much alike to choose between them safely.",
+      "affectedCount": 5,
+      "options": [
+        {
+          "label": "Checkbox",
+          "confidence": 1,
+          "agreements": [
+            "offers no coded-value editor, correct for a type that holds no list",
+            "offers no range inputs, correct for a non-numeric type",
+            "offers no formula input, correct",
+            "is not a two-state control, as expected"
+          ],
+          "conflicts": []
+        },
+        {
+          "label": "Date",
+          "confidence": 1,
+          "agreements": [
+            "offers no coded-value editor, correct for a type that holds no list",
+            "offers no range inputs, correct for a non-numeric type",
+            "offers no formula input, correct",
+            "is not a two-state control, as expected"
+          ],
+          "conflicts": []
+        },
+        {
+          "label": "Multi-line Textbox",
+          "confidence": 1,
+          "agreements": [
+            "offers no coded-value editor, correct for a type that holds no list",
+            "offers no range inputs, correct for a non-numeric type",
+            "offers no formula input, correct",
+            "is not a two-state control, as expected"
+          ],
+          "conflicts": []
+        },
+        {
+          "label": "Single Line Textbox",
+          "confidence": 1,
+          "agreements": [
+            "offers no coded-value editor, correct for a type that holds no list",
+            "offers no range inputs, correct for a non-numeric type",
+            "offers no formula input, correct",
+            "is not a two-state control, as expected"
+          ],
+          "conflicts": []
+        },
+        {
+          "label": "Time",
+          "confidence": 1,
+          "agreements": [
+            "offers no coded-value editor, correct for a type that holds no list",
+            "offers no range inputs, correct for a non-numeric type",
+            "offers no formula input, correct",
+            "is not a two-state control, as expected"
+          ],
+          "conflicts": []
+        },
+        {
+          "label": "Yes/No Toggle",
+          "confidence": 1,
+          "agreements": [
+            "offers no coded-value editor, correct for a type that holds no list",
+            "offers no range inputs, correct for a non-numeric type",
+            "offers no formula input, correct",
+            "is not a two-state control, as expected"
+          ],
+          "conflicts": []
+        }
+      ],
+      "answered": "chose \"Checkbox\""
+    },
+    {
+      "id": "type:calculated",
+      "kind": "type_mapping",
+      "question": "Which field type in this platform's palette means \"calculated\"?",
+      "reason": "Derived from other fields by a formula; never entered by hand. \"Checkbox\" (1.00) and \"Date\" (1.00) behave too much alike to choose between them safely.",
+      "affectedCount": 2,
+      "options": [
+        {
+          "label": "Checkbox",
+          "confidence": 1,
+          "agreements": [
+            "offers no coded-value editor, correct for a type that holds no list",
+            "offers no range inputs, correct for a non-numeric type",
+            "offers no formula input, correct",
+            "is not a two-state control, as expected"
+          ],
+          "conflicts": []
+        },
+        {
+          "label": "Date",
+          "confidence": 1,
+          "agreements": [
+            "offers no coded-value editor, correct for a type that holds no list",
+            "offers no range inputs, correct for a non-numeric type",
+            "offers no formula input, correct",
+            "is not a two-state control, as expected"
+          ],
+          "conflicts": []
+        },
+        {
+          "label": "Multi-line Textbox",
+          "confidence": 1,
+          "agreements": [
+            "offers no coded-value editor, correct for a type that holds no list",
+            "offers no range inputs, correct for a non-numeric type",
+            "offers no formula input, correct",
+            "is not a two-state control, as expected"
+          ],
+          "conflicts": []
+        },
+        {
+          "label": "Single Line Textbox",
+          "confidence": 1,
+          "agreements": [
+            "offers no coded-value editor, correct for a type that holds no list",
+            "offers no range inputs, correct for a non-numeric type",
+            "offers no formula input, correct",
+            "is not a two-state control, as expected"
+          ],
+          "conflicts": []
+        },
+        {
+          "label": "Time",
+          "confidence": 1,
+          "agreements": [
+            "offers no coded-value editor, correct for a type that holds no list",
+            "offers no range inputs, correct for a non-numeric type",
+            "offers no formula input, correct",
+            "is not a two-state control, as expected"
+          ],
+          "conflicts": []
+        },
+        {
+          "label": "Yes/No Toggle",
+          "confidence": 1,
+          "agreements": [
+            "offers no coded-value editor, correct for a type that holds no list",
+            "offers no range inputs, correct for a non-numeric type",
+            "offers no formula input, correct",
+            "is not a two-state control, as expected"
+          ],
+          "conflicts": []
+        }
+      ],
+      "answered": "chose \"Checkbox\""
+    },
+    {
+      "id": "type:time",
+      "kind": "type_mapping",
+      "question": "Which field type in this platform's palette means \"time\"?",
+      "reason": "Time of day, no date. \"Checkbox\" (1.00) and \"Date\" (1.00) behave too much alike to choose between them safely.",
+      "affectedCount": 3,
+      "options": [
+        {
+          "label": "Checkbox",
+          "confidence": 1,
+          "agreements": [
+            "offers no coded-value editor, correct for a type that holds no list",
+            "offers no range inputs, correct for a non-numeric type",
+            "offers no formula input, correct",
+            "is not a two-state control, as expected"
+          ],
+          "conflicts": []
+        },
+        {
+          "label": "Date",
+          "confidence": 1,
+          "agreements": [
+            "offers no coded-value editor, correct for a type that holds no list",
+            "offers no range inputs, correct for a non-numeric type",
+            "offers no formula input, correct",
+            "is not a two-state control, as expected"
+          ],
+          "conflicts": []
+        },
+        {
+          "label": "Multi-line Textbox",
+          "confidence": 1,
+          "agreements": [
+            "offers no coded-value editor, correct for a type that holds no list",
+            "offers no range inputs, correct for a non-numeric type",
+            "offers no formula input, correct",
+            "is not a two-state control, as expected"
+          ],
+          "conflicts": []
+        },
+        {
+          "label": "Single Line Textbox",
+          "confidence": 1,
+          "agreements": [
+            "offers no coded-value editor, correct for a type that holds no list",
+            "offers no range inputs, correct for a non-numeric type",
+            "offers no formula input, correct",
+            "is not a two-state control, as expected"
+          ],
+          "conflicts": []
+        },
+        {
+          "label": "Time",
+          "confidence": 1,
+          "agreements": [
+            "offers no coded-value editor, correct for a type that holds no list",
+            "offers no range inputs, correct for a non-numeric type",
+            "offers no formula input, correct",
+            "is not a two-state control, as expected"
+          ],
+          "conflicts": []
+        },
+        {
+          "label": "Yes/No Toggle",
+          "confidence": 1,
+          "agreements": [
+            "offers no coded-value editor, correct for a type that holds no list",
+            "offers no range inputs, correct for a non-numeric type",
+            "offers no formula input, correct",
+            "is not a two-state control, as expected"
+          ],
+          "conflicts": []
+        }
+      ],
+      "answered": "chose \"Checkbox\""
+    },
+    {
+      "id": "type:textarea",
+      "kind": "type_mapping",
+      "question": "Which field type in this platform's palette means \"textarea\"?",
+      "reason": "Free text, multiple lines. \"Checkbox\" (1.00) and \"Date\" (1.00) behave too much alike to choose between them safely.",
+      "affectedCount": 1,
+      "options": [
+        {
+          "label": "Checkbox",
+          "confidence": 1,
+          "agreements": [
+            "offers no coded-value editor, correct for a type that holds no list",
+            "offers no range inputs, correct for a non-numeric type",
+            "offers no formula input, correct",
+            "is not a two-state control, as expected"
+          ],
+          "conflicts": []
+        },
+        {
+          "label": "Date",
+          "confidence": 1,
+          "agreements": [
+            "offers no coded-value editor, correct for a type that holds no list",
+            "offers no range inputs, correct for a non-numeric type",
+            "offers no formula input, correct",
+            "is not a two-state control, as expected"
+          ],
+          "conflicts": []
+        },
+        {
+          "label": "Multi-line Textbox",
+          "confidence": 1,
+          "agreements": [
+            "offers no coded-value editor, correct for a type that holds no list",
+            "offers no range inputs, correct for a non-numeric type",
+            "offers no formula input, correct",
+            "is not a two-state control, as expected"
+          ],
+          "conflicts": []
+        },
+        {
+          "label": "Single Line Textbox",
+          "confidence": 1,
+          "agreements": [
+            "offers no coded-value editor, correct for a type that holds no list",
+            "offers no range inputs, correct for a non-numeric type",
+            "offers no formula input, correct",
+            "is not a two-state control, as expected"
+          ],
+          "conflicts": []
+        },
+        {
+          "label": "Time",
+          "confidence": 1,
+          "agreements": [
+            "offers no coded-value editor, correct for a type that holds no list",
+            "offers no range inputs, correct for a non-numeric type",
+            "offers no formula input, correct",
+            "is not a two-state control, as expected"
+          ],
+          "conflicts": []
+        },
+        {
+          "label": "Yes/No Toggle",
+          "confidence": 1,
+          "agreements": [
+            "offers no coded-value editor, correct for a type that holds no list",
+            "offers no range inputs, correct for a non-numeric type",
+            "offers no formula input, correct",
+            "is not a two-state control, as expected"
+          ],
+          "conflicts": []
+        }
+      ],
+      "answered": "chose \"Checkbox\""
+    },
+    {
+      "id": "ground:/visits/0/forms/0:save the form",
+      "kind": "grounding_failed",
+      "question": "Which control on this screen is used to save the form?",
+      "reason": "No control clearly satisfies \"Persist the work done in this form designer so it survives leaving the screen.\". The best candidate scored 0.25, too close to the runner-up at 0.25 to choose safely.",
+      "affectedCount": 1,
+      "options": [
+        {
+          "label": "Patients — button",
+          "confidence": 0.25,
+          "agreements": [],
+          "conflicts": []
+        },
+        {
+          "label": "Calendar — button",
+          "confidence": 0.25,
+          "agreements": [],
+          "conflicts": []
+        },
+        {
+          "label": "Study Plan — button",
+          "confidence": 0.25,
+          "agreements": [],
+          "conflicts": []
+        },
+        {
+          "label": "Reports — button",
+          "confidence": 0.25,
+          "agreements": [],
+          "conflicts": []
+        },
+        {
+          "label": "← Visit Schedule — button",
+          "confidence": 0.25,
+          "agreements": [],
+          "conflicts": []
+        }
+      ],
+      "answered": "skip"
+    }
+  ],
+  "coverage": [
+    {
+      "pointer": "/visits/0",
+      "visit": "Screening",
+      "form": "",
+      "present": false,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "the visit could not be found or opened"
+      ]
+    },
+    {
+      "pointer": "/visits/0/forms/0",
+      "visit": "Screening",
+      "form": "Demographics",
+      "present": false,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "the visit could not be opened"
+      ]
+    },
+    {
+      "pointer": "/visits/0/forms/0/fields/0",
+      "visit": "Screening",
+      "form": "Demographics",
+      "present": false,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "the visit could not be opened"
+      ],
+      "field": "Subject Initials"
+    },
+    {
+      "pointer": "/visits/0/forms/0/fields/1",
+      "visit": "Screening",
+      "form": "Demographics",
+      "present": false,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "the visit could not be opened"
+      ],
+      "field": "Date of Birth"
+    },
+    {
+      "pointer": "/visits/0/forms/0/fields/2",
+      "visit": "Screening",
+      "form": "Demographics",
+      "present": false,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "the visit could not be opened"
+      ],
+      "field": "Sex at Birth"
+    },
+    {
+      "pointer": "/visits/0/forms/0/fields/3",
+      "visit": "Screening",
+      "form": "Demographics",
+      "present": false,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "the visit could not be opened"
+      ],
+      "field": "Race"
+    },
+    {
+      "pointer": "/visits/0/forms/0/fields/4",
+      "visit": "Screening",
+      "form": "Demographics",
+      "present": false,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "the visit could not be opened"
+      ],
+      "field": "Ethnicity"
+    },
+    {
+      "pointer": "/visits/0/forms/0/fields/5",
+      "visit": "Screening",
+      "form": "Demographics",
+      "present": false,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "the visit could not be opened"
+      ],
+      "field": "Height"
+    },
+    {
+      "pointer": "/visits/0/forms/0/fields/6",
+      "visit": "Screening",
+      "form": "Demographics",
+      "present": false,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "the visit could not be opened"
+      ],
+      "field": "Weight"
+    },
+    {
+      "pointer": "/visits/0/forms/0/fields/7",
+      "visit": "Screening",
+      "form": "Demographics",
+      "present": false,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "the visit could not be opened"
+      ],
+      "field": "Body Mass Index"
+    },
+    {
+      "pointer": "/visits/0/forms/1",
+      "visit": "Screening",
+      "form": "Informed Consent",
+      "present": false,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "the visit could not be opened"
+      ]
+    },
+    {
+      "pointer": "/visits/0/forms/1/fields/0",
+      "visit": "Screening",
+      "form": "Informed Consent",
+      "present": false,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "the visit could not be opened"
+      ],
+      "field": "Informed Consent Obtained"
+    },
+    {
+      "pointer": "/visits/0/forms/1/fields/1",
+      "visit": "Screening",
+      "form": "Informed Consent",
+      "present": false,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "the visit could not be opened"
+      ],
+      "field": "Date of Consent"
+    },
+    {
+      "pointer": "/visits/0/forms/1/fields/2",
+      "visit": "Screening",
+      "form": "Informed Consent",
+      "present": false,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "the visit could not be opened"
+      ],
+      "field": "Time of Consent"
+    },
+    {
+      "pointer": "/visits/0/forms/1/fields/3",
+      "visit": "Screening",
+      "form": "Informed Consent",
+      "present": false,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "the visit could not be opened"
+      ],
+      "field": "Consent Form Version"
+    },
+    {
+      "pointer": "/visits/0/forms/1/fields/4",
+      "visit": "Screening",
+      "form": "Informed Consent",
+      "present": false,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "the visit could not be opened"
+      ],
+      "field": "Consented By"
+    },
+    {
+      "pointer": "/visits/0/forms/1/fields/5",
+      "visit": "Screening",
+      "form": "Informed Consent",
+      "present": false,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "the visit could not be opened"
+      ],
+      "field": "Copy Provided to Subject"
+    },
+    {
+      "pointer": "/visits/0/forms/2",
+      "visit": "Screening",
+      "form": "Eligibility Criteria",
+      "present": false,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "the visit could not be opened"
+      ]
+    },
+    {
+      "pointer": "/visits/0/forms/2/fields/0",
+      "visit": "Screening",
+      "form": "Eligibility Criteria",
+      "present": false,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "the visit could not be opened"
+      ],
+      "field": "Age 18 Years or Older at Consent"
+    },
+    {
+      "pointer": "/visits/0/forms/2/fields/1",
+      "visit": "Screening",
+      "form": "Eligibility Criteria",
+      "present": false,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "the visit could not be opened"
+      ],
+      "field": "Confirmed Diagnosis of Plaque Psoriasis"
+    },
+    {
+      "pointer": "/visits/0/forms/2/fields/2",
+      "visit": "Screening",
+      "form": "Eligibility Criteria",
+      "present": false,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "the visit could not be opened"
+      ],
+      "field": "Duration of Diagnosis"
+    },
+    {
+      "pointer": "/visits/0/forms/2/fields/3",
+      "visit": "Screening",
+      "form": "Eligibility Criteria",
+      "present": false,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "the visit could not be opened"
+      ],
+      "field": "Written Informed Consent Provided"
+    },
+    {
+      "pointer": "/visits/0/forms/2/fields/4",
+      "visit": "Screening",
+      "form": "Eligibility Criteria",
+      "present": false,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "the visit could not be opened"
+      ],
+      "field": "Any Exclusionary Condition Present"
+    },
+    {
+      "pointer": "/visits/0/forms/2/fields/5",
+      "visit": "Screening",
+      "form": "Eligibility Criteria",
+      "present": false,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "the visit could not be opened"
+      ],
+      "field": "Exclusionary Conditions"
+    },
+    {
+      "pointer": "/visits/0/forms/3",
+      "visit": "Screening",
+      "form": "Medical History",
+      "present": false,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "the visit could not be opened"
+      ]
+    },
+    {
+      "pointer": "/visits/0/forms/3/fields/0",
+      "visit": "Screening",
+      "form": "Medical History",
+      "present": false,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "the visit could not be opened"
+      ],
+      "field": "Condition"
+    },
+    {
+      "pointer": "/visits/0/forms/3/fields/1",
+      "visit": "Screening",
+      "form": "Medical History",
+      "present": false,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "the visit could not be opened"
+      ],
+      "field": "Body System"
+    },
+    {
+      "pointer": "/visits/0/forms/3/fields/2",
+      "visit": "Screening",
+      "form": "Medical History",
+      "present": false,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "the visit could not be opened"
+      ],
+      "field": "Onset Date"
+    },
+    {
+      "pointer": "/visits/0/forms/3/fields/3",
+      "visit": "Screening",
+      "form": "Medical History",
+      "present": false,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "the visit could not be opened"
+      ],
+      "field": "Ongoing"
+    },
+    {
+      "pointer": "/visits/0/forms/3/fields/4",
+      "visit": "Screening",
+      "form": "Medical History",
+      "present": false,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "the visit could not be opened"
+      ],
+      "field": "Notes"
+    },
+    {
+      "pointer": "/visits/0/forms/4",
+      "visit": "Screening",
+      "form": "Prior and Concomitant Medications",
+      "present": false,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "the visit could not be opened"
+      ]
+    },
+    {
+      "pointer": "/visits/0/forms/4/fields/0",
+      "visit": "Screening",
+      "form": "Prior and Concomitant Medications",
+      "present": false,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "the visit could not be opened"
+      ],
+      "field": "Medication Name"
+    },
+    {
+      "pointer": "/visits/0/forms/4/fields/1",
+      "visit": "Screening",
+      "form": "Prior and Concomitant Medications",
+      "present": false,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "the visit could not be opened"
+      ],
+      "field": "Indication"
+    },
+    {
+      "pointer": "/visits/0/forms/4/fields/2",
+      "visit": "Screening",
+      "form": "Prior and Concomitant Medications",
+      "present": false,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "the visit could not be opened"
+      ],
+      "field": "Dose"
+    },
+    {
+      "pointer": "/visits/0/forms/4/fields/3",
+      "visit": "Screening",
+      "form": "Prior and Concomitant Medications",
+      "present": false,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "the visit could not be opened"
+      ],
+      "field": "Route"
+    },
+    {
+      "pointer": "/visits/0/forms/4/fields/4",
+      "visit": "Screening",
+      "form": "Prior and Concomitant Medications",
+      "present": false,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "the visit could not be opened"
+      ],
+      "field": "Frequency"
+    },
+    {
+      "pointer": "/visits/0/forms/4/fields/5",
+      "visit": "Screening",
+      "form": "Prior and Concomitant Medications",
+      "present": false,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "the visit could not be opened"
+      ],
+      "field": "Start Date"
+    },
+    {
+      "pointer": "/visits/0/forms/4/fields/6",
+      "visit": "Screening",
+      "form": "Prior and Concomitant Medications",
+      "present": false,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "the visit could not be opened"
+      ],
+      "field": "Ongoing"
+    },
+    {
+      "pointer": "/visits/0/forms/5",
+      "visit": "Screening",
+      "form": "Vital Signs",
+      "present": false,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "the visit could not be opened"
+      ]
+    },
+    {
+      "pointer": "/visits/0/forms/5/fields/0",
+      "visit": "Screening",
+      "form": "Vital Signs",
+      "present": false,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "the visit could not be opened"
+      ],
+      "field": "Systolic Blood Pressure"
+    },
+    {
+      "pointer": "/visits/0/forms/5/fields/1",
+      "visit": "Screening",
+      "form": "Vital Signs",
+      "present": false,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "the visit could not be opened"
+      ],
+      "field": "Diastolic Blood Pressure"
+    },
+    {
+      "pointer": "/visits/0/forms/5/fields/2",
+      "visit": "Screening",
+      "form": "Vital Signs",
+      "present": false,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "the visit could not be opened"
+      ],
+      "field": "Pulse Pressure"
+    },
+    {
+      "pointer": "/visits/0/forms/5/fields/3",
+      "visit": "Screening",
+      "form": "Vital Signs",
+      "present": false,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "the visit could not be opened"
+      ],
+      "field": "Heart Rate"
+    },
+    {
+      "pointer": "/visits/0/forms/5/fields/4",
+      "visit": "Screening",
+      "form": "Vital Signs",
+      "present": false,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "the visit could not be opened"
+      ],
+      "field": "Respiratory Rate"
+    },
+    {
+      "pointer": "/visits/0/forms/5/fields/5",
+      "visit": "Screening",
+      "form": "Vital Signs",
+      "present": false,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "the visit could not be opened"
+      ],
+      "field": "Body Temperature"
+    },
+    {
+      "pointer": "/visits/0/forms/5/fields/6",
+      "visit": "Screening",
+      "form": "Vital Signs",
+      "present": false,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "the visit could not be opened"
+      ],
+      "field": "Position"
+    },
+    {
+      "pointer": "/visits/0/forms/5/fields/7",
+      "visit": "Screening",
+      "form": "Vital Signs",
+      "present": false,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "the visit could not be opened"
+      ],
+      "field": "Time of Measurement"
+    },
+    {
+      "pointer": "/visits/0/forms/6",
+      "visit": "Screening",
+      "form": "Local Laboratory - Hematology",
+      "present": false,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "the visit could not be opened"
+      ]
+    },
+    {
+      "pointer": "/visits/0/forms/6/fields/0",
+      "visit": "Screening",
+      "form": "Local Laboratory - Hematology",
+      "present": false,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "the visit could not be opened"
+      ],
+      "field": "Collection Date"
+    },
+    {
+      "pointer": "/visits/0/forms/6/fields/1",
+      "visit": "Screening",
+      "form": "Local Laboratory - Hematology",
+      "present": false,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "the visit could not be opened"
+      ],
+      "field": "Collection Time"
+    },
+    {
+      "pointer": "/visits/0/forms/6/fields/2",
+      "visit": "Screening",
+      "form": "Local Laboratory - Hematology",
+      "present": false,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "the visit could not be opened"
+      ],
+      "field": "Hemoglobin"
+    },
+    {
+      "pointer": "/visits/0/forms/6/fields/3",
+      "visit": "Screening",
+      "form": "Local Laboratory - Hematology",
+      "present": false,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "the visit could not be opened"
+      ],
+      "field": "Hematocrit"
+    },
+    {
+      "pointer": "/visits/0/forms/6/fields/4",
+      "visit": "Screening",
+      "form": "Local Laboratory - Hematology",
+      "present": false,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "the visit could not be opened"
+      ],
+      "field": "White Blood Cell Count"
+    },
+    {
+      "pointer": "/visits/0/forms/6/fields/5",
+      "visit": "Screening",
+      "form": "Local Laboratory - Hematology",
+      "present": false,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "the visit could not be opened"
+      ],
+      "field": "Platelet Count"
+    },
+    {
+      "pointer": "/visits/0/forms/6/fields/6",
+      "visit": "Screening",
+      "form": "Local Laboratory - Hematology",
+      "present": false,
+      "typeOk": null,
+      "labelOk": null,
+      "requiredOk": null,
+      "optionsOk": null,
+      "rangeOk": null,
+      "formulaOk": null,
+      "skipOk": null,
+      "repeatingOk": null,
+      "notes": [
+        "the visit could not be opened"
+      ],
+      "field": "Sample Condition"
+    }
+  ],
+  "log": [
+    {
+      "level": "info",
+      "message": "Element library discovered with 20 entries: ← Screening, Preview Form, Save As Template, Save, Activate, Calculated Field, Check List, Checkbox, Date, Date/Time, Dropdown, Multi-line Textbox, Number (Decimal), Number (Whole), Radio Buttons, Single Line Textbox, Time, Yes/No Toggle, Import From Library…, + Page"
+    },
+    {
+      "level": "info",
+      "message": "Probing element library entry \"Calculated Field\" to find out what it actually is…"
+    },
+    {
+      "level": "info",
+      "message": "  Calculated Field: The label input accepted text without anything else on the page reacting — it may be inert."
+    },
+    {
+      "level": "info",
+      "message": "  \"Calculated Field\" behaves like text (0.70, coverage 0.77) — offers no coded-value editor, correct for a type that holds no list; offers no range inputs, correct for a non-numeric type"
+    },
+    {
+      "level": "info",
+      "message": "Probing element library entry \"Check List\" to find out what it actually is…"
+    },
+    {
+      "level": "info",
+      "message": "  Check List: The label input accepted text without anything else on the page reacting — it may be inert."
+    },
+    {
+      "level": "info",
+      "message": "  \"Check List\" behaves like multi_select (1.00, coverage 1.00) — offers a coded-value editor, as this type requires; offers no range inputs, correct for a non-numeric type"
+    },
+    {
+      "level": "info",
+      "message": "Probing element library entry \"Checkbox\" to find out what it actually is…"
+    },
+    {
+      "level": "info",
+      "message": "  Checkbox: The label input accepted text without anything else on the page reacting — it may be inert."
+    },
+    {
+      "level": "info",
+      "message": "  \"Checkbox\" behaves like text (1.00, coverage 0.77) — offers no coded-value editor, correct for a type that holds no list; offers no range inputs, correct for a non-numeric type"
+    },
+    {
+      "level": "info",
+      "message": "Probing element library entry \"Date\" to find out what it actually is…"
+    },
+    {
+      "level": "info",
+      "message": "  Date: The label input accepted text without anything else on the page reacting — it may be inert."
+    },
+    {
+      "level": "info",
+      "message": "  \"Date\" behaves like text (1.00, coverage 0.77) — offers no coded-value editor, correct for a type that holds no list; offers no range inputs, correct for a non-numeric type"
+    },
+    {
+      "level": "info",
+      "message": "Probing element library entry \"Dropdown\" to find out what it actually is…"
+    },
+    {
+      "level": "info",
+      "message": "  Dropdown: The label input accepted text without anything else on the page reacting — it may be inert."
+    },
+    {
+      "level": "info",
+      "message": "  \"Dropdown\" behaves like single_select (1.00, coverage 1.00) — offers a coded-value editor, as this type requires; offers no range inputs, correct for a non-numeric type"
+    },
+    {
+      "level": "info",
+      "message": "Probing element library entry \"Multi-line Textbox\" to find out what it actually is…"
+    },
+    {
+      "level": "info",
+      "message": "  Multi-line Textbox: The label input accepted text without anything else on the page reacting — it may be inert."
+    },
+    {
+      "level": "info",
+      "message": "  \"Multi-line Textbox\" behaves like text (1.00, coverage 0.77) — offers no coded-value editor, correct for a type that holds no list; offers no range inputs, correct for a non-numeric type"
+    },
+    {
+      "level": "info",
+      "message": "Probing element library entry \"Number (Decimal)\" to find out what it actually is…"
+    },
+    {
+      "level": "info",
+      "message": "  Number (Decimal): The label input accepted text without anything else on the page reacting — it may be inert."
+    },
+    {
+      "level": "info",
+      "message": "  \"Number (Decimal)\" behaves like decimal (1.00, coverage 0.81) — offers no coded-value editor, correct for a type that holds no list; offers a min/max range, as numeric types do"
+    },
+    {
+      "level": "info",
+      "message": "Probing element library entry \"Number (Whole)\" to find out what it actually is…"
+    },
+    {
+      "level": "info",
+      "message": "  Number (Whole): The label input accepted text without anything else on the page reacting — it may be inert."
+    },
+    {
+      "level": "info",
+      "message": "  \"Number (Whole)\" behaves like integer (1.00, coverage 0.81) — offers no coded-value editor, correct for a type that holds no list; offers a min/max range, as numeric types do"
+    },
+    {
+      "level": "info",
+      "message": "Probing element library entry \"Radio Buttons\" to find out what it actually is…"
+    },
+    {
+      "level": "info",
+      "message": "  Radio Buttons: The label input accepted text without anything else on the page reacting — it may be inert."
+    },
+    {
+      "level": "info",
+      "message": "  \"Radio Buttons\" behaves like radio (1.00, coverage 1.00) — offers a coded-value editor, as this type requires; offers no range inputs, correct for a non-numeric type"
+    },
+    {
+      "level": "info",
+      "message": "Probing element library entry \"Single Line Textbox\" to find out what it actually is…"
+    },
+    {
+      "level": "info",
+      "message": "  Single Line Textbox: The label input accepted text without anything else on the page reacting — it may be inert."
+    },
+    {
+      "level": "info",
+      "message": "  \"Single Line Textbox\" behaves like text (1.00, coverage 0.77) — offers no coded-value editor, correct for a type that holds no list; offers no range inputs, correct for a non-numeric type"
+    },
+    {
+      "level": "info",
+      "message": "Probing element library entry \"Time\" to find out what it actually is…"
+    },
+    {
+      "level": "info",
+      "message": "  Time: The label input accepted text without anything else on the page reacting — it may be inert."
+    },
+    {
+      "level": "info",
+      "message": "  \"Time\" behaves like text (1.00, coverage 0.77) — offers no coded-value editor, correct for a type that holds no list; offers no range inputs, correct for a non-numeric type"
+    },
+    {
+      "level": "info",
+      "message": "Probing element library entry \"Yes/No Toggle\" to find out what it actually is…"
+    },
+    {
+      "level": "info",
+      "message": "  Yes/No Toggle: The label input accepted text without anything else on the page reacting — it may be inert."
+    },
+    {
+      "level": "info",
+      "message": "  \"Yes/No Toggle\" behaves like text (1.00, coverage 0.77) — offers no coded-value editor, correct for a type that holds no list; offers no range inputs, correct for a non-numeric type"
+    },
+    {
+      "level": "info",
+      "message": "Probing element library entry \"Date/Time\" to find out what it actually is…"
+    },
+    {
+      "level": "info",
+      "message": "  Date/Time: The label input accepted text without anything else on the page reacting — it may be inert."
+    },
+    {
+      "level": "info",
+      "message": "  \"Date/Time\" behaves like text (1.00, coverage 0.77) — offers no coded-value editor, correct for a type that holds no list; offers no range inputs, correct for a non-numeric type"
+    },
+    {
+      "level": "info",
+      "message": "Probing element library entry \"← Screening\" to find out what it actually is…"
+    },
+    {
+      "level": "info",
+      "message": "  ← Screening: Could not set a probe label: Nothing on this screen looks like it could satisfy \"Set the field's label — the question text a coordinator will read.\"."
+    },
+    {
+      "level": "info",
+      "message": "  ← Screening: Could not find the field on the canvas, so how it renders is unknown."
+    },
+    {
+      "level": "info",
+      "message": "  \"← Screening\" behaves like text (1.00, coverage 0.62) — offers no coded-value editor, correct for a type that holds no list; offers no range inputs, correct for a non-numeric type"
+    },
+    {
+      "level": "info",
+      "message": "Probing element library entry \"Preview Form\" to find out what it actually is…"
+    },
+    {
+      "level": "warn",
+      "message": "The remembered element library no longer matches this screen; rediscovering it."
+    },
+    {
+      "level": "info",
+      "message": "Element library discovered with 6 entries: Patients, Calendar, Study Plan, Reports, ← Visit Schedule, + New Source Document"
+    },
+    {
+      "level": "info",
+      "message": "  Preview Form: The element library has no entry named \"Preview Form\" on this screen."
+    },
+    {
+      "level": "info",
+      "message": "  \"Preview Form\" behaves like text (0.00, coverage 0.00)"
+    },
+    {
+      "level": "info",
+      "message": "Probing element library entry \"Save As Template\" to find out what it actually is…"
+    },
+    {
+      "level": "info",
+      "message": "  Save As Template: The element library has no entry named \"Save As Template\" on this screen."
+    },
+    {
+      "level": "info",
+      "message": "  \"Save As Template\" behaves like text (0.00, coverage 0.00)"
+    },
+    {
+      "level": "info",
+      "message": "Probing element library entry \"Save\" to find out what it actually is…"
+    },
+    {
+      "level": "info",
+      "message": "  Save: The element library has no entry named \"Save\" on this screen."
+    },
+    {
+      "level": "info",
+      "message": "  \"Save\" behaves like text (0.00, coverage 0.00)"
+    },
+    {
+      "level": "info",
+      "message": "Probing element library entry \"Activate\" to find out what it actually is…"
+    },
+    {
+      "level": "info",
+      "message": "  Activate: The element library has no entry named \"Activate\" on this screen."
+    },
+    {
+      "level": "info",
+      "message": "  \"Activate\" behaves like text (0.00, coverage 0.00)"
+    },
+    {
+      "level": "info",
+      "message": "Probing element library entry \"Import From Library…\" to find out what it actually is…"
+    },
+    {
+      "level": "info",
+      "message": "  Import From Library…: The element library has no entry named \"Import From Library…\" on this screen."
+    },
+    {
+      "level": "info",
+      "message": "  \"Import From Library…\" behaves like text (0.00, coverage 0.00)"
+    },
+    {
+      "level": "info",
+      "message": "Probing element library entry \"+ Page\" to find out what it actually is…"
+    },
+    {
+      "level": "info",
+      "message": "  + Page: The element library has no entry named \"+ Page\" on this screen."
+    },
+    {
+      "level": "info",
+      "message": "  \"+ Page\" behaves like text (0.00, coverage 0.00)"
+    },
+    {
+      "level": "warn",
+      "message": "text could not be mapped safely: \"Checkbox\" (1.00) and \"Date\" (1.00) behave too much alike to choose between them safely."
+    },
+    {
+      "level": "warn",
+      "message": "date could not be mapped safely: \"Checkbox\" (1.00) and \"Date\" (1.00) behave too much alike to choose between them safely."
+    },
+    {
+      "level": "info",
+      "message": "radio → \"Radio Buttons\" (0.98) — offers a coded-value editor, as this type requires; offers no range inputs, correct for a non-numeric type; offers no formula input, correct"
+    },
+    {
+      "level": "info",
+      "message": "multi_select → \"Check List\" (0.99) — offers a coded-value editor, as this type requires; offers no range inputs, correct for a non-numeric type; offers no formula input, correct"
+    },
+    {
+      "level": "info",
+      "message": "single_select → \"Dropdown\" (0.99) — offers a coded-value editor, as this type requires; offers no range inputs, correct for a non-numeric type; offers no formula input, correct"
+    },
+    {
+      "level": "info",
+      "message": "decimal → \"Number (Decimal)\" (0.98) — offers no coded-value editor, correct for a type that holds no list; offers a min/max range, as numeric types do; offers no formula input, correct"
+    },
+    {
+      "level": "warn",
+      "message": "calculated could not be mapped safely: \"Checkbox\" (1.00) and \"Date\" (1.00) behave too much alike to choose between them safely."
+    },
+    {
+      "level": "info",
+      "message": "boolean → \"← Screening\" (0.85) — offers no coded-value editor, correct for a type that holds no list; offers no range inputs, correct for a non-numeric type; offers no formula input, correct"
+    },
+    {
+      "level": "warn",
+      "message": "time could not be mapped safely: \"Checkbox\" (1.00) and \"Date\" (1.00) behave too much alike to choose between them safely."
+    },
+    {
+      "level": "info",
+      "message": "checkbox → \"← Screening\" (0.85) — offers no coded-value editor, correct for a type that holds no list; offers no range inputs, correct for a non-numeric type; offers no formula input, correct"
+    },
+    {
+      "level": "info",
+      "message": "integer → \"Number (Whole)\" (0.98) — offers no coded-value editor, correct for a type that holds no list; offers a min/max range, as numeric types do; offers no formula input, correct"
+    },
+    {
+      "level": "warn",
+      "message": "textarea could not be mapped safely: \"Checkbox\" (1.00) and \"Date\" (1.00) behave too much alike to choose between them safely."
+    },
+    {
+      "level": "info",
+      "message": "A reviewer mapped text to \"Checkbox\"."
+    },
+    {
+      "level": "info",
+      "message": "A reviewer mapped date to \"Checkbox\"."
+    },
+    {
+      "level": "info",
+      "message": "A reviewer mapped calculated to \"Checkbox\"."
+    },
+    {
+      "level": "info",
+      "message": "A reviewer mapped time to \"Checkbox\"."
+    },
+    {
+      "level": "info",
+      "message": "A reviewer mapped textarea to \"Checkbox\"."
+    },
+    {
+      "level": "info",
+      "message": "\"Demographics\" appeared to be locked; created a new version to make it editable."
+    },
+    {
+      "level": "info",
+      "message": "\"Demographics\" appeared to be locked; created a new version to make it editable."
+    },
+    {
+      "level": "warn",
+      "message": "\"Save\" looks like a save but did not persist anything — treating it as a look-alike and trying the next candidate."
+    },
+    {
+      "level": "warn",
+      "message": "The model could not be consulted (HTTP 429: {\n  \"error\": {\n    \"code\": 429,\n    \"message\": \"You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \\n* Quota ex); falling back to the human gate."
+    },
+    {
+      "level": "warn",
+      "message": "The model could not be consulted (HTTP 429: {\n  \"error\": {\n    \"code\": 429,\n    \"message\": \"You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \\n* Quota ex); falling back to the human gate."
+    },
+    {
+      "level": "warn",
+      "message": "Cannot apply a display rule to \"Exclusionary Conditions\" — it is not on the canvas."
+    },
+    {
+      "level": "warn",
+      "message": "\"Save\" looks like a save but did not persist anything — treating it as a look-alike and trying the next candidate."
+    },
+    {
+      "level": "warn",
+      "message": "\"Save\" looks like a save but did not persist anything — treating it as a look-alike and trying the next candidate."
+    },
+    {
+      "level": "warn",
+      "message": "The model could not be consulted (HTTP 429: {\n  \"error\": {\n    \"code\": 429,\n    \"message\": \"You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \\n* Quota ex); falling back to the human gate."
+    },
+    {
+      "level": "warn",
+      "message": "The model could not be consulted (HTTP 429: {\n  \"error\": {\n    \"code\": 429,\n    \"message\": \"You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \\n* Quota ex); falling back to the human gate."
+    },
+    {
+      "level": "warn",
+      "message": "The model could not be consulted (HTTP 429: {\n  \"error\": {\n    \"code\": 429,\n    \"message\": \"You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \\n* Quota ex); falling back to the human gate."
+    },
+    {
+      "level": "warn",
+      "message": "\"Save\" looks like a save but did not persist anything — treating it as a look-alike and trying the next candidate."
+    },
+    {
+      "level": "warn",
+      "message": "The model could not be consulted (HTTP 429: {\n  \"error\": {\n    \"code\": 429,\n    \"message\": \"You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \\n* Quota ex); falling back to the human gate."
+    },
+    {
+      "level": "warn",
+      "message": "The model could not be consulted (HTTP 429: {\n  \"error\": {\n    \"code\": 429,\n    \"message\": \"You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \\n* Quota ex); falling back to the human gate."
+    },
+    {
+      "level": "warn",
+      "message": "The model could not be consulted (HTTP 429: {\n  \"error\": {\n    \"code\": 429,\n    \"message\": \"You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \\n* Quota ex); falling back to the human gate."
+    },
+    {
+      "level": "warn",
+      "message": "\"Save\" looks like a save but did not persist anything — treating it as a look-alike and trying the next candidate."
+    },
+    {
+      "level": "warn",
+      "message": "\"Save\" looks like a save but did not persist anything — treating it as a look-alike and trying the next candidate."
+    },
+    {
+      "level": "warn",
+      "message": "The model could not be consulted (HTTP 429: {\n  \"error\": {\n    \"code\": 429,\n    \"message\": \"You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \\n* Quota ex); falling back to the human gate."
+    },
+    {
+      "level": "warn",
+      "message": "The model could not be consulted (HTTP 429: {\n  \"error\": {\n    \"code\": 429,\n    \"message\": \"You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \\n* Quota ex); falling back to the human gate."
+    },
+    {
+      "level": "warn",
+      "message": "The model could not be consulted (HTTP 429: {\n  \"error\": {\n    \"code\": 429,\n    \"message\": \"You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \\n* Quota ex); falling back to the human gate."
+    },
+    {
+      "level": "warn",
+      "message": "The model could not be consulted (HTTP 429: {\n  \"error\": {\n    \"code\": 429,\n    \"message\": \"You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \\n* Quota ex); falling back to the human gate."
+    },
+    {
+      "level": "warn",
+      "message": "Reconciliation: 0/47 fields present; missing: Demographics/Subject Initials, Demographics/Date of Birth, Demographics/Sex at Birth, Demographics/Race, Demographics/Ethnicity, Demographics/Height, Demographics/Weight, Demographics/Body Mass Index…"
+    }
+  ],
+  "irStats": {
+    "visits": 1,
+    "formInstances": 7,
+    "distinctForms": 7,
+    "fields": 47,
+    "withOptions": 10,
+    "withRange": 13,
+    "withFormula": 2,
+    "skipRules": 1,
+    "repeatingForms": 2,
+    "typeHistogram": {
+      "text": 5,
+      "date": 5,
+      "radio": 2,
+      "multi_select": 2,
+      "single_select": 6,
+      "decimal": 7,
+      "calculated": 2,
+      "boolean": 7,
+      "time": 3,
+      "checkbox": 1,
+      "integer": 6,
+      "textarea": 1
+    }
+  }
+}

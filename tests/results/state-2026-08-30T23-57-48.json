@@ -1,0 +1,671 @@
+{
+  "platform": "esource-mock-a",
+  "specVersion": "esource-mock-a/1.0.0",
+  "study": {
+    "name": "ABC-101",
+    "visits": [
+      {
+        "name": "Screening",
+        "windowStart": "-28",
+        "windowEnd": "-1",
+        "forms": [
+          {
+            "name": "Demographics",
+            "repeating": false,
+            "status": "draft",
+            "fields": [
+              {
+                "label": "Subject Initials",
+                "type": "date",
+                "required": true,
+                "options": [],
+                "min": "",
+                "max": "",
+                "units": "",
+                "formula": "",
+                "skipLogic": null
+              },
+              {
+                "label": "Date of Birth",
+                "type": "date",
+                "required": true,
+                "options": [],
+                "min": "",
+                "max": "",
+                "units": "",
+                "formula": "",
+                "skipLogic": null
+              },
+              {
+                "label": "Sex at Birth",
+                "type": "date",
+                "required": true,
+                "options": [],
+                "min": "",
+                "max": "",
+                "units": "",
+                "formula": "",
+                "skipLogic": null
+              },
+              {
+                "label": "Race",
+                "type": "date",
+                "required": false,
+                "options": [],
+                "min": "",
+                "max": "",
+                "units": "",
+                "formula": "",
+                "skipLogic": null
+              },
+              {
+                "label": "Not Reported",
+                "type": "single_select",
+                "required": false,
+                "options": [
+                  {
+                    "code": "",
+                    "label": "Hispanic or Latino"
+                  },
+                  {
+                    "code": "",
+                    "label": ""
+                  },
+                  {
+                    "code": "",
+                    "label": ""
+                  }
+                ],
+                "min": "",
+                "max": "",
+                "units": "",
+                "formula": "",
+                "skipLogic": null
+              },
+              {
+                "label": "Height",
+                "type": "decimal",
+                "required": true,
+                "options": [],
+                "min": "100",
+                "max": "250",
+                "units": "cm",
+                "formula": "",
+                "skipLogic": null
+              },
+              {
+                "label": "Weight",
+                "type": "decimal",
+                "required": true,
+                "options": [],
+                "min": "30",
+                "max": "300",
+                "units": "kg",
+                "formula": "",
+                "skipLogic": null
+              },
+              {
+                "label": "Body Mass Index",
+                "type": "date",
+                "required": false,
+                "options": [],
+                "min": "",
+                "max": "",
+                "units": "",
+                "formula": "",
+                "skipLogic": null
+              },
+              {
+                "label": "Informed Consent Obtained",
+                "type": "checkbox",
+                "required": true,
+                "options": [],
+                "min": "",
+                "max": "",
+                "units": "",
+                "formula": "",
+                "skipLogic": null
+              },
+              {
+                "label": "Date of Consent",
+                "type": "date",
+                "required": true,
+                "options": [],
+                "min": "",
+                "max": "",
+                "units": "",
+                "formula": "",
+                "skipLogic": null
+              },
+              {
+                "label": "Time of Consent",
+                "type": "date",
+                "required": false,
+                "options": [],
+                "min": "",
+                "max": "",
+                "units": "",
+                "formula": "",
+                "skipLogic": null
+              },
+              {
+                "label": "Consent Form Version",
+                "type": "date",
+                "required": true,
+                "options": [],
+                "min": "",
+                "max": "",
+                "units": "",
+                "formula": "",
+                "skipLogic": null
+              },
+              {
+                "label": "Consented By",
+                "type": "single_select",
+                "required": true,
+                "options": [
+                  {
+                    "code": "",
+                    "label": ""
+                  },
+                  {
+                    "code": "",
+                    "label": ""
+                  },
+                  {
+                    "code": "",
+                    "label": ""
+                  }
+                ],
+                "min": "",
+                "max": "",
+                "units": "",
+                "formula": "",
+                "skipLogic": null
+              },
+              {
+                "label": "Copy Provided to Subject",
+                "type": "checkbox",
+                "required": false,
+                "options": [],
+                "min": "",
+                "max": "",
+                "units": "",
+                "formula": "",
+                "skipLogic": null
+              },
+              {
+                "label": "Age 18 Years or Older at Consent",
+                "type": "checkbox",
+                "required": true,
+                "options": [],
+                "min": "",
+                "max": "",
+                "units": "",
+                "formula": "",
+                "skipLogic": null
+              },
+              {
+                "label": "Confirmed Diagnosis of Plaque Psoriasis",
+                "type": "checkbox",
+                "required": true,
+                "options": [],
+                "min": "",
+                "max": "",
+                "units": "",
+                "formula": "",
+                "skipLogic": null
+              },
+              {
+                "label": "Duration of Diagnosis",
+                "type": "integer",
+                "required": false,
+                "options": [],
+                "min": "0",
+                "max": "600",
+                "units": "months",
+                "formula": "",
+                "skipLogic": null
+              },
+              {
+                "label": "Written Informed Consent Provided",
+                "type": "checkbox",
+                "required": true,
+                "options": [],
+                "min": "",
+                "max": "",
+                "units": "",
+                "formula": "",
+                "skipLogic": null
+              },
+              {
+                "label": "Any Exclusionary Condition Present",
+                "type": "checkbox",
+                "required": true,
+                "options": [],
+                "min": "",
+                "max": "",
+                "units": "",
+                "formula": "",
+                "skipLogic": null
+              },
+              {
+                "label": "Exclusionary Conditions",
+                "type": "date",
+                "required": false,
+                "options": [],
+                "min": "",
+                "max": "",
+                "units": "",
+                "formula": "",
+                "skipLogic": null
+              },
+              {
+                "label": "Condition",
+                "type": "date",
+                "required": true,
+                "options": [],
+                "min": "",
+                "max": "",
+                "units": "",
+                "formula": "",
+                "skipLogic": null
+              },
+              {
+                "label": "Other",
+                "type": "single_select",
+                "required": false,
+                "options": [
+                  {
+                    "code": "",
+                    "label": "Cardiovascular"
+                  },
+                  {
+                    "code": "",
+                    "label": ""
+                  },
+                  {
+                    "code": "",
+                    "label": ""
+                  },
+                  {
+                    "code": "",
+                    "label": ""
+                  },
+                  {
+                    "code": "",
+                    "label": ""
+                  },
+                  {
+                    "code": "",
+                    "label": ""
+                  }
+                ],
+                "min": "",
+                "max": "",
+                "units": "",
+                "formula": "",
+                "skipLogic": null
+              },
+              {
+                "label": "Onset Date",
+                "type": "date",
+                "required": false,
+                "options": [],
+                "min": "",
+                "max": "",
+                "units": "",
+                "formula": "",
+                "skipLogic": null
+              },
+              {
+                "label": "Ongoing",
+                "type": "checkbox",
+                "required": true,
+                "options": [],
+                "min": "",
+                "max": "",
+                "units": "",
+                "formula": "",
+                "skipLogic": null
+              },
+              {
+                "label": "Notes",
+                "type": "date",
+                "required": false,
+                "options": [],
+                "min": "",
+                "max": "",
+                "units": "",
+                "formula": "",
+                "skipLogic": null
+              },
+              {
+                "label": "Medication Name",
+                "type": "date",
+                "required": true,
+                "options": [],
+                "min": "",
+                "max": "",
+                "units": "",
+                "formula": "",
+                "skipLogic": null
+              },
+              {
+                "label": "Indication",
+                "type": "date",
+                "required": false,
+                "options": [],
+                "min": "",
+                "max": "",
+                "units": "",
+                "formula": "",
+                "skipLogic": null
+              },
+              {
+                "label": "Dose",
+                "type": "decimal",
+                "required": false,
+                "options": [],
+                "min": "0",
+                "max": "10000",
+                "units": "mg",
+                "formula": "",
+                "skipLogic": null
+              },
+              {
+                "label": "Route",
+                "type": "single_select",
+                "required": false,
+                "options": [
+                  {
+                    "code": "",
+                    "label": ""
+                  },
+                  {
+                    "code": "",
+                    "label": ""
+                  },
+                  {
+                    "code": "",
+                    "label": ""
+                  },
+                  {
+                    "code": "",
+                    "label": ""
+                  },
+                  {
+                    "code": "",
+                    "label": ""
+                  }
+                ],
+                "min": "",
+                "max": "",
+                "units": "",
+                "formula": "",
+                "skipLogic": null
+              },
+              {
+                "label": "Frequency",
+                "type": "single_select",
+                "required": false,
+                "options": [
+                  {
+                    "code": "",
+                    "label": ""
+                  },
+                  {
+                    "code": "",
+                    "label": ""
+                  },
+                  {
+                    "code": "",
+                    "label": ""
+                  },
+                  {
+                    "code": "",
+                    "label": ""
+                  }
+                ],
+                "min": "",
+                "max": "",
+                "units": "",
+                "formula": "",
+                "skipLogic": null
+              },
+              {
+                "label": "Start Date",
+                "type": "date",
+                "required": true,
+                "options": [],
+                "min": "",
+                "max": "",
+                "units": "",
+                "formula": "",
+                "skipLogic": null
+              },
+              {
+                "label": "Systolic Blood Pressure",
+                "type": "integer",
+                "required": true,
+                "options": [],
+                "min": "60",
+                "max": "250",
+                "units": "mmHg",
+                "formula": "",
+                "skipLogic": null
+              },
+              {
+                "label": "Diastolic Blood Pressure",
+                "type": "integer",
+                "required": true,
+                "options": [],
+                "min": "30",
+                "max": "150",
+                "units": "mmHg",
+                "formula": "",
+                "skipLogic": null
+              },
+              {
+                "label": "Pulse Pressure",
+                "type": "date",
+                "required": false,
+                "options": [],
+                "min": "",
+                "max": "",
+                "units": "",
+                "formula": "",
+                "skipLogic": null
+              },
+              {
+                "label": "Heart Rate",
+                "type": "integer",
+                "required": true,
+                "options": [],
+                "min": "30",
+                "max": "220",
+                "units": "bpm",
+                "formula": "",
+                "skipLogic": null
+              },
+              {
+                "label": "Respiratory Rate",
+                "type": "integer",
+                "required": false,
+                "options": [],
+                "min": "6",
+                "max": "60",
+                "units": "breaths/min",
+                "formula": "",
+                "skipLogic": null
+              },
+              {
+                "label": "Body Temperature",
+                "type": "decimal",
+                "required": false,
+                "options": [],
+                "min": "34",
+                "max": "42",
+                "units": "C",
+                "formula": "",
+                "skipLogic": null
+              },
+              {
+                "label": "Position",
+                "type": "date",
+                "required": false,
+                "options": [],
+                "min": "",
+                "max": "",
+                "units": "",
+                "formula": "",
+                "skipLogic": null
+              },
+              {
+                "label": "Time of Measurement",
+                "type": "date",
+                "required": true,
+                "options": [],
+                "min": "",
+                "max": "",
+                "units": "",
+                "formula": "",
+                "skipLogic": null
+              },
+              {
+                "label": "Collection Date",
+                "type": "date",
+                "required": true,
+                "options": [],
+                "min": "",
+                "max": "",
+                "units": "",
+                "formula": "",
+                "skipLogic": null
+              },
+              {
+                "label": "Collection Time",
+                "type": "date",
+                "required": false,
+                "options": [],
+                "min": "",
+                "max": "",
+                "units": "",
+                "formula": "",
+                "skipLogic": null
+              },
+              {
+                "label": "Hemoglobin",
+                "type": "decimal",
+                "required": true,
+                "options": [],
+                "min": "3",
+                "max": "25",
+                "units": "g/dL",
+                "formula": "",
+                "skipLogic": null
+              },
+              {
+                "label": "Hematocrit",
+                "type": "decimal",
+                "required": false,
+                "options": [],
+                "min": "10",
+                "max": "70",
+                "units": "%",
+                "formula": "",
+                "skipLogic": null
+              },
+              {
+                "label": "White Blood Cell Count",
+                "type": "decimal",
+                "required": true,
+                "options": [],
+                "min": "0.5",
+                "max": "100",
+                "units": "10^9/L",
+                "formula": "",
+                "skipLogic": null
+              },
+              {
+                "label": "Platelet Count",
+                "type": "integer",
+                "required": true,
+                "options": [],
+                "min": "10",
+                "max": "1500",
+                "units": "10^9/L",
+                "formula": "",
+                "skipLogic": null
+              },
+              {
+                "label": "Sample Condition",
+                "type": "single_select",
+                "required": false,
+                "options": [
+                  {
+                    "code": "",
+                    "label": ""
+                  },
+                  {
+                    "code": "",
+                    "label": ""
+                  },
+                  {
+                    "code": "",
+                    "label": ""
+                  },
+                  {
+                    "code": "",
+                    "label": ""
+                  }
+                ],
+                "min": "",
+                "max": "",
+                "units": "",
+                "formula": "",
+                "skipLogic": null
+              }
+            ]
+          },
+          {
+            "name": "Informed Consent",
+            "repeating": false,
+            "status": "draft",
+            "fields": []
+          },
+          {
+            "name": "Eligibility Criteria",
+            "repeating": false,
+            "status": "draft",
+            "fields": []
+          },
+          {
+            "name": "Medical History",
+            "repeating": true,
+            "status": "draft",
+            "fields": []
+          },
+          {
+            "name": "Prior and Concomitant Medications",
+            "repeating": true,
+            "status": "draft",
+            "fields": []
+          },
+          {
+            "name": "Vital Signs",
+            "repeating": false,
+            "status": "draft",
+            "fields": []
+          },
+          {
+            "name": "Local Laboratory - Hematology",
+            "repeating": false,
+            "status": "draft",
+            "fields": []
+          }
+        ]
+      }
+    ]
+  }
+}
