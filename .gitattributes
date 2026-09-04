@@ -2,3 +2,4 @@
 # which breaks exact-match tooling and makes diffs noisy on a Windows checkout.
 * text=auto eol=lf
 *.png binary
+*.mp4 binary
